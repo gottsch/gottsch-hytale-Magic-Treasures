@@ -1,0 +1,8 @@
+{
+  "Name": "Drain",
+  "Kind": "Drain",
+  "Level": 3,
+  "Cost": 2,
+  "Cooldown": 9,
+  "Effect": 10
+}

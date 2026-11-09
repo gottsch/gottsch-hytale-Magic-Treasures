@@ -1,0 +1,8 @@
+{
+  "Name": "Lesser Healing",
+  "Kind": "Healing",
+  "Level": 1,
+  "Cost": 2,
+  "Cooldown": 10,
+  "Effect": 5
+}

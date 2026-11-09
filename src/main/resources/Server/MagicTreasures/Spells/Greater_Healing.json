@@ -1,0 +1,8 @@
+{
+  "Name": "Greater Healing",
+  "Kind": "Healing",
+  "Level": 5,
+  "Cost": 4,
+  "Cooldown": 8,
+  "Effect": 15
+}

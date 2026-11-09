@@ -21,6 +21,7 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
+import com.hypixel.hytale.server.core.command.system.arguments.system.DefaultArg;
 import com.hypixel.hytale.server.core.command.system.arguments.system.OptionalArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
@@ -32,27 +33,37 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryState;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryStats;
+import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.TreeSet;
 
 /**
  * /mt info: prints the held piece of jewelry's definition, computed stats and saved state.
  * <p>
- * For testing the tooltip, {@code --mana=N} sets the piece's mana and {@code --rune=ID}
- * adds a rune id to it, then writes the stack back to the hotbar slot, which rewrites its
- * tooltip. Neither checks limits.
+ * For testing, {@code --mana=N} sets the piece's mana, {@code --uses=N} its uses,
+ * {@code --rune=ID} adds a rune id, {@code --spell=ID} adds a spell (up to the piece's max
+ * level) and {@code --clearspells=true} removes its spells. The stack is then written back to
+ * the hotbar slot, which rewrites its tooltip. Only the spell level is checked.
  *
  * @author Mark Gottschling on 11/09/2026
  */
 public class InfoCommand extends AbstractPlayerCommand {
     private final OptionalArg<Double> manaArg;
     private final OptionalArg<String> runeArg;
+    private final OptionalArg<String> spellArg;
+    private final OptionalArg<Integer> usesArg;
+    private final DefaultArg<Boolean> clearSpellsArg;
 
     public InfoCommand() {
         super("info", "Show the held jewelry's stats and state.");
         this.manaArg = withOptionalArg("mana", "Test: set the held piece's mana", ArgTypes.DOUBLE);
         this.runeArg = withOptionalArg("rune", "Test: add a rune id to the held piece", ArgTypes.STRING);
+        this.spellArg = withOptionalArg("spell", "Test: add a spell id to the held piece", ArgTypes.STRING);
+        this.usesArg = withOptionalArg("uses", "Test: set the held piece's uses", ArgTypes.INTEGER);
+        this.clearSpellsArg = withDefaultArg("clearspells", "Test: remove the held piece's spells", ArgTypes.BOOLEAN,
+                false, "false");
     }
 
     @Override
@@ -75,10 +86,33 @@ public class InfoCommand extends AbstractPlayerCommand {
         JewelryState state = Jewelry.state(stack);
         boolean saved = stack.getFromMetadataOrNull(JewelryState.KEYED_CODEC) != null;
 
-        if (manaArg.provided(context) || runeArg.provided(context)) {
+        if (manaArg.provided(context) || runeArg.provided(context) || spellArg.provided(context)
+                || usesArg.provided(context) || clearSpellsArg.get(context)) {
             state = state.copy();
             if (manaArg.provided(context)) {
                 state.setMana(manaArg.get(context));
+            }
+            if (usesArg.provided(context)) {
+                state.setUses(usesArg.get(context));
+            }
+            if (clearSpellsArg.get(context)) {
+                state.setSpells();
+            }
+            if (spellArg.provided(context)) {
+                Spell spell = Spell.get(spellArg.get(context));
+                if (spell == null) {
+                    context.sendMessage(Message.raw("No spell " + spellArg.get(context) + ". Spells: "
+                            + String.join(", ", new TreeSet<>(Spell.getAssetMap().getAssetMap().keySet()))));
+                    return;
+                }
+                if (spell.getLevel() > stats.maxLevel()) {
+                    context.sendMessage(Message.raw(spell.getName() + " is level " + spell.getLevel()
+                            + "; this piece holds spells up to level " + stats.maxLevel() + "."));
+                    return;
+                }
+                String[] spells = Arrays.copyOf(state.getSpells(), state.getSpells().length + 1);
+                spells[spells.length - 1] = spell.getId();
+                state.setSpells(spells);
             }
             if (runeArg.provided(context)) {
                 String[] runes = Arrays.copyOf(state.getRunes(), state.getRunes().length + 1);

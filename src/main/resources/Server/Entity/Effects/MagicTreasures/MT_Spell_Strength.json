@@ -1,0 +1,11 @@
+{
+  "Duration": 60,
+  "OverlapBehavior": "Overwrite",
+  "RemovalBehavior": "Duration",
+  "Debuff": false,
+  "StatusEffectIcon": "Icons/ItemsGenerated/Potion_Damage_Small.png",
+  "OutgoingDamage": {
+    "Physical": [{ "CalculationType": "Percent", "Amount": 0.2 }],
+    "Projectile": [{ "CalculationType": "Percent", "Amount": 0.2 }]
+  }
+}

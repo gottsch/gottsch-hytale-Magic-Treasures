@@ -52,11 +52,15 @@ import java.util.Map;
  * @param caseLocation where the case was found, for example {@code utility 0}, or null if
  *                     the player has no case where it counts
  * @param pieces the worn pieces, in case slot order
+ * @param section the inventory section holding the case, or null if there is none
+ * @param caseSlot the case's slot in that section
+ * @param pieceSlots each worn piece's slot inside the case, matching {@code pieces}
  * @author Mark Gottschling on 11/09/2026
  */
-public record WornJewelry(@Nullable String caseLocation, List<ItemStack> pieces) {
+public record WornJewelry(@Nullable String caseLocation, List<ItemStack> pieces, @Nullable ItemContainer section,
+                          short caseSlot, List<Short> pieceSlots) {
     public static final String CASE_ITEM_ID = "MT_Jewelry_Case";
-    public static final WornJewelry NONE = new WornJewelry(null, List.of());
+    public static final WornJewelry NONE = new WornJewelry(null, List.of(), null, (short) -1, List.of());
 
     /** How many pieces of each type can be worn at once. */
     public static final Map<String, Integer> LIMITS = Map.of("Ring", 2, "Necklace", 1, "Bracelet", 1);
@@ -85,7 +89,10 @@ public record WornJewelry(@Nullable String caseLocation, List<ItemStack> pieces)
         for (short slot = 0; slot < container.getCapacity(); slot++) {
             ItemStack stack = container.getItemStack(slot);
             if (stack != null && !stack.isEmpty() && CASE_ITEM_ID.equals(stack.getItemId())) {
-                return new WornJewelry(section + " " + slot, worn(contents(stack)));
+                List<ItemStack> pieces = new ArrayList<>();
+                List<Short> slots = new ArrayList<>();
+                worn(contents(stack), pieces, slots);
+                return new WornJewelry(section + " " + slot, List.copyOf(pieces), container, slot, List.copyOf(slots));
             }
         }
         return null;
@@ -104,12 +111,13 @@ public record WornJewelry(@Nullable String caseLocation, List<ItemStack> pieces)
     }
 
     /**
-     * Applies the per-type limits to the case's contents.
+     * Applies the per-type limits to the case's contents, filling the worn pieces and their
+     * slots in the case.
      */
-    private static List<ItemStack> worn(ItemStack[] contents) {
+    private static void worn(ItemStack[] contents, List<ItemStack> pieces, List<Short> slots) {
         Map<String, Integer> counts = new HashMap<>();
-        List<ItemStack> pieces = new ArrayList<>();
-        for (ItemStack stack : contents) {
+        for (short slot = 0; slot < contents.length; slot++) {
+            ItemStack stack = contents[slot];
             JewelryDefinition definition = Jewelry.definition(stack);
             if (definition == null) {
                 continue;
@@ -117,9 +125,36 @@ public record WornJewelry(@Nullable String caseLocation, List<ItemStack> pieces)
             int count = counts.merge(definition.getType(), 1, Integer::sum);
             if (count <= LIMITS.getOrDefault(definition.getType(), 0)) {
                 pieces.add(stack);
+                slots.add(slot);
             }
         }
-        return List.copyOf(pieces);
+    }
+
+    /**
+     * Replaces a piece inside the case, for example after a spell spent its mana. An empty
+     * or null stack removes it (the piece broke). The case's stack is rewritten in its
+     * section, which raises an inventory change.
+     *
+     * @return false if the case is no longer where it was found
+     */
+    public boolean replace(short pieceSlot, @Nullable ItemStack stack) {
+        if (section == null) {
+            return false;
+        }
+        ItemStack caseStack = section.getItemStack(caseSlot);
+        if (caseStack == null || !CASE_ITEM_ID.equals(caseStack.getItemId())) {
+            return false;
+        }
+        ItemStackItemContainer container = ItemStackItemContainer.getContainer(section, caseSlot);
+        if (container == null) {
+            return false;
+        }
+        if (stack == null || stack.isEmpty()) {
+            container.removeItemStackFromSlot(pieceSlot);
+        } else {
+            container.setItemStackForSlot(pieceSlot, stack);
+        }
+        return true;
     }
 
     /**

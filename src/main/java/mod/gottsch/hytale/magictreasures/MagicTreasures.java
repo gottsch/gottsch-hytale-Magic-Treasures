@@ -27,6 +27,10 @@ import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import mod.gottsch.hytale.magictreasures.core.command.MagicTreasuresCommand;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryAssets;
+import mod.gottsch.hytale.magictreasures.core.spell.DrainDamageSystem;
+import mod.gottsch.hytale.magictreasures.core.spell.HitMeter;
+import mod.gottsch.hytale.magictreasures.core.spell.SpellEngine;
+import mod.gottsch.hytale.magictreasures.core.spell.SpellTickSystem;
 import mod.gottsch.hytale.magictreasures.core.wear.JewelryWear;
 import mod.gottsch.hytale.magictreasures.core.wear.WornJewelrySystem;
 
@@ -53,8 +57,15 @@ public class MagicTreasures extends JavaPlugin {
         // worn jewelry: re-read on every inventory change, and shown again after joining
         this.getEntityStoreRegistry().registerSystem(new WornJewelrySystem());
         this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, MagicTreasures::onReady);
-        this.getEventRegistry().register(PlayerDisconnectEvent.class,
-                event -> JewelryWear.onLeave(event.getPlayerRef().getUuid()));
+        // passive spells: tick spells once a second, hit spells (Drain) on damage dealt
+        this.getEntityStoreRegistry().registerSystem(new SpellTickSystem());
+        this.getEntityStoreRegistry().registerSystem(new DrainDamageSystem());
+        this.getEntityStoreRegistry().registerSystem(new HitMeter.Before());
+        this.getEntityStoreRegistry().registerSystem(new HitMeter.After());
+        this.getEventRegistry().register(PlayerDisconnectEvent.class, event -> {
+            JewelryWear.onLeave(event.getPlayerRef().getUuid());
+            SpellEngine.onLeave(event.getPlayerRef().getUuid());
+        });
     }
 
     private static void onReady(PlayerReadyEvent event) {

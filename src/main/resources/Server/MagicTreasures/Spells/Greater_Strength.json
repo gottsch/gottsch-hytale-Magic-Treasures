@@ -1,0 +1,9 @@
+{
+  "Name": "Greater Strength",
+  "Kind": "Strength",
+  "Level": 5,
+  "Cost": 10,
+  "Cooldown": 300,
+  "Duration": 240,
+  "EntityEffect": "MT_Spell_Greater_Strength"
+}

@@ -1,0 +1,8 @@
+{
+  "Name": "Greater Drain",
+  "Kind": "Drain",
+  "Level": 6,
+  "Cost": 3,
+  "Cooldown": 7.5,
+  "Effect": 20
+}

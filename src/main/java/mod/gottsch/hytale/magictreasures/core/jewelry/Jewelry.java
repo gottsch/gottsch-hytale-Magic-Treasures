@@ -21,6 +21,8 @@ import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.item.config.metadata.ItemDisplayMetadata;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryDefinition;
+import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryStyle;
+import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -106,19 +108,50 @@ public final class Jewelry {
             return Message.raw("This jewelry's material or style is missing. It can't cast.").color(LABEL);
         }
         List<Message> parts = new ArrayList<>();
-        line(parts, "Mana", String.format("%.0f / %.0f", state.getMana(), stats.maxMana()), MANA);
+        // "Charge", not "Mana": the piece's own well, apart from the player's mana bar
+        line(parts, "Charge", String.format("%.0f / %.0f", state.getMana(), stats.maxMana()), MANA);
         line(parts, "Uses", state.getUses() + " / " + stats.maxUses(), VALUE);
         line(parts, "Recharges", state.getRecharges() + " / " + stats.maxRecharges(), VALUE);
         line(parts, "Repairs", state.getRepairs() + " / " + stats.maxRepairs(), VALUE);
         line(parts, "Spell level", "up to " + stats.maxLevel(), VALUE);
         line(parts, "Rune sockets", state.getRunes().length + " / " + stats.sockets(), VALUE);
-        line(parts, "Spells", state.getSpells().length == 0 ? "none" : String.join(", ", state.getSpells()), VALUE);
+        line(parts, "Spells", state.getSpells().length == 0 ? "none" : spellNames(state.getSpells()), VALUE);
         if (state.getRunes().length > 0) {
             line(parts, "Runes", String.join(", ", state.getRunes()), VALUE);
         }
         // drop the trailing newline
         parts.removeLast();
         return Message.empty().insertAll(parts);
+    }
+
+    private static String spellNames(String[] ids) {
+        List<String> names = new ArrayList<>();
+        for (String id : ids) {
+            Spell spell = Spell.get(id);
+            names.add(spell == null ? id : spell.getName() + " (" + spell.getLevel() + ")");
+        }
+        return String.join(", ", names);
+    }
+
+    /**
+     * @return a short name for a piece, for example {@code Great Gold Ruby Ring}; the item id
+     * if it isn't jewelry
+     */
+    public static String displayName(ItemStack stack) {
+        JewelryDefinition definition = definition(stack);
+        if (definition == null) {
+            return stack == null ? "" : stack.getItemId();
+        }
+        JewelryStyle style = JewelryStyle.get(definition.getStyle());
+        StringBuilder name = new StringBuilder();
+        if (style != null && !"Regular".equalsIgnoreCase(style.getId())) {
+            name.append(style.getName()).append(' ');
+        }
+        name.append(definition.getMaterial()).append(' ');
+        if (definition.getGem() != null) {
+            name.append(definition.getGem()).append(' ');
+        }
+        return name.append(definition.getType()).toString();
     }
 
     private static void line(List<Message> parts, String label, String value, String color) {

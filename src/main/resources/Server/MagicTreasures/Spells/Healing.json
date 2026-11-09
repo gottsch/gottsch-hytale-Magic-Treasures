@@ -1,0 +1,8 @@
+{
+  "Name": "Healing",
+  "Kind": "Healing",
+  "Level": 3,
+  "Cost": 3,
+  "Cooldown": 9,
+  "Effect": 10
+}

@@ -20,11 +20,12 @@ package mod.gottsch.hytale.magictreasures.core.jewelry.asset;
 import com.hypixel.hytale.assetstore.map.DefaultAssetMap;
 import com.hypixel.hytale.server.core.asset.HytaleAssetStore;
 import com.hypixel.hytale.server.core.plugin.registry.AssetRegistry;
+import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
 
 /**
  * Registers Magic Treasures' own JSON asset types. Each loads from a folder under
  * {@code Server/} in every asset pack, the plugin's own included, so other packs can add
- * materials, styles, gems and jewelry.
+ * materials, styles, gems, jewelry and spells.
  *
  * @author Mark Gottschling on 11/09/2026
  */
@@ -33,6 +34,7 @@ public final class JewelryAssets {
     public static final String STYLES_PATH = "MagicTreasures/Styles";
     public static final String GEMS_PATH = "MagicTreasures/Gems";
     public static final String JEWELRY_PATH = "MagicTreasures/Jewelry";
+    public static final String SPELLS_PATH = "MagicTreasures/Spells";
 
     private JewelryAssets() {
     }
@@ -57,6 +59,11 @@ public final class JewelryAssets {
                 .setPath(JEWELRY_PATH)
                 .setCodec(JewelryDefinition.CODEC)
                 .setKeyFunction(JewelryDefinition::getId)
+                .build());
+        registry.register(HytaleAssetStore.builder(Spell.class, new DefaultAssetMap<>())
+                .setPath(SPELLS_PATH)
+                .setCodec(Spell.CODEC)
+                .setKeyFunction(Spell::getId)
                 .build());
     }
 }

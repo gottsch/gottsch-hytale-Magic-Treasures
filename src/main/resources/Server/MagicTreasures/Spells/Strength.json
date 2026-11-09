@@ -1,0 +1,9 @@
+{
+  "Name": "Strength",
+  "Kind": "Strength",
+  "Level": 3,
+  "Cost": 6,
+  "Cooldown": 240,
+  "Duration": 180,
+  "EntityEffect": "MT_Spell_Strength"
+}

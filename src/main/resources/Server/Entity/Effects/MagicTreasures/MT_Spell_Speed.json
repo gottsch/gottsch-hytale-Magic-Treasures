@@ -1,0 +1,10 @@
+{
+  "Duration": 60,
+  "OverlapBehavior": "Overwrite",
+  "RemovalBehavior": "Duration",
+  "Debuff": false,
+  "StatusEffectIcon": "Icons/ItemsGenerated/Potion_Regen_Stamina.png",
+  "ApplicationEffects": {
+    "HorizontalSpeedMultiplier": 1.2
+  }
+}

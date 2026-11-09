@@ -1,0 +1,9 @@
+{
+  "Name": "Speed",
+  "Kind": "Speed",
+  "Level": 2,
+  "Cost": 4,
+  "Cooldown": 120,
+  "Duration": 60,
+  "EntityEffect": "MT_Spell_Speed"
+}

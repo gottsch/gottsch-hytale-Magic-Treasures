@@ -1,0 +1,9 @@
+{
+  "Name": "Cat Sight",
+  "Kind": "Cat_Sight",
+  "Level": 1,
+  "Cost": 4,
+  "Cooldown": 120,
+  "Duration": 60,
+  "EntityEffect": "MT_Spell_Cat_Sight"
+}
