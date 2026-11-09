@@ -1,0 +1,25 @@
+{
+    "Group": "gottsch",
+    "Name": "MagicTreasures",
+    "Version": "0.1.0",
+    "Description": "Magic jewelry, gems and spells. Find or craft rings, necklaces and bracelets, set gems and runes in them, and wear them.",
+    "Authors": [
+        {
+            "Name": "gottsch"
+        }
+    ],
+    "Website": "https://github.com/gottsch",
+    "ServerVersion": ">=0.7.6 <0.8.0",
+    "Dependencies": {
+        "Hytale:AssetModule": "*"
+    },
+    "OptionalDependencies": {
+        
+    },
+    "DisabledByDefault": false,
+    "Main": "mod.gottsch.hytale.magictreasures.MagicTreasures",
+    "IncludesAssetPack": true,
+    "UpdateChecker": {
+        "CurseForge": ""
+    }
+}

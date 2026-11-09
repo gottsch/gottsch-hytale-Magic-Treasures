@@ -1,0 +1,16 @@
+.gradle/
+build/
+out/
+run/
+.idea/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+.vscode
+# dev-server data written into resources
+src/main/resources/SavedFlames.txt
+src/main/resources/MageFlame.json
+src/main/resources/MageFlame.json.bak
