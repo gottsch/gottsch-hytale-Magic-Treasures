@@ -11,7 +11,7 @@ Materials, styles and gems are JSON under `src/main/resources/Server/MagicTreasu
 The jewelry items themselves are generated:
 
 ```
-python tools/generate_jewelry.py          # the small development set
+python tools/generate_jewelry.py          # the starter set (48 pieces)
 python tools/generate_jewelry.py --all    # every combination
 ```
 

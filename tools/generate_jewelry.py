@@ -21,7 +21,7 @@ Both generated folders are emptied first, so remove a
 combination by leaving it out here and running again.
 
 Usage (from the repo root):
-    python tools/generate_jewelry.py          # the small M1 set
+    python tools/generate_jewelry.py          # the starter set
     python tools/generate_jewelry.py --all    # every combination
 """
 import argparse
@@ -42,9 +42,13 @@ END = "# === END generated jewelry ==="
 TYPES = ["Ring", "Necklace", "Bracelet"]
 QUALITIES = ["Junk", "Common", "Uncommon", "Rare", "Epic", "Legendary"]
 
-# The small set for M1: enough to test stats, styles and gems.
-M1_MATERIALS = ["Gold", "Silver"]
-M1_GEMS = [None, "Ruby"]
+# The starter set (Nov 9): 2 x 3 x 4 x 2 = 48 pieces. Grow it by
+# adding to these lists. Bracelets, iron, bone, the other gems and
+# Lord's come later.
+STARTER_TYPES = ["Ring", "Necklace"]
+STARTER_MATERIALS = ["Copper", "Silver", "Gold"]
+STARTER_GEMS = [None, "Topaz", "Ruby", "Sapphire"]
+STARTER_STYLES = ["Regular", "Great"]
 
 # Placeholder art until real jewelry models exist.
 PLACEHOLDER_MODEL = "Items/Runes/Rune_Ability.blockymodel"
@@ -131,15 +135,17 @@ def write_lang(entries):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--all", action="store_true",
-                        help="every material and gem, not the M1 set")
+                        help="every combination, not the starter set")
     args = parser.parse_args()
 
     materials = load("Materials")
     styles = load("Styles")
     gems = load("Gems")
 
-    material_ids = list(materials) if args.all else M1_MATERIALS
-    gem_ids = [None, *gems] if args.all else M1_GEMS
+    types = TYPES if args.all else STARTER_TYPES
+    material_ids = list(materials) if args.all else STARTER_MATERIALS
+    gem_ids = [None, *gems] if args.all else STARTER_GEMS
+    style_ids = list(styles) if args.all else STARTER_STYLES
 
     for folder in (ITEMS_OUT, DEFS_OUT):
         if folder.exists():
@@ -148,12 +154,13 @@ def main():
 
     lang = []
     count = 0
-    for jewelry_type in TYPES:
+    for jewelry_type in types:
         for material_id in material_ids:
             material = materials[material_id]
             for gem_id in gem_ids:
                 gem = gems[gem_id] if gem_id else None
-                for style_id, style in styles.items():
+                for style_id in style_ids:
+                    style = styles[style_id]
                     if not fits(style, jewelry_type):
                         continue
                     iid = item_id(jewelry_type, material_id, gem_id,
