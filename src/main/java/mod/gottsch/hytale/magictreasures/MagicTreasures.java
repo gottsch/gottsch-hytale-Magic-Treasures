@@ -17,17 +17,24 @@
  */
 package mod.gottsch.hytale.magictreasures;
 
+import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
+import com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import mod.gottsch.hytale.magictreasures.core.command.MagicTreasuresCommand;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryAssets;
+import mod.gottsch.hytale.magictreasures.core.wear.JewelryWear;
+import mod.gottsch.hytale.magictreasures.core.wear.WornJewelrySystem;
 
 import javax.annotation.Nonnull;
 
 /**
- * Magic Treasures plugin entry point. For now it only holds the feasibility tests:
- * casting a rune's ability from code and wearing a model attached to the player.
+ * Magic Treasures plugin entry point: registers the jewelry asset types, the commands, and
+ * the worn-jewelry tracking (an inventory system plus join and leave events).
  *
  * @author Mark Gottschling on 11/08/2026
  */
@@ -43,5 +50,23 @@ public class MagicTreasures extends JavaPlugin {
         LOGGER.atInfo().log("Setting up %s version %s", this.getName(), this.getManifest().getVersion().toString());
         JewelryAssets.register(this.getAssetRegistry());
         this.getCommandRegistry().registerCommand(new MagicTreasuresCommand());
+        // worn jewelry: re-read on every inventory change, and shown again after joining
+        this.getEntityStoreRegistry().registerSystem(new WornJewelrySystem());
+        this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, MagicTreasures::onReady);
+        this.getEventRegistry().register(PlayerDisconnectEvent.class,
+                event -> JewelryWear.onLeave(event.getPlayerRef().getUuid()));
+    }
+
+    private static void onReady(PlayerReadyEvent event) {
+        Ref<EntityStore> ref = event.getPlayerRef();
+        if (ref == null || !ref.isValid()) {
+            return;
+        }
+        Store<EntityStore> store = ref.getStore();
+        store.getExternalData().getWorld().execute(() -> {
+            if (ref.isValid()) {
+                JewelryWear.onJoin(ref, store);
+            }
+        });
     }
 }

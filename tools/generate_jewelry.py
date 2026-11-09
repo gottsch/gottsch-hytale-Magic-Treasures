@@ -177,6 +177,9 @@ def main():
                         "ItemLevel": material.get("MaxLevel", 1)
                         + style.get("MaxLevel", 0),
                         "Categories": ["Items.Ingredients"],
+                        # the Jewelry Case only takes items with this
+                        # tag ("ItemTag": "Family=MT_Jewelry")
+                        "Tags": {"Family": ["MT_Jewelry"]},
                         "Model": PLACEHOLDER_MODEL,
                         "Texture": PLACEHOLDER_TEXTURE,
                         "PlayerAnimationsId": "Item",

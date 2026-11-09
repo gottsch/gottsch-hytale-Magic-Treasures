@@ -9,6 +9,11 @@
   "Categories": [
     "Items.Ingredients"
   ],
+  "Tags": {
+    "Family": [
+      "MT_Jewelry"
+    ]
+  },
   "Model": "Items/Runes/Rune_Ability.blockymodel",
   "Texture": "Items/Runes/Rune_Textures/Rune_Ability_Blank.png",
   "PlayerAnimationsId": "Item",

@@ -33,6 +33,6 @@ public class MagicTreasuresCommand extends AbstractCommandCollection {
         this.addSubCommand(new GiveCommand());
         this.addSubCommand(new InfoCommand());
         this.addSubCommand(new CastTestCommand());
-        this.addSubCommand(new WearTestCommand());
+        this.addSubCommand(new WornCommand());
     }
 }

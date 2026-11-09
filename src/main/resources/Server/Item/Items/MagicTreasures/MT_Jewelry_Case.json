@@ -1,0 +1,54 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Jewelry_Case.name",
+    "Description": "server.items.MT_Jewelry_Case.description"
+  },
+  "Icon": "Icons/ItemsGenerated/Utility_Bag_Seed.png",
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      22.5,
+      45.0,
+      22.5
+    ],
+    "Translation": [
+      0.0,
+      -15.0
+    ]
+  },
+  "Quality": "Uncommon",
+  "ItemLevel": 1,
+  "Categories": [
+    "Items.Armors"
+  ],
+  "Model": "Items/Tools/Feedbag/Feedbag.blockymodel",
+  "Texture": "Items/Tools/Feedbag/Seedbag_Texture.png",
+  "PlayerAnimationsId": "Block",
+  "Scale": 1.0,
+  "MaxStack": 1,
+  "Tags": {
+    "Type": [
+      "Utility"
+    ]
+  },
+  "Container": {
+    "Capacity": 4,
+    "ItemTag": "Family=MT_Jewelry"
+  },
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenItemStackContainer"
+        }
+      ]
+    }
+  }
+}
