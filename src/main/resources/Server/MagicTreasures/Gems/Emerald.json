@@ -1,0 +1,10 @@
+{
+  "Item": "Rock_Gem_Emerald",
+  "Mana": 75,
+  "Recharges": 2,
+  "Factors": {
+    "Cooldown": 0.98,
+    "Cost": 0.98
+  },
+  "Quality": "Uncommon"
+}

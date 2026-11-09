@@ -1,0 +1,13 @@
+{
+  "Name": "Lord's",
+  "ManaMultiplier": 2.0,
+  "UsesMultiplier": 3.0,
+  "MaxLevel": 2,
+  "Repairs": 2,
+  "QualitySteps": 2,
+  "Sockets": 3,
+  "Types": [
+    "Ring",
+    "Necklace"
+  ]
+}

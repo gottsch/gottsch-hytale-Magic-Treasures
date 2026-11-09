@@ -1,0 +1,14 @@
+{
+  "Mana": 100,
+  "Uses": 150,
+  "Repairs": 2,
+  "MaxLevel": 6,
+  "Quality": "Rare",
+  "Ingredient": "Ingredient_Bar_Gold",
+  "GradientSet": "Ornamented_Metal",
+  "Gradient": "Gold_Red",
+  "Factors": {
+    "Cooldown": 0.96,
+    "Cost": 0.925
+  }
+}

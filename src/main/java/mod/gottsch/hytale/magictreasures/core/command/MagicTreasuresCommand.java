@@ -30,6 +30,8 @@ public class MagicTreasuresCommand extends AbstractCommandCollection {
     public MagicTreasuresCommand() {
         super("magictreasures", "Magic Treasures root command.");
         this.addAliases("mt");
+        this.addSubCommand(new GiveCommand());
+        this.addSubCommand(new InfoCommand());
         this.addSubCommand(new CastTestCommand());
         this.addSubCommand(new WearTestCommand());
     }

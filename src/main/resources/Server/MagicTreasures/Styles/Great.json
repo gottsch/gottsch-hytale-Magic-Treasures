@@ -1,0 +1,9 @@
+{
+  "Name": "Great",
+  "ManaMultiplier": 1.5,
+  "UsesMultiplier": 2.0,
+  "MaxLevel": 1,
+  "Repairs": 1,
+  "QualitySteps": 1,
+  "Sockets": 2
+}

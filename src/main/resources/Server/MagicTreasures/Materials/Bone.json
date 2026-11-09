@@ -1,0 +1,10 @@
+{
+  "Mana": 50,
+  "Uses": 200,
+  "MaxLevel": 7,
+  "Quality": "Uncommon",
+  "Factors": {
+    "Cost": 1.05,
+    "Effect": 1.25
+  }
+}

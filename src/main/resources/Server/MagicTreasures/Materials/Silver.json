@@ -1,0 +1,13 @@
+{
+  "Mana": 75,
+  "Uses": 150,
+  "Repairs": 2,
+  "MaxLevel": 5,
+  "Quality": "Uncommon",
+  "Ingredient": "Ingredient_Bar_Silver",
+  "GradientSet": "Ornamented_Metal",
+  "Gradient": "Silver_Blue",
+  "Factors": {
+    "Cost": 0.95
+  }
+}

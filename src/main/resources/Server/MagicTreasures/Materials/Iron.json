@@ -1,0 +1,13 @@
+{
+  "Mana": 50,
+  "Uses": 200,
+  "Repairs": 3,
+  "MaxLevel": 3,
+  "Quality": "Common",
+  "Ingredient": "Ingredient_Bar_Iron",
+  "GradientSet": "Ornamented_Metal",
+  "Gradient": "Iron_Black",
+  "Factors": {
+    "Duration": 1.25
+  }
+}

@@ -21,6 +21,7 @@ import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import mod.gottsch.hytale.magictreasures.core.command.MagicTreasuresCommand;
+import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryAssets;
 
 import javax.annotation.Nonnull;
 
@@ -40,6 +41,7 @@ public class MagicTreasures extends JavaPlugin {
     @Override
     protected void setup() {
         LOGGER.atInfo().log("Setting up %s version %s", this.getName(), this.getManifest().getVersion().toString());
+        JewelryAssets.register(this.getAssetRegistry());
         this.getCommandRegistry().registerCommand(new MagicTreasuresCommand());
     }
 }

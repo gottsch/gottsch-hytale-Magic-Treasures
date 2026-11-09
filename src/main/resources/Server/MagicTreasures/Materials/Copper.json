@@ -1,0 +1,13 @@
+{
+  "Mana": 50,
+  "Uses": 75,
+  "Repairs": 1,
+  "MaxLevel": 4,
+  "Quality": "Uncommon",
+  "Ingredient": "Ingredient_Bar_Copper",
+  "GradientSet": "Ornamented_Metal",
+  "Gradient": "Copper_Green",
+  "Factors": {
+    "Cooldown": 0.95
+  }
+}
