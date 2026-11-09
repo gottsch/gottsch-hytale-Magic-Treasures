@@ -57,7 +57,11 @@ import java.util.function.Function;
  * the whole look from the skin's parts ({@link CosmeticRegistry}): the body's texture and skin tone on the
  * model, then the face parts and outfit as {@link ModelAttachment}s, then the jewelry.
  * {@code --outfit=false} keeps the model's own attachments instead (plain body, stock face).
- * The original model is kept per player and restored on the next run. Every run logs what it sends.
+ * The next run takes the jewelry off. Putting the original model back left the player naked (the client
+ * keeps drawing the model it was sent), so by default it sends the rebuilt look without the jewelry;
+ * {@code --undo=skin} instead puts the original back and resends the skin, to test whether that makes the
+ * client draw the skin again. {@code --gradientset} and {@code --gradient} tint the jewelry
+ * (e.g. {@code Ornamented_Metal} / {@code Gold_Red} with a greyscale texture). Every run logs what it sends.
  * <p>
  * A skin stores each part as {@code PartId.ColorOrTexture[.Variant]}. A part either has a texture per
  * colour, or a greyscale texture tinted with its gradient set.
@@ -74,6 +78,9 @@ public class WearTestCommand extends AbstractPlayerCommand {
     private final DefaultArg<Boolean> outfitArg;
     private final DefaultArg<Boolean> faceArg;
     private final DefaultArg<Boolean> listArg;
+    private final DefaultArg<String> undoArg;
+    private final DefaultArg<String> gradientSetArg;
+    private final DefaultArg<String> gradientArg;
 
     public WearTestCommand() {
         super("wear", "Test: toggle a piece of jewelry (default: a necklace) on yourself.");
@@ -89,6 +96,12 @@ public class WearTestCommand extends AbstractPlayerCommand {
                 ArgTypes.BOOLEAN, true, "true");
         this.listArg = withDefaultArg("list", "Only list the model's attachments and the skin's parts",
                 ArgTypes.BOOLEAN, false, "false");
+        this.undoArg = withDefaultArg("undo", "How to take it off: rebuild (the look without jewelry) or skin "
+                + "(original model + resend the skin)", ArgTypes.STRING, "rebuild", "rebuild");
+        this.gradientSetArg = withDefaultArg("gradientset", "Jewelry tint gradient set, e.g. Ornamented_Metal (none = no tint)",
+                ArgTypes.STRING, "none", "none");
+        this.gradientArg = withDefaultArg("gradient", "Jewelry tint within the set, e.g. Gold_Red",
+                ArgTypes.STRING, "none", "none");
     }
 
     @Override
@@ -122,16 +135,42 @@ public class WearTestCommand extends AbstractPlayerCommand {
             return;
         }
 
-        // wearing our jewelry -> put the original model back
+        // wearing our jewelry -> take it off
         UUID uuid = playerRef.getUuid();
         Model original = ORIGINALS.remove(uuid);
         if (original != null) {
-            store.putComponent(ref, ModelComponent.getComponentType(), new ModelComponent(original));
-            context.sendMessage(Message.raw("Back to your original model (" + original.getAttachments().length + " attachments)."));
+            if ("skin".equalsIgnoreCase(undoArg.get(context))) {
+                // put the server's own model back and resend the skin, hoping the client draws the skin again
+                store.putComponent(ref, ModelComponent.getComponentType(), new ModelComponent(original));
+                if (skinComponent != null) {
+                    skinComponent.setNetworkOutdated();
+                }
+                context.sendMessage(Message.raw("Took it off: original model back and skin resent."));
+            } else {
+                // the client now draws whatever model it is sent, so send the look without the jewelry
+                store.putComponent(ref, ModelComponent.getComponentType(),
+                        new ModelComponent(buildLook(context, original, skin, null)));
+                context.sendMessage(Message.raw("Took it off: your look rebuilt without the jewelry."));
+            }
             return;
         }
         ORIGINALS.put(uuid, model);
 
+        String gradientSet = "none".equalsIgnoreCase(gradientSetArg.get(context)) ? null : gradientSetArg.get(context);
+        String gradient = "none".equalsIgnoreCase(gradientArg.get(context)) ? null : gradientArg.get(context);
+        ModelAttachment jewelry = new ModelAttachment(modelArg.get(context), textureArg.get(context), gradientSet, gradient, 1.0);
+        Model worn = buildLook(context, model, skin, jewelry);
+        store.putComponent(ref, ModelComponent.getComponentType(), new ModelComponent(worn));
+        context.sendMessage(Message.raw("Sent " + worn.getAttachments().length + " attachments (look + jewelry). Run again to take it off."));
+    }
+
+    /**
+     * The player's look as a model: the base model with the body's texture and skin tone, then the face and
+     * outfit parts from the skin (or the base model's own attachments with {@code --outfit=false}), then the
+     * jewelry if there is one.
+     */
+    private Model buildLook(CommandContext context, Model model, PlayerSkin skin, ModelAttachment jewelry) {
+        ModelAttachment[] current = model.getAttachments() == null ? new ModelAttachment[0] : model.getAttachments();
         List<ModelAttachment> attachments = new ArrayList<>();
         List<String> problems = new ArrayList<>();
         String bodyTexture = model.getTexture();
@@ -163,21 +202,19 @@ public class WearTestCommand extends AbstractPlayerCommand {
             // keep the attachments the model already has
             attachments.addAll(List.of(current));
         }
-        attachments.add(new ModelAttachment(modelArg.get(context), textureArg.get(context), null, null, 1.0));
+        if (jewelry != null) {
+            attachments.add(jewelry);
+        }
 
         for (ModelAttachment a : attachments) {
             LOGGER.atInfo().log("wear: sending %s | %s | %s | %s", a.getModel(), a.getTexture(), a.getGradientSet(), a.getGradientId());
         }
+        LOGGER.atInfo().log("wear: body %s | %s | %s", bodyTexture, bodyGradientSet, bodyGradientId);
         if (!problems.isEmpty()) {
             LOGGER.atInfo().log("wear: could not resolve %s", problems);
-        }
-        LOGGER.atInfo().log("wear: body %s | %s | %s", bodyTexture, bodyGradientSet, bodyGradientId);
-        store.putComponent(ref, ModelComponent.getComponentType(), new ModelComponent(copyWith(model,
-                attachments.toArray(new ModelAttachment[0]), bodyTexture, bodyGradientSet, bodyGradientId)));
-        context.sendMessage(Message.raw("Sent " + attachments.size() + " attachments (outfit + jewelry). Run again to undo."));
-        if (!problems.isEmpty()) {
             context.sendMessage(Message.raw("Could not resolve: " + String.join(", ", problems)));
         }
+        return copyWith(model, attachments.toArray(new ModelAttachment[0]), bodyTexture, bodyGradientSet, bodyGradientId);
     }
 
     /**
