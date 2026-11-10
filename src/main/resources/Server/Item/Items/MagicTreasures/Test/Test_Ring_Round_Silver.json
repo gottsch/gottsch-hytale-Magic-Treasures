@@ -1,0 +1,17 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Test_Ring_Round_Silver.name",
+    "Description": "server.items.Test_Ring_Round_Silver.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/MT_Ring_Silver.png",
+  "Quality": "Rare",
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Model": "Items/MagicTreasures/Rings/Ring_Regular_Round.blockymodel",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Silver.png",
+  "PlayerAnimationsId": "Item",
+  "Scale": 1.0,
+  "MaxStack": 1,
+  "ItemSoundSetId": "ISS_Items_Gems"
+}

@@ -120,6 +120,23 @@ def fits(style, jewelry_type):
     return not types or jewelry_type in types
 
 
+# Real art (Nov 10), from tools/make_ring_art.py: the starter rings'
+# styles and metals. Anything else keeps the placeholder.
+RING_STYLES = ["Regular", "Great"]
+RING_MATERIALS = ["Copper", "Silver", "Gold"]
+RING_GEMS = [None, "Topaz", "Ruby", "Sapphire"]
+
+
+def ring_art(jewelry_type, material_id, gem_id, style_id, iid):
+    """(model, texture, icon) for a ring with real art, else None."""
+    if (jewelry_type != "Ring" or style_id not in RING_STYLES
+            or material_id not in RING_MATERIALS or gem_id not in RING_GEMS):
+        return None
+    model = f"Items/MagicTreasures/Rings/Ring_{style_id}" +         ("_Set" if gem_id else "") + ".blockymodel"
+    texture = f"Items/MagicTreasures/Rings/Ring_{material_id}" +         (f"_{gem_id}" if gem_id else "") + ".png"
+    return model, texture, f"Icons/Items/MagicTreasures/{iid}.png"
+
+
 def icon(material_id, gem_id):
     if gem_id:
         return f"Icons/ItemsGenerated/Rock_Gem_{gem_id}.png"
@@ -223,6 +240,11 @@ def main():
                         "Scale": 0.6,
                         "ItemSoundSetId": "ISS_Items_Gems",
                     }
+                    art = ring_art(jewelry_type, material_id, gem_id,
+                                   style_id, iid)
+                    if art:
+                        item["Model"], item["Texture"], item["Icon"] = art
+                        item["Scale"] = 1.0
                     item["Interactions"] = {
                         "Secondary": {"Interactions": [IMBUE]}}
                     ingredient = material.get("Ingredient")

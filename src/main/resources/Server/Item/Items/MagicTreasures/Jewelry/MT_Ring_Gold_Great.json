@@ -3,7 +3,7 @@
     "Name": "server.items.MT_Ring_Gold_Great.name",
     "Description": "server.items.MT_Ring_Gold_Great.description"
   },
-  "Icon": "Icons/ItemsGenerated/Ingredient_Bar_Gold.png",
+  "Icon": "Icons/Items/MagicTreasures/MT_Ring_Gold_Great.png",
   "Quality": "Epic",
   "ItemLevel": 7,
   "Categories": [
@@ -14,11 +14,11 @@
       "MT_Jewelry"
     ]
   },
-  "Model": "Items/Runes/Rune_Ability.blockymodel",
-  "Texture": "Items/Runes/Rune_Textures/Rune_Ability_Blank.png",
+  "Model": "Items/MagicTreasures/Rings/Ring_Great.blockymodel",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Gold.png",
   "PlayerAnimationsId": "Item",
   "MaxStack": 1,
-  "Scale": 0.6,
+  "Scale": 1.0,
   "ItemSoundSetId": "ISS_Items_Gems",
   "Interactions": {
     "Secondary": {

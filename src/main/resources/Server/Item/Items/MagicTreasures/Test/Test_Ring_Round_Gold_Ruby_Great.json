@@ -1,0 +1,17 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Test_Ring_Round_Gold_Ruby_Great.name",
+    "Description": "server.items.Test_Ring_Round_Gold_Ruby_Great.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/MT_Ring_Gold_Ruby_Great.png",
+  "Quality": "Rare",
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Model": "Items/MagicTreasures/Rings/Ring_Great_Set_Round.blockymodel",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Gold_Ruby.png",
+  "PlayerAnimationsId": "Item",
+  "Scale": 1.0,
+  "MaxStack": 1,
+  "ItemSoundSetId": "ISS_Items_Gems"
+}

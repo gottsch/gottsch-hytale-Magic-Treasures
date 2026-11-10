@@ -28,6 +28,8 @@ import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
 import com.hypixel.hytale.server.core.modules.entity.player.PlayerSkinComponent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
+import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryDefinition;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryStats;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryMaterial;
 
@@ -64,6 +66,13 @@ public final class JewelryWear {
     public static final String NECKLACE_MODEL = "Cosmetics/Overtops/Overtops_Necklace.blockymodel";
     public static final String NECKLACE_TEXTURE = "Cosmetics/Overtops/Overtops_Necklace_Textures/Necklace_1_Greyscale.png";
 
+    /**
+     * Worn rings (Nov 10, tools/make_ring_art.py): a thin band around the hand, inside a glove.
+     * The first worn ring is on the right hand, the second on the left.
+     */
+    public static final String RING_MODEL_RIGHT = "Cosmetics/MagicTreasures/Ring_Worn_R.blockymodel";
+    public static final String RING_MODEL_LEFT = "Cosmetics/MagicTreasures/Ring_Worn_L.blockymodel";
+    public static final String RING_TEXTURE = "Cosmetics/MagicTreasures/Ring_Worn_Greyscale.png";
     /** What each online player wears, and the visible pieces last sent (null: the look was never changed). */
     private static final Map<UUID, Worn> WORN = new ConcurrentHashMap<>();
 
@@ -96,8 +105,12 @@ public final class JewelryWear {
         WornJewelry jewelry = WornJewelry.of(ref, accessor);
         List<ModelAttachment> visible = new ArrayList<>();
         List<String> visibleIds = new ArrayList<>();
+        int rings = 0;
         for (ItemStack piece : jewelry.pieces()) {
-            ModelAttachment attachment = wornModel(piece);
+            // the first ring goes on the right hand, the second on the left
+            JewelryDefinition definition = Jewelry.definition(piece);
+            boolean ring = definition != null && "Ring".equalsIgnoreCase(definition.getType());
+            ModelAttachment attachment = wornModel(piece, ring ? rings++ : 0);
             if (attachment != null) {
                 visible.add(attachment);
                 visibleIds.add(piece.getItemId());
@@ -152,12 +165,21 @@ public final class JewelryWear {
      * @return the model shown on the player for a worn piece, or null if it isn't visible
      */
     @Nullable
-    public static ModelAttachment wornModel(ItemStack piece) {
+    public static ModelAttachment wornModel(ItemStack piece, int ringIndex) {
         JewelryStats stats = JewelryStats.of(piece.getItemId());
-        if (!stats.known() || !"Necklace".equalsIgnoreCase(stats.definition().getType())) {
+        if (!stats.known()) {
             return null;
         }
         JewelryMaterial material = stats.material();
-        return new ModelAttachment(NECKLACE_MODEL, NECKLACE_TEXTURE, material.getGradientSet(), material.getGradient(), 1.0);
+        String type = stats.definition().getType();
+        if ("Necklace".equalsIgnoreCase(type)) {
+            return new ModelAttachment(NECKLACE_MODEL, NECKLACE_TEXTURE, material.getGradientSet(),
+                    material.getGradient(), 1.0);
+        }
+        if ("Ring".equalsIgnoreCase(type)) {
+            return new ModelAttachment(ringIndex == 0 ? RING_MODEL_RIGHT : RING_MODEL_LEFT, RING_TEXTURE,
+                    material.getGradientSet(), material.getGradient(), 1.0);
+        }
+        return null;
     }
 }

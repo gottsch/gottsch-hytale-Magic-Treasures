@@ -41,8 +41,9 @@ import java.util.Map;
  * <p>
  * The rules (port plan, decision 2):
  * <ul>
- *     <li>The case counts only in the utility section or the hotbar, utility first. If the
- *     player has more than one, only the first found counts.</li>
+ *     <li>The case counts from anywhere in the inventory: utility, hotbar, storage, then
+ *     backpack (changed Nov 10; it was utility and hotbar only). If the player has more than
+ *     one, only the first found counts.</li>
  *     <li>The case holds 4 pieces, but at most 2 rings, 1 necklace and 1 bracelet are worn,
  *     in slot order. Any other piece in the case is carried, not worn.</li>
  * </ul>
@@ -66,12 +67,21 @@ public record WornJewelry(@Nullable String caseLocation, List<ItemStack> pieces,
     public static final Map<String, Integer> LIMITS = Map.of("Ring", 2, "Necklace", 1, "Bracelet", 1);
 
     /**
-     * Reads what the player is wearing from their utility section and hotbar.
+     * Reads what the player is wearing: the first Jewelry Case found in the utility section,
+     * hotbar, storage or backpack, in that order. The case counts from anywhere in the
+     * inventory (changed Nov 10, Mark: it no longer needs a quick slot); it is only opened
+     * from the hand.
      */
     public static WornJewelry of(Ref<EntityStore> ref, ComponentAccessor<EntityStore> accessor) {
         WornJewelry worn = find(accessor, ref, InventoryComponent.Utility.getComponentType(), "utility");
         if (worn == null) {
             worn = find(accessor, ref, InventoryComponent.Hotbar.getComponentType(), "hotbar");
+        }
+        if (worn == null) {
+            worn = find(accessor, ref, InventoryComponent.Storage.getComponentType(), "storage");
+        }
+        if (worn == null) {
+            worn = find(accessor, ref, InventoryComponent.Backpack.getComponentType(), "backpack");
         }
         return worn == null ? NONE : worn;
     }

@@ -54,13 +54,13 @@ public class WornCommand extends AbstractPlayerCommand {
         WornJewelry fresh = WornJewelry.of(ref, store);
         WornJewelry recorded = JewelryWear.worn(playerRef.getUuid());
         if (fresh.caseLocation() == null) {
-            context.sendMessage(Message.raw("No Jewelry Case in your hotbar or utility slots, so nothing is worn."));
+            context.sendMessage(Message.raw("No Jewelry Case in your inventory, so nothing is worn."));
         } else {
             context.sendMessage(Message.raw("Jewelry Case in " + fresh.caseLocation() + ". Worn ("
                     + fresh.pieces().size() + "): " + (fresh.pieces().isEmpty() ? "nothing" : String.join(", ", fresh.itemIds()))));
             for (ItemStack piece : fresh.pieces()) {
                 context.sendMessage(Message.raw("  " + piece.getItemId()
-                        + (JewelryWear.wornModel(piece) == null ? "" : " (shown on you)")));
+                        + (JewelryWear.wornModel(piece, 0) == null ? "" : " (shown on you)")));
             }
         }
         if (!recorded.itemIds().equals(fresh.itemIds())) {
