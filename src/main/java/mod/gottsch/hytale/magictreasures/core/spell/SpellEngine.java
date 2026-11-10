@@ -106,6 +106,41 @@ public final class SpellEngine {
         cast(SpellKind.Trigger.HIT, playerRef.getUuid(), ref, store, worn, damage);
     }
 
+    /**
+     * Spends one use of the piece in this case slot, after it boosted a rune cast. A piece
+     * with no uses left breaks.
+     *
+     * @param pieceId the piece's item id when the cast started, so a piece swapped in since
+     *                isn't charged
+     */
+    public static void useRune(Ref<EntityStore> ref, Store<EntityStore> store, short slot, String pieceId) {
+        WornJewelry worn = WornJewelry.of(ref, store);
+        int i = worn.pieceSlots().indexOf(slot);
+        if (i < 0 || !worn.pieces().get(i).getItemId().equals(pieceId)) {
+            return;
+        }
+        ItemStack piece = worn.pieces().get(i);
+        JewelryState state = Jewelry.state(piece);
+        if (state == null) {
+            return;
+        }
+        state = state.copy().setUses(state.getUses() - 1);
+        if (state.getUses() > 0) {
+            worn.replace(slot, Jewelry.withState(piece, state));
+            return;
+        }
+        worn.replace(slot, null);
+        PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
+        if (playerRef != null) {
+            playerRef.sendMessage(Message.raw("Your " + Jewelry.displayName(piece) + " is worn out and broke.")
+                    .color("#ff7070"));
+            Map<String, Long> cooldowns = COOLDOWNS.get(playerRef.getUuid());
+            if (cooldowns != null) {
+                clearCooldowns(cooldowns, slot);
+            }
+        }
+    }
+
     public static void onLeave(UUID uuid) {
         COOLDOWNS.remove(uuid);
         LIT.remove(uuid);

@@ -172,10 +172,14 @@ public class JewelryHud extends CustomUIHud {
      * {@code Healing ready, Speed 42s}
      */
     private static String spells(PlayerRef playerRef, short slot, JewelryState state) {
-        if (state == null || state.getSpells().length == 0) {
+        if (state == null || (state.getSpells().length == 0 && state.getRunes().length == 0)) {
             return "No spells";
         }
         List<String> parts = new ArrayList<>();
+        // socketed runes first: they boost the same rune in the ability slots
+        for (String rune : state.getRunes()) {
+            parts.add("+" + rune.replace("Rune_", ""));
+        }
         for (String id : state.getSpells()) {
             Spell spell = Spell.get(id);
             String name = spell == null ? id + " (unknown)" : spell.getName();

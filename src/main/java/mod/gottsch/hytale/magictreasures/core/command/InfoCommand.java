@@ -25,6 +25,8 @@ import com.hypixel.hytale.server.core.command.system.arguments.system.DefaultArg
 import com.hypixel.hytale.server.core.command.system.arguments.system.OptionalArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
+import com.hypixel.hytale.server.core.asset.type.item.config.CoreItemAbility;
+import com.hypixel.hytale.server.core.asset.type.item.config.Item;
 import com.hypixel.hytale.server.core.inventory.InventoryComponent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -43,9 +45,10 @@ import java.util.TreeSet;
  * /mt info: prints the held piece of jewelry's definition, computed stats and saved state.
  * <p>
  * For testing, {@code --mana=N} sets the piece's mana, {@code --uses=N} its uses,
- * {@code --rune=ID} adds a rune id, {@code --spell=ID} adds a spell (up to the piece's max
- * level) and {@code --clearspells=true} removes its spells. The stack is then written back to
- * the hotbar slot, which rewrites its tooltip. Only the spell level is checked.
+ * {@code --rune=ID} adds a core rune (up to the piece's sockets), {@code --spell=ID} adds a
+ * spell (up to the piece's max level), and {@code --clearspells=true} and
+ * {@code --clearrunes=true} remove them. The stack is then written back to the hotbar slot,
+ * which rewrites its tooltip.
  *
  * @author Mark Gottschling on 11/09/2026
  */
@@ -55,6 +58,7 @@ public class InfoCommand extends AbstractPlayerCommand {
     private final OptionalArg<String> spellArg;
     private final OptionalArg<Integer> usesArg;
     private final DefaultArg<Boolean> clearSpellsArg;
+    private final DefaultArg<Boolean> clearRunesArg;
 
     public InfoCommand() {
         super("info", "Show the held jewelry's stats and state.");
@@ -63,6 +67,8 @@ public class InfoCommand extends AbstractPlayerCommand {
         this.spellArg = withOptionalArg("spell", "Test: add a spell id to the held piece", ArgTypes.STRING);
         this.usesArg = withOptionalArg("uses", "Test: set the held piece's uses", ArgTypes.INTEGER);
         this.clearSpellsArg = withDefaultArg("clearspells", "Test: remove the held piece's spells", ArgTypes.BOOLEAN,
+                false, "false");
+        this.clearRunesArg = withDefaultArg("clearrunes", "Test: remove the held piece's runes", ArgTypes.BOOLEAN,
                 false, "false");
     }
 
@@ -87,7 +93,7 @@ public class InfoCommand extends AbstractPlayerCommand {
         boolean saved = stack.getFromMetadataOrNull(JewelryState.KEYED_CODEC) != null;
 
         if (manaArg.provided(context) || runeArg.provided(context) || spellArg.provided(context)
-                || usesArg.provided(context) || clearSpellsArg.get(context)) {
+                || usesArg.provided(context) || clearSpellsArg.get(context) || clearRunesArg.get(context)) {
             state = state.copy();
             if (manaArg.provided(context)) {
                 state.setMana(manaArg.get(context));
@@ -97,6 +103,9 @@ public class InfoCommand extends AbstractPlayerCommand {
             }
             if (clearSpellsArg.get(context)) {
                 state.setSpells();
+            }
+            if (clearRunesArg.get(context)) {
+                state.setRunes();
             }
             if (spellArg.provided(context)) {
                 Spell spell = Spell.get(spellArg.get(context));
@@ -115,6 +124,17 @@ public class InfoCommand extends AbstractPlayerCommand {
                 state.setSpells(spells);
             }
             if (runeArg.provided(context)) {
+                Item runeItem = Item.getAssetMap().getAsset(runeArg.get(context));
+                if (runeItem == null || !(runeItem.getAbility() instanceof CoreItemAbility)) {
+                    context.sendMessage(Message.raw(runeArg.get(context)
+                            + " isn't a core rune. Try Rune_Fireball, Rune_WindStrike or Rune_GroundSlam."));
+                    return;
+                }
+                if (state.getRunes().length >= stats.sockets()) {
+                    context.sendMessage(Message.raw("This piece's rune sockets are full ("
+                            + stats.sockets() + "). Use --clearrunes=true first."));
+                    return;
+                }
                 String[] runes = Arrays.copyOf(state.getRunes(), state.getRunes().length + 1);
                 runes[runes.length - 1] = runeArg.get(context);
                 state.setRunes(runes);

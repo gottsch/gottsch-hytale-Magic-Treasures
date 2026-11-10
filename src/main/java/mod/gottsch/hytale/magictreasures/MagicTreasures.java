@@ -29,6 +29,7 @@ import mod.gottsch.hytale.magictreasures.core.command.MagicTreasuresCommand;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryAssets;
 import mod.gottsch.hytale.magictreasures.core.spell.DrainDamageSystem;
 import mod.gottsch.hytale.magictreasures.core.spell.HitMeter;
+import mod.gottsch.hytale.magictreasures.core.spell.RuneBoostSystem;
 import mod.gottsch.hytale.magictreasures.core.spell.SpellEngine;
 import mod.gottsch.hytale.magictreasures.core.spell.SpellTickSystem;
 import mod.gottsch.hytale.magictreasures.core.wear.JewelryWear;
@@ -62,6 +63,8 @@ public class MagicTreasures extends JavaPlugin {
         this.getEntityStoreRegistry().registerSystem(new DrainDamageSystem());
         this.getEntityStoreRegistry().registerSystem(new HitMeter.Before());
         this.getEntityStoreRegistry().registerSystem(new HitMeter.After());
+        // runes: a rune held by worn jewelry boosts the same rune cast from the ability slots
+        this.getEntityStoreRegistry().registerSystem(new RuneBoostSystem());
         this.getEventRegistry().register(PlayerDisconnectEvent.class, event -> {
             JewelryWear.onLeave(event.getPlayerRef().getUuid());
             SpellEngine.onLeave(event.getPlayerRef().getUuid());

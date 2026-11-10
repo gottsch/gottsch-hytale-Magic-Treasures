@@ -23,13 +23,17 @@
   ],
   "Model": "Items/Tools/Feedbag/Feedbag.blockymodel",
   "Texture": "Items/Tools/Feedbag/Seedbag_Texture.png",
-  "PlayerAnimationsId": "Block",
+  "PlayerAnimationsId": "Torch",
   "Scale": 1.0,
   "MaxStack": 1,
   "Tags": {
     "Type": [
       "Utility"
     ]
+  },
+  "Utility": {
+    "Compatible": true,
+    "Usable": false
   },
   "Container": {
     "Capacity": 4,
