@@ -19,5 +19,17 @@
   "PlayerAnimationsId": "Item",
   "MaxStack": 1,
   "Scale": 0.6,
-  "ItemSoundSetId": "ISS_Items_Gems"
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  }
 }

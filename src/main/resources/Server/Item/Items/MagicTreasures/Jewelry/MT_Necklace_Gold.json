@@ -19,5 +19,36 @@
   "PlayerAnimationsId": "Item",
   "MaxStack": 1,
   "Scale": 0.6,
-  "ItemSoundSetId": "ISS_Items_Gems"
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  },
+  "Recipe": {
+    "TimeSeconds": 2,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Gold",
+        "Quantity": 4
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "Workbench_Tinkering"
+        ]
+      }
+    ],
+    "KnowledgeRequired": true
+  }
 }

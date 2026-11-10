@@ -21,9 +21,9 @@
   "Categories": [
     "Items.Armors"
   ],
-  "Model": "Items/Tools/Feedbag/Feedbag.blockymodel",
+  "Model": "Items/MagicTreasures/Jewelry_Case.blockymodel",
   "Texture": "Items/Tools/Feedbag/Seedbag_Texture.png",
-  "PlayerAnimationsId": "Torch",
+  "PlayerAnimationsId": "Shield",
   "Scale": 1.0,
   "MaxStack": 1,
   "Tags": {
@@ -33,7 +33,7 @@
   },
   "Utility": {
     "Compatible": true,
-    "Usable": false
+    "Usable": true
   },
   "Container": {
     "Capacity": 4,

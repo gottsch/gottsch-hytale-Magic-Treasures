@@ -1,0 +1,43 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Scroll_Strength.name",
+    "Description": "server.items.MT_Scroll_Strength.description"
+  },
+  "Icon": "Icons/ItemsGenerated/Deco_Scroll.png",
+  "Quality": "Uncommon",
+  "ItemLevel": 3,
+  "Categories": [
+    "Items.Recipes"
+  ],
+  "Tags": {
+    "Type": [
+      "MT_Spell_Scroll"
+    ]
+  },
+  "Model": "Items/Consumables/Scrolls/Scroll.blockymodel",
+  "Texture": "Items/Consumables/Scrolls/Scroll_Texture.png",
+  "PlayerAnimationsId": "Item",
+  "MaxStack": 10,
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  }
+}

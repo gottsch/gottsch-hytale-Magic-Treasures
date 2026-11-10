@@ -22,10 +22,14 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent;
+import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
+import com.hypixel.hytale.server.core.modules.interaction.interaction.config.server.OpenCustomUIInteraction;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import mod.gottsch.hytale.magictreasures.core.command.MagicTreasuresCommand;
+import mod.gottsch.hytale.magictreasures.core.imbue.ImbuePageSupplier;
+import mod.gottsch.hytale.magictreasures.core.imbue.LearnJewelryRecipesInteraction;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryAssets;
 import mod.gottsch.hytale.magictreasures.core.spell.DrainDamageSystem;
 import mod.gottsch.hytale.magictreasures.core.spell.HitMeter;
@@ -65,6 +69,12 @@ public class MagicTreasures extends JavaPlugin {
         this.getEntityStoreRegistry().registerSystem(new HitMeter.After());
         // runes: a rune held by worn jewelry boosts the same rune cast from the ability slots
         this.getEntityStoreRegistry().registerSystem(new RuneBoostSystem());
+        // imbuing (M5): a held spell scroll or piece of jewelry opens the imbue page, and
+        // recipe scrolls teach the jewelry recipes
+        OpenCustomUIInteraction.registerCustomPageSupplier(this, ImbuePageSupplier.class, ImbuePageSupplier.ID,
+                new ImbuePageSupplier());
+        this.getCodecRegistry(Interaction.CODEC).register(LearnJewelryRecipesInteraction.TYPE_NAME,
+                LearnJewelryRecipesInteraction.class, LearnJewelryRecipesInteraction.CODEC);
         this.getEventRegistry().register(PlayerDisconnectEvent.class, event -> {
             JewelryWear.onLeave(event.getPlayerRef().getUuid());
             SpellEngine.onLeave(event.getPlayerRef().getUuid());

@@ -1,0 +1,47 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Recipe_Necklace.name",
+    "Description": "server.items.MT_Recipe_Necklace.description"
+  },
+  "Icon": "Icons/ItemsGenerated/Recipe_Page.png",
+  "Quality": "Uncommon",
+  "Categories": [
+    "Items.Recipes"
+  ],
+  "Tags": {
+    "Type": [
+      "Recipe"
+    ]
+  },
+  "Model": "Items/Consumables/Recipes/Recipe.blockymodel",
+  "Texture": "Items/Consumables/Recipes/Recipe_Texture.png",
+  "PlayerAnimationsId": "Item",
+  "MaxStack": 10,
+  "Consumable": true,
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "MT_LearnJewelryRecipes",
+          "JewelryType": "Necklace",
+          "Next": {
+            "Type": "ModifyInventory",
+            "AdjustHeldItemQuantity": -1
+          }
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "MT_LearnJewelryRecipes",
+          "JewelryType": "Necklace",
+          "Next": {
+            "Type": "ModifyInventory",
+            "AdjustHeldItemQuantity": -1
+          }
+        }
+      ]
+    }
+  }
+}
