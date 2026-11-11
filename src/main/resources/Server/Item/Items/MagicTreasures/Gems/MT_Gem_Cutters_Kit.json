@@ -1,0 +1,83 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Gem_Cutters_Kit.name",
+    "Description": "server.items.MT_Gem_Cutters_Kit.description"
+  },
+  "Icon": "Icons/ItemsGenerated/Tool_Repair_Kit_Iron.png",
+  "Quality": "Uncommon",
+  "Categories": [
+    "Items.Tools"
+  ],
+  "Tags": {
+    "Type": [
+      "Tool"
+    ]
+  },
+  "Model": "Items/Tools/Repair_Kit/Repair_Kit_Iron.blockymodel",
+  "Texture": "Items/Tools/Repair_Kit/Repair_Kit_Iron_Texture.png",
+  "IconProperties": {
+    "Scale": 0.58823,
+    "Rotation": [
+      341,
+      141,
+      8
+    ],
+    "Translation": [
+      1,
+      -13.5
+    ]
+  },
+  "PlayerAnimationsId": "Item",
+  "MaxStack": 1,
+  "MaxDurability": 10,
+  "ItemSoundSetId": "ISS_Weapons_Wood",
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_GemCut"
+          }
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_GemCut"
+          }
+        }
+      ]
+    }
+  },
+  "Recipe": {
+    "TimeSeconds": 2,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 2
+      },
+      {
+        "ItemId": "Ingredient_Leather_Light",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Rock_Gem_Topaz",
+        "Quantity": 1
+      }
+    ],
+    "OutputQuantity": 1,
+    "BenchRequirement": [
+      {
+        "Id": "Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "Workbench_Tools"
+        ]
+      }
+    ]
+  }
+}

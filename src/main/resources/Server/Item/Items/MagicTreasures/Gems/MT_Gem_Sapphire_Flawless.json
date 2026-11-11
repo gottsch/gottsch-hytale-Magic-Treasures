@@ -1,0 +1,44 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Gem_Sapphire_Flawless.name",
+    "Description": "server.items.MT_Gem_Sapphire_Flawless.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/MT_Gem_Sapphire_Flawless.png",
+  "Quality": "Legendary",
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Tags": {
+    "Type": [
+      "MT_Cut_Gem"
+    ]
+  },
+  "Model": "Items/MagicTreasures/Gems/Emerald_Cut_Gem.blockymodel",
+  "Texture": "Items/MagicTreasures/Gems/Sapphire_Emerald_Cut_Flawless.png",
+  "PlayerAnimationsId": "Item",
+  "Scale": 1.0,
+  "MaxStack": 64,
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  }
+}

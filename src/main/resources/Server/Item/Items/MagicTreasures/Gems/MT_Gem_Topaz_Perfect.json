@@ -1,0 +1,44 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Gem_Topaz_Perfect.name",
+    "Description": "server.items.MT_Gem_Topaz_Perfect.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/MT_Gem_Topaz_Perfect.png",
+  "Quality": "Rare",
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Tags": {
+    "Type": [
+      "MT_Cut_Gem"
+    ]
+  },
+  "Model": "Items/MagicTreasures/Gems/Princess_Gem.blockymodel",
+  "Texture": "Items/MagicTreasures/Gems/Topaz_Princess_Perfect.png",
+  "PlayerAnimationsId": "Item",
+  "Scale": 1.0,
+  "MaxStack": 64,
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  }
+}

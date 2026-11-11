@@ -45,6 +45,8 @@ public class JewelryState {
             .append(new KeyedCodec<>("Recharges", Codec.INTEGER), (s, v) -> s.recharges = v, s -> s.recharges).add()
             .append(new KeyedCodec<>("Spells", Codec.STRING_ARRAY), (s, v) -> s.spells = v, s -> s.spells).add()
             .append(new KeyedCodec<>("Runes", Codec.STRING_ARRAY), (s, v) -> s.runes = v, s -> s.runes).add()
+            // how well its gem is cut (GemCut name); none on pieces set before M6, read as Fine
+            .append(new KeyedCodec<>("Cut", Codec.STRING), (s, v) -> s.cut = v, s -> s.cut).add()
             .build();
 
     public static final KeyedCodec<JewelryState> KEYED_CODEC = new KeyedCodec<>(KEY, CODEC);
@@ -57,6 +59,7 @@ public class JewelryState {
     protected int recharges;
     protected String[] spells = NONE;
     protected String[] runes = NONE;
+    protected String cut;
 
     public JewelryState() {
     }
@@ -81,6 +84,7 @@ public class JewelryState {
         c.recharges = recharges;
         c.spells = getSpells().clone();
         c.runes = getRunes().clone();
+        c.cut = cut;
         return c;
     }
 
@@ -135,6 +139,18 @@ public class JewelryState {
 
     public JewelryState setRunes(String... runes) {
         this.runes = runes == null ? NONE : runes;
+        return this;
+    }
+
+    /**
+     * @return the name of the gem's cut ({@code GemCut}), or null if not recorded
+     */
+    public String getCut() {
+        return cut;
+    }
+
+    public JewelryState setCut(String cut) {
+        this.cut = cut;
         return this;
     }
 

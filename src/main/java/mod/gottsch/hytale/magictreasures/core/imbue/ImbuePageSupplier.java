@@ -17,6 +17,7 @@
  */
 package mod.gottsch.hytale.magictreasures.core.imbue;
 
+import mod.gottsch.hytale.magictreasures.core.cutting.GemCut;
 import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.server.core.entity.InteractionContext;
@@ -33,7 +34,7 @@ import javax.annotation.Nullable;
 
 /**
  * Opens the {@link ImbuePage} from an item's {@code OpenCustomUI} interaction, like vanilla's
- * repair kit: {@code "Page": {"Id": "MT_Imbue"}}. A held spell scroll lists the jewelry; a
+ * repair kit: {@code "Page": {"Id": "MT_Imbue"}}. A held spell scroll or cut gem lists the jewelry; a
  * held piece of jewelry lists what works on it.
  *
  * @author Mark Gottschling on 11/10/2026
@@ -55,7 +56,9 @@ public class ImbuePageSupplier implements OpenCustomUIInteraction.CustomPageSupp
         if (Jewelry.isJewelry(held)) {
             return ImbuePage.forPiece(playerRef, accessor, ref, slot);
         }
-        if (Imbuing.kindOf(held) == Imbuing.Kind.SPELL) {
+        // a spell scroll, or a cut gem (Mark, Nov 10: right-clicking a gem should do
+        // something): the page lists your jewelry
+        if (Imbuing.kindOf(held) == Imbuing.Kind.SPELL || GemCut.ofItem(held.getItemId()) != null) {
             return ImbuePage.forScroll(playerRef, accessor, ref, slot);
         }
         return null;

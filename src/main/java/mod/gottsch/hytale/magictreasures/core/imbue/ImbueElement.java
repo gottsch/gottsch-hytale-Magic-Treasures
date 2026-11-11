@@ -35,10 +35,10 @@ public class ImbueElement extends ChoiceElement {
     private static final String ROW_LAYOUT = "Pages/ItemRepairElement.ui";
 
     private final String iconItemId;
-    private final String label;
+    private final Message label;
     private final Imbuing.Outcome outcome;
 
-    public ImbueElement(String iconItemId, String label, Imbuing.Outcome outcome, ImbueChoice choice) {
+    public ImbueElement(String iconItemId, Message label, Imbuing.Outcome outcome, ImbueChoice choice) {
         this.iconItemId = iconItemId;
         this.label = label;
         this.outcome = outcome;
@@ -55,7 +55,7 @@ public class ImbueElement extends ChoiceElement {
         commandBuilder.append("#ElementList", ROW_LAYOUT);
         commandBuilder.set(selector + " #Icon.ItemId", iconItemId);
         commandBuilder.set(selector + " #Name.TextSpans",
-                Message.raw(label).color(outcome.allowed() ? "#ffffff" : "#8a8a8a"));
+                label.color(outcome.allowed() ? "#ffffff" : "#8a8a8a"));
         commandBuilder.set(selector + " #Durability.Text", outcome.text());
     }
 }

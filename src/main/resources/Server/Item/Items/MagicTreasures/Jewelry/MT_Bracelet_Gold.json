@@ -1,0 +1,54 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Bracelet_Gold.name",
+    "Description": "server.items.MT_Bracelet_Gold.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/MT_Bracelet_Gold.png",
+  "Quality": "Rare",
+  "ItemLevel": 6,
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Tags": {
+    "Family": [
+      "MT_Jewelry"
+    ]
+  },
+  "Model": "Items/MagicTreasures/Bracelets/Bracelet_Regular.blockymodel",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Gold.png",
+  "PlayerAnimationsId": "Item",
+  "MaxStack": 1,
+  "Scale": 1.0,
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  },
+  "Recipe": {
+    "TimeSeconds": 2,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Gold",
+        "Quantity": 4
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "Workbench_Tinkering"
+        ]
+      }
+    ],
+    "KnowledgeRequired": true
+  }
+}

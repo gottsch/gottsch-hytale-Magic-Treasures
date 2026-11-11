@@ -17,6 +17,7 @@
  */
 package mod.gottsch.hytale.magictreasures.core.jewelry;
 
+import mod.gottsch.hytale.magictreasures.core.cutting.GemCut;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.Gemstone;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryDefinition;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryMaterial;
@@ -77,6 +78,17 @@ public record JewelryStats(@Nullable JewelryDefinition definition, @Nullable Jew
     }
 
     public static JewelryStats of(@Nullable JewelryDefinition definition) {
+        return of(definition, null);
+    }
+
+    /**
+     * @param cut how well the piece's gem is cut; null counts as Fine (the gem's listed
+     *            stats). The cut scales the gem's extra charge, recharges and rune factors.
+     */
+    public static JewelryStats of(@Nullable JewelryDefinition definition, @Nullable GemCut cut) {
+        if (cut == null) {
+            cut = GemCut.FINE;
+        }
         if (definition == null) {
             return NONE;
         }
@@ -87,14 +99,16 @@ public record JewelryStats(@Nullable JewelryDefinition definition, @Nullable Jew
             return new JewelryStats(definition, material, style, gem, false,
                     0, 0, 0, 0, 0, 0, SpellFactors.NONE, "Common");
         }
-        double gemMana = gem == null ? 0 : gem.getMana();
-        int gemRecharges = gem == null ? 0 : gem.getRecharges();
-        double maxMana = Math.round((material.getMana() + gemMana) * style.getManaMultiplier());
+        double gemMana = gem == null ? 0 : gem.getMana() * cut.getMultiplier();
+        int gemRecharges = gem == null ? 0 : (int) Math.round(gem.getRecharges() * cut.getMultiplier());
+        // to the nearest 5, so charges read as round numbers (Mark, Nov 10)
+        double maxMana = 5 * Math.round((material.getMana() + gemMana) * style.getManaMultiplier() / 5);
         int maxUses = (int) Math.round(material.getUses() * style.getUsesMultiplier());
         int maxLevel = material.getMaxLevel() + style.getMaxLevel();
         int maxRepairs = material.getRepairs() + style.getRepairs();
         int maxRecharges = material.getRecharges() + gemRecharges;
-        SpellFactors factors = gem == null ? material.getFactors() : material.getFactors().multiply(gem.getFactors());
+        SpellFactors factors = gem == null ? material.getFactors()
+                : material.getFactors().multiply(cut.scale(gem.getFactors()));
         return new JewelryStats(definition, material, style, gem, true, maxMana, maxUses, maxLevel, maxRepairs,
                 maxRecharges, style.getSockets(), factors, quality(material, style, gem));
     }

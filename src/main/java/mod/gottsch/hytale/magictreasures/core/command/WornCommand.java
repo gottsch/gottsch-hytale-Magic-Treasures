@@ -60,7 +60,7 @@ public class WornCommand extends AbstractPlayerCommand {
                     + fresh.pieces().size() + "): " + (fresh.pieces().isEmpty() ? "nothing" : String.join(", ", fresh.itemIds()))));
             for (ItemStack piece : fresh.pieces()) {
                 context.sendMessage(Message.raw("  " + piece.getItemId()
-                        + (JewelryWear.wornModel(piece, 0) == null ? "" : " (shown on you)")));
+                        + (JewelryWear.wornModels(piece, 0).isEmpty() ? "" : " (shown on you)")));
             }
         }
         if (!recorded.itemIds().equals(fresh.itemIds())) {

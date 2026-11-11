@@ -47,6 +47,7 @@ DATA = SERVER / "MagicTreasures"
 ITEMS_OUT = SERVER / "Item" / "Items" / "MagicTreasures" / "Jewelry"
 DEFS_OUT = DATA / "Jewelry"
 SCROLLS_OUT = SERVER / "Item" / "Items" / "MagicTreasures" / "Scrolls"
+GEMS_OUT = SERVER / "Item" / "Items" / "MagicTreasures" / "Gems"
 LANG = SERVER / "Languages" / "en-US" / "server.lang"
 
 BEGIN = "# === BEGIN generated jewelry (tools/generate_jewelry.py) ==="
@@ -55,10 +56,10 @@ END = "# === END generated jewelry ==="
 TYPES = ["Ring", "Necklace", "Bracelet"]
 QUALITIES = ["Junk", "Common", "Uncommon", "Rare", "Epic", "Legendary"]
 
-# The starter set (Nov 9): 2 x 3 x 4 x 2 = 48 pieces. Grow it by
-# adding to these lists. Bracelets, iron, bone, the other gems and
-# Lord's come later.
-STARTER_TYPES = ["Ring", "Necklace"]
+# The starter set (Nov 9): 3 x 3 x 4 x 2 = 72 pieces (bracelets added
+# Nov 10, with their art). Grow it by adding to these lists. Iron,
+# bone, the other gems and Lord's come later.
+STARTER_TYPES = ["Ring", "Necklace", "Bracelet"]
 STARTER_MATERIALS = ["Copper", "Silver", "Gold"]
 STARTER_GEMS = [None, "Topaz", "Ruby", "Sapphire"]
 STARTER_STYLES = ["Regular", "Great"]
@@ -137,6 +138,28 @@ def ring_art(jewelry_type, material_id, gem_id, style_id, iid):
     return model, texture, f"Icons/Items/MagicTreasures/{iid}.png"
 
 
+def necklace_art(jewelry_type, material_id, gem_id, style_id, iid):
+    """(model, texture, icon) for a necklace with real art, else None.
+    Necklaces use the ring textures (tools/make_necklace_art.py)."""
+    if (jewelry_type != "Necklace" or style_id not in RING_STYLES
+            or material_id not in RING_MATERIALS or gem_id not in RING_GEMS):
+        return None
+    model = f"Items/MagicTreasures/Necklaces/Necklace_{style_id}" +         ("_Set" if gem_id else "") + ".blockymodel"
+    texture = f"Items/MagicTreasures/Rings/Ring_{material_id}" +         (f"_{gem_id}" if gem_id else "") + ".png"
+    return model, texture, f"Icons/Items/MagicTreasures/{iid}.png"
+
+
+def bracelet_art(jewelry_type, material_id, gem_id, style_id, iid):
+    """(model, texture, icon) for a bracelet with real art, else None.
+    Bracelets use the ring textures (tools/make_bracelet_art.py)."""
+    if (jewelry_type != "Bracelet" or style_id not in RING_STYLES
+            or material_id not in RING_MATERIALS or gem_id not in RING_GEMS):
+        return None
+    model = f"Items/MagicTreasures/Bracelets/Bracelet_{style_id}" +         ("_Set" if gem_id else "") + ".blockymodel"
+    texture = f"Items/MagicTreasures/Rings/Ring_{material_id}" +         (f"_{gem_id}" if gem_id else "") + ".png"
+    return model, texture, f"Icons/Items/MagicTreasures/{iid}.png"
+
+
 def icon(material_id, gem_id):
     if gem_id:
         return f"Icons/ItemsGenerated/Rock_Gem_{gem_id}.png"
@@ -200,7 +223,7 @@ def main():
     gem_ids = [None, *gems] if args.all else STARTER_GEMS
     style_ids = list(styles) if args.all else STARTER_STYLES
 
-    for folder in (ITEMS_OUT, DEFS_OUT, SCROLLS_OUT):
+    for folder in (ITEMS_OUT, DEFS_OUT, SCROLLS_OUT, GEMS_OUT):
         if folder.exists():
             shutil.rmtree(folder)
         folder.mkdir(parents=True)
@@ -240,8 +263,12 @@ def main():
                         "Scale": 0.6,
                         "ItemSoundSetId": "ISS_Items_Gems",
                     }
-                    art = ring_art(jewelry_type, material_id, gem_id,
-                                   style_id, iid)
+                    art = (ring_art(jewelry_type, material_id, gem_id,
+                                    style_id, iid)
+                           or necklace_art(jewelry_type, material_id,
+                                           gem_id, style_id, iid)
+                           or bracelet_art(jewelry_type, material_id,
+                                           gem_id, style_id, iid))
                     if art:
                         item["Model"], item["Texture"], item["Icon"] = art
                         item["Scale"] = 1.0
@@ -274,8 +301,10 @@ def main():
                     count += 1
 
     scrolls = write_scrolls(load("Spells"), types, lang)
+    gems = write_gems(load("Gems"), lang)
     write_lang(lang)
-    print(f"Generated {count} jewelry items and {scrolls} scrolls.")
+    print(f"Generated {count} jewelry items, {scrolls} scrolls and "
+          f"{gems} cut gems and kits.")
 
 
 def write_scrolls(spells, types, lang):
@@ -342,6 +371,113 @@ def write_scrolls(spells, types, lang):
                     "at a workbench. Used up once learned.")
         count += 1
     return count
+
+
+# Gem cutting (M6, Nov 10). Cuts and their quality steps match the
+# GemCut enum in Java. Each gem has one shape; the cut changes its
+# colour and shine (tools/make_cut_gem_art.py).
+CUTS = [("Flawed", -1, "a flawed cut", "75%"),
+        ("Fine", 0, "a fine cut", "100%"),
+        ("Flawless", 1, "a flawless cut", "125%"),
+        ("Perfect", 2, "a perfect cut", "150%")]
+# Mark (Nov 10): brilliant for diamond and ruby, the emerald cut for
+# emerald and sapphire, the princess cut for topaz and voidstone;
+# zephyr brilliant until decided
+GEM_SHAPES = {"Diamond": "Brilliant", "Ruby": "Brilliant",
+              "Emerald": "Emerald_Cut", "Sapphire": "Emerald_Cut",
+              "Topaz": "Princess", "Voidstone": "Princess"}
+SHAPE_MODELS = {"Brilliant": "Brilliant_Gem",
+                "Emerald_Cut": "Emerald_Cut_Gem",
+                "Princess": "Princess_Gem"}
+KIT_ID = "MT_Gem_Cutters_Kit"
+# was 40; Mark (Nov 10): magic jewelry should be kind of expensive
+KIT_USES = 10
+
+
+def shape_of(gem_id):
+    return GEM_SHAPES.get(gem_id, "Brilliant")
+CUT_PAGE = {"Type": "OpenCustomUI", "Page": {"Id": "MT_GemCut"}}
+
+
+def write_gems(gems, lang):
+    """Writes the cut gems (MT_Gem_<Gem>_<Cut>) and the gem cutter's
+    kit, which opens the cutting page."""
+    count = 0
+    for gem_id, gem in gems.items():
+        for cut, steps, look, share in CUTS:
+            gid = f"MT_Gem_{gem_id}_{cut}"
+            shape = shape_of(gem_id)
+            q = QUALITIES[max(0, min(quality_index(gem.get("Quality",
+                                                            "Common"))
+                                     + steps, len(QUALITIES) - 1))]
+            write_json(GEMS_OUT / f"{gid}.json", {
+                "TranslationProperties": {
+                    "Name": f"server.items.{gid}.name",
+                    "Description": f"server.items.{gid}.description",
+                },
+                "Icon": f"Icons/Items/MagicTreasures/{gid}.png",
+                "Quality": q,
+                "Categories": ["Items.Ingredients"],
+                "Tags": {"Type": ["MT_Cut_Gem"]},
+                "Model": "Items/MagicTreasures/Gems/"
+                         + SHAPE_MODELS[shape] + ".blockymodel",
+                "Texture": f"Items/MagicTreasures/Gems/{gem_id}_{shape}"
+                           f"_{cut}.png",
+                "PlayerAnimationsId": "Item",
+                "Scale": 1.0,
+                "MaxStack": 64,
+                "ItemSoundSetId": "ISS_Items_Gems",
+                # right-click: choose the jewelry to set it in
+                "Interactions": {
+                    "Primary": {"Interactions": [IMBUE]},
+                    "Secondary": {"Interactions": [IMBUE]},
+                },
+            })
+            lang.append(f"items.{gid}.name={cut} {gem_id}")
+            lang.append(f"items.{gid}.description=A {gem_id.lower()} "
+                        f"given {look}. Set in jewelry, it adds {share} of "
+                        "the gem's charge, recharges and rune boosts. "
+                        "Right-click to choose the jewelry to set it in.")
+            count += 1
+    write_json(GEMS_OUT / f"{KIT_ID}.json", {
+        "TranslationProperties": {
+            "Name": f"server.items.{KIT_ID}.name",
+            "Description": f"server.items.{KIT_ID}.description",
+        },
+        # the vanilla iron repair kit's art until the kit has its own
+        "Icon": "Icons/ItemsGenerated/Tool_Repair_Kit_Iron.png",
+        "Quality": "Uncommon",
+        "Categories": ["Items.Tools"],
+        "Tags": {"Type": ["Tool"]},
+        "Model": "Items/Tools/Repair_Kit/Repair_Kit_Iron.blockymodel",
+        "Texture": "Items/Tools/Repair_Kit/Repair_Kit_Iron_Texture.png",
+        "IconProperties": {"Scale": 0.58823, "Rotation": [341, 141, 8],
+                           "Translation": [1, -13.5]},
+        "PlayerAnimationsId": "Item",
+        "MaxStack": 1,
+        "MaxDurability": KIT_USES,
+        "ItemSoundSetId": "ISS_Weapons_Wood",
+        "Interactions": {
+            "Primary": {"Interactions": [CUT_PAGE]},
+            "Secondary": {"Interactions": [CUT_PAGE]},
+        },
+        "Recipe": {
+            "TimeSeconds": 2,
+            "Input": [{"ItemId": "Ingredient_Bar_Iron", "Quantity": 2},
+                      {"ItemId": "Ingredient_Leather_Light", "Quantity": 1},
+                      {"ItemId": "Rock_Gem_Topaz", "Quantity": 1}],
+            "OutputQuantity": 1,
+            "BenchRequirement": [{"Id": "Workbench", "Type": "Crafting",
+                                  "Categories": ["Workbench_Tools"]}],
+        },
+    })
+    lang.append(f"items.{KIT_ID}.name=Gem Cutter's Kit")
+    lang.append(f"items.{KIT_ID}.description=Right-click to cut the raw "
+                "gems you carry. Better cuts come with your gem cutting "
+                "level; harder gems need a higher level, and a cut at "
+                f"the edge of your skill can shatter the gem. {KIT_USES} "
+                "uses.")
+    return count + 1
 
 
 if __name__ == "__main__":

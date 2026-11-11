@@ -1,0 +1,35 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Bracelet_Copper_Sapphire_Great.name",
+    "Description": "server.items.MT_Bracelet_Copper_Sapphire_Great.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/MT_Bracelet_Copper_Sapphire_Great.png",
+  "Quality": "Legendary",
+  "ItemLevel": 5,
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Tags": {
+    "Family": [
+      "MT_Jewelry"
+    ]
+  },
+  "Model": "Items/MagicTreasures/Bracelets/Bracelet_Great_Set.blockymodel",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Copper_Sapphire.png",
+  "PlayerAnimationsId": "Item",
+  "MaxStack": 1,
+  "Scale": 1.0,
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,10 +1,10 @@
 {
   "Item": "Rock_Gem_Emerald",
-  "Mana": 75,
-  "Recharges": 2,
+  "Mana": 45,
+  "Recharges": 1,
   "Factors": {
-    "Cooldown": 0.98,
-    "Cost": 0.98
+    "Cooldown": 0.99,
+    "Cost": 0.99
   },
   "Quality": "Uncommon"
 }

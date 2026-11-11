@@ -17,6 +17,7 @@
  */
 package mod.gottsch.hytale.magictreasures.core.imbue;
 
+import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Ref;
@@ -30,7 +31,9 @@ import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import mod.gottsch.hytale.magictreasures.core.cutting.GemCut;
 import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
+import mod.gottsch.hytale.magictreasures.core.jewelry.asset.Gemstone;
 import mod.gottsch.hytale.magictreasures.core.wear.WornJewelry;
 
 import javax.annotation.Nonnull;
@@ -91,13 +94,15 @@ public class ImbuePage extends ChoiceBasePage {
             Imbuing.Outcome outcome = Imbuing.check(piece, scrollStack);
             if (outcome != null) {
                 String where = pieceSlot.inCase() ? " (in case)" : "";
-                elements.add(new ImbueElement(piece.getItemId(), Jewelry.displayName(piece) + where, outcome,
+                elements.add(new ImbueElement(piece.getItemId(), Message.join(Jewelry.name(piece), Message.raw(where)),
+                        outcome,
                         new ImbueChoice(pieceSlot, piece.getItemId(), scroll, scrollStack.getItemId())));
             }
         }
         sort(elements);
         return new ImbuePage(playerRef, elements.toArray(ChoiceElement[]::new),
-                "Choose the jewelry to imbue with " + name(scrollStack) + ".");
+                (Imbuing.kindOf(scrollStack) == Imbuing.Kind.GEM ? "Choose the jewelry to set with a "
+                        : "Choose the jewelry to imbue with ") + name(scrollStack) + ".");
     }
 
     /**
@@ -114,7 +119,7 @@ public class ImbuePage extends ChoiceBasePage {
             ItemStack material = materialSlot.get();
             Imbuing.Outcome outcome = Imbuing.check(piece, material);
             if (outcome != null) {
-                String label = Jewelry.isJewelry(material) ? Jewelry.displayName(material) : name(material);
+                Message label = Jewelry.isJewelry(material) ? Jewelry.name(material) : Message.raw(name(material));
                 elements.add(new ImbueElement(material.getItemId(), label, outcome,
                         new ImbueChoice(pieceSlot, piece.getItemId(), materialSlot, material.getItemId())));
             }
@@ -155,7 +160,7 @@ public class ImbuePage extends ChoiceBasePage {
     /**
      * @return every non-empty slot of the hotbar, utility, storage and backpack
      */
-    static List<ItemSlot> sectionSlots(ComponentAccessor<EntityStore> accessor, Ref<EntityStore> ref) {
+    public static List<ItemSlot> sectionSlots(ComponentAccessor<EntityStore> accessor, Ref<EntityStore> ref) {
         List<ItemSlot> slots = new ArrayList<>();
         add(slots, accessor, ref, InventoryComponent.Hotbar.getComponentType());
         add(slots, accessor, ref, InventoryComponent.Utility.getComponentType());
@@ -184,6 +189,14 @@ public class ImbuePage extends ChoiceBasePage {
      */
     static String name(ItemStack stack) {
         String id = stack.getItemId();
+        GemCut cut = GemCut.ofItem(id);
+        if (cut != null) {
+            Gemstone gem = GemCut.gemOfItem(id);
+            return cut.getName() + " " + (gem == null ? id : gem.getId());
+        }
+        if (id.startsWith(GemCut.RAW_PREFIX)) {
+            return "Raw " + id.substring(GemCut.RAW_PREFIX.length());
+        }
         if (id.startsWith(Imbuing.SCROLL_PREFIX)) {
             id = id.substring(Imbuing.SCROLL_PREFIX.length());
         }

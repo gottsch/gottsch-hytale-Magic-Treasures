@@ -1,0 +1,17 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Test_Gem_Emerald_Cut_Ruby.name",
+    "Description": "server.items.Test_Gem_Emerald_Cut_Ruby.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/Gem_Ruby_Emerald_Cut.png",
+  "Quality": "Rare",
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Model": "Items/MagicTreasures/Gems/Emerald_Cut_Gem.blockymodel",
+  "Texture": "Items/MagicTreasures/Gems/Ruby_Emerald_Cut.png",
+  "PlayerAnimationsId": "Item",
+  "Scale": 1.0,
+  "MaxStack": 64,
+  "ItemSoundSetId": "ISS_Items_Gems"
+}

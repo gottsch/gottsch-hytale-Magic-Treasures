@@ -31,12 +31,12 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryDefinition;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryStats;
-import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryMaterial;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -52,27 +52,35 @@ import java.util.concurrent.ConcurrentHashMap;
  * ready after joining. The look has to be sent again at join because the server rebuilds the
  * player's model then. Armor changes and respawning keep it (tested Nov 9, 2026).
  * <p>
- * Only necklaces are visible for now. A ring is too small to see, and bracelets would clash
- * with gloves. Until there is jewelry art, a necklace shows as the vanilla heart necklace,
- * tinted with its material's gradient (for example {@code Ornamented_Metal} /
- * {@code Gold_Red}).
+ * Rings, necklaces and bracelets are visible (art Nov 10), in the colours of their item
+ * textures. Rings sit on a finger (the first worn ring right, the second left), mostly inside
+ * gloves; a bracelet sits on the left wrist.
  *
  * @author Mark Gottschling on 11/09/2026
  */
 public final class JewelryWear {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
-    /** Placeholder worn model until there is jewelry art. */
-    public static final String NECKLACE_MODEL = "Cosmetics/Overtops/Overtops_Necklace.blockymodel";
-    public static final String NECKLACE_TEXTURE = "Cosmetics/Overtops/Overtops_Necklace_Textures/Necklace_1_Greyscale.png";
 
     /**
-     * Worn rings (Nov 10, tools/make_ring_art.py): a thin band around the hand, inside a glove.
-     * The first worn ring is on the right hand, the second on the left.
+     * Worn rings and necklaces (Nov 10, tools/make_ring_art.py and make_necklace_art.py). A ring
+     * is a thin band around the hand, inside a glove: the first worn ring on the right hand, the
+     * second on the left. A necklace is a chain decal on the chest (the vanilla necklace's quads)
+     * with a 3D pendant and its gem, model {@code NECKLACE_WORN + style [+ "_Set"]}.
+     * <p>
+     * Both use the ring item textures ({@code Ring_<Material>[_<Gem>].png}), in their own colours.
+     * The client refuses an attachment texture that no asset references ("Cannot use ... as an
+     * entity attachment texture"), so a worn-only greyscale texture tinted by the material's
+     * gradient never showed; the jewelry items reference these.
      */
     public static final String RING_MODEL_RIGHT = "Cosmetics/MagicTreasures/Ring_Worn_R.blockymodel";
     public static final String RING_MODEL_LEFT = "Cosmetics/MagicTreasures/Ring_Worn_L.blockymodel";
-    public static final String RING_TEXTURE = "Cosmetics/MagicTreasures/Ring_Worn_Greyscale.png";
+    public static final String NECKLACE_WORN = "Cosmetics/MagicTreasures/Necklace_Worn_";
+    /** A worn bracelet, on the left wrist (tools/make_bracelet_art.py): {@code + style [+ "_Set"]}. */
+    public static final String BRACELET_WORN = "Cosmetics/MagicTreasures/Bracelet_Worn_";
+    public static final String ITEM_TEXTURES = "Items/MagicTreasures/Rings/Ring_";
+    /** The metals with ring textures. */
+    public static final Set<String> ART_MATERIALS = Set.of("Copper", "Silver", "Gold");
     /** What each online player wears, and the visible pieces last sent (null: the look was never changed). */
     private static final Map<UUID, Worn> WORN = new ConcurrentHashMap<>();
 
@@ -110,9 +118,9 @@ public final class JewelryWear {
             // the first ring goes on the right hand, the second on the left
             JewelryDefinition definition = Jewelry.definition(piece);
             boolean ring = definition != null && "Ring".equalsIgnoreCase(definition.getType());
-            ModelAttachment attachment = wornModel(piece, ring ? rings++ : 0);
-            if (attachment != null) {
-                visible.add(attachment);
+            List<ModelAttachment> attachments = wornModels(piece, ring ? rings++ : 0);
+            if (!attachments.isEmpty()) {
+                visible.addAll(attachments);
                 visibleIds.add(piece.getItemId());
             }
         }
@@ -162,24 +170,37 @@ public final class JewelryWear {
     }
 
     /**
-     * @return the model shown on the player for a worn piece, or null if it isn't visible
+     * The attachments that show a worn piece: one per piece, textured with its item texture.
+     *
+     * @param ringIndex for a ring, 0 for the first worn ring (right hand), 1 for the second (left)
+     * @return empty if the piece isn't shown
      */
-    @Nullable
-    public static ModelAttachment wornModel(ItemStack piece, int ringIndex) {
+    public static List<ModelAttachment> wornModels(ItemStack piece, int ringIndex) {
         JewelryStats stats = JewelryStats.of(piece.getItemId());
         if (!stats.known()) {
-            return null;
+            return List.of();
         }
-        JewelryMaterial material = stats.material();
-        String type = stats.definition().getType();
-        if ("Necklace".equalsIgnoreCase(type)) {
-            return new ModelAttachment(NECKLACE_MODEL, NECKLACE_TEXTURE, material.getGradientSet(),
-                    material.getGradient(), 1.0);
+        JewelryDefinition definition = stats.definition();
+        String type = definition.getType();
+        String metal = definition.getMaterial();
+        if (!ART_MATERIALS.contains(metal)) {
+            // no art for this metal yet (iron, bone): not shown
+            return List.of();
+        }
+        boolean necklace = "Necklace".equalsIgnoreCase(type);
+        if (necklace || "Bracelet".equalsIgnoreCase(type)) {
+            // the starter art has Regular and Great; other styles use Great's for now
+            String style = "Regular".equalsIgnoreCase(definition.getStyle()) ? "Regular" : "Great";
+            String gem = definition.getGem();
+            String texture = ITEM_TEXTURES + metal + (gem == null ? "" : "_" + gem) + ".png";
+            String model = (necklace ? NECKLACE_WORN : BRACELET_WORN) + style + (gem == null ? "" : "_Set")
+                    + ".blockymodel";
+            return List.of(new ModelAttachment(model, texture, null, null, 1.0));
         }
         if ("Ring".equalsIgnoreCase(type)) {
-            return new ModelAttachment(ringIndex == 0 ? RING_MODEL_RIGHT : RING_MODEL_LEFT, RING_TEXTURE,
-                    material.getGradientSet(), material.getGradient(), 1.0);
+            return List.of(new ModelAttachment(ringIndex == 0 ? RING_MODEL_RIGHT : RING_MODEL_LEFT,
+                    ITEM_TEXTURES + metal + ".png", null, null, 1.0));
         }
-        return null;
+        return List.of();
     }
 }

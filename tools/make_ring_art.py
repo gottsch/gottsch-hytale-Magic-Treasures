@@ -18,13 +18,17 @@ Icons, Common/Icons/Items/MagicTreasures/MT_Ring_*.png: one per item,
 rendered with blocky_render.
 
 Worn models, Common/Cosmetics/MagicTreasures/:
-- Ring_Worn_R.blockymodel (top node R-Hand) and Ring_Worn_L
-  (L-Hand): a thin band around the hand, 0.2 units off the skin, so it
-  shows on a bare hand but stays inside a glove (vanilla gloves are
+- Ring_Worn_R.blockymodel and Ring_Worn_L: a thin band around a
+  finger-wide slice at the front of the hand, hung from the player's bone chain Belly > ... > R-Hand (or
+  L-Hand), 0.4 units off the skin, so it shows on a bare hand and
+  mostly stays inside a glove (vanilla gloves are
   the hand box stretched about 1.05). Mark, Nov 9: a glove covers the
   ring, and that's fine.
-- Ring_Worn_Greyscale.png: tinted by the material's gradient
-  (Ornamented_Metal / Gold_Red and so on), like other cosmetics.
+- They use the ring item texture of the metal (Ring_<Material>.png),
+  not a greyscale texture tinted by the material's gradient: the
+  client refuses an attachment texture it hasn't loaded ("Cannot use
+  ... as an entity attachment texture"), and it loads only textures
+  that assets reference. Nothing references a worn-only texture.
 
 Usage (from the repo root):
     python tools/make_ring_art.py --assets <Assets.zip> [--preview P]
@@ -80,9 +84,12 @@ METAL = {
 
 # the worn band (in the hand's frame: the hand box is 10 x 12 x 14)
 HAND = (10.0, 12.0, 14.0)
-WORN_GAP = 0.2       # how far the band stands off the skin
-WORN_HEIGHT = 2.0    # along the hand
-WORN_Y = -2.5        # from the hand's centre toward the fingertips
+WORN_GAP = 0.4       # how far the band stands off the skin
+WORN_HEIGHT = 1.5  # along the hand
+FINGER = 3.5       # a finger's width (the hand is 14 across four)
+# from the hand's centre toward the fingertips (the hand box is 12 tall,
+# so -2.5 is the lower middle, where fingers would be)
+WORN_Y = -2.5
 WORN_TEX = 32
 
 
@@ -234,55 +241,114 @@ def paint_metal(im, pal, oy=0):
             put(x0 + u, y0 + v, high if edge == 0 else mid)
 
 
+# The worn necklace's chain decal, in a free corner of every ring
+# texture: the worn jewelry must use a texture the client has loaded,
+# and it loads only textures that assets reference (the jewelry items
+# reference these). The decal quads read 23 x 37 texels from here; the
+# chain itself is the vanilla necklace's chain path, rows 21-27 of its
+# texture.
+DECAL = (40, 21)
+
+
+def paint_chain_decal(im, assets, pal):
+    with zipfile.ZipFile(assets) as z:
+        vanilla = Image.open(io.BytesIO(z.read(
+            "Common/Cosmetics/Overtops/Overtops_Necklace_Textures/"
+            "Necklace_1_Greyscale.png"))).convert("RGBA")
+    dark, low, mid, high, shine = pal
+    for y in range(21, 28):
+        for x in range(23):
+            if vanilla.getpixel((x, y))[3] > 0:
+                col = shine if (x + y) % 3 == 0 else high
+                im.putpixel((DECAL[0] + x, DECAL[1] + (y - 21)), col + (255,))
+
+
 def item_texture(assets, material, gem):
     im = Image.new("RGBA", (TEX, TEX), (0, 0, 0, 0))
     if gem:
         gem_tex = brilliant.texture(palette(assets, gem))
         im.paste(gem_tex.crop((0, 0, TEX, METAL_Y)), (0, 0))
-    paint_metal(im, metal_palette(assets, material))
+    pal = metal_palette(assets, material)
+    paint_metal(im, pal)
+    paint_chain_decal(im, assets, pal)
     return im
 
 
-def worn_model(side):
-    """A thin rectangular band around the hand. The root copies vanilla
-    gloves' hand node, so the children use the glove's frame (the
-    hand box centre)."""
+def skeleton_chain(assets, side):
+    """The player's bones from Belly down to the hand, from the game's
+    Player.blockymodel, as shapeless nodes: [(name, position,
+    orientation, offset, stretch)]."""
+    with zipfile.ZipFile(assets) as z:
+        player = json.loads(z.read("Common/Characters/Player.blockymodel"))
+
+    def find(nodes, name, path):
+        for n in nodes:
+            if n["name"] == name:
+                return path + [n]
+            found = find(n.get("children") or [], name, path + [n])
+            if found:
+                return found
+        return None
+
+    chain = find(player["nodes"], f"{side}-Hand", [])
+    start = [n["name"] for n in chain].index("Belly")
+    return chain[start:]
+
+
+def worn_model(side, assets):
+    """A thin band around the index finger, in the hand's frame
+    (children of the hand are placed from its box centre).
+
+    The band hangs from the player's whole bone chain, Belly > Chest >
+    Shoulder > Arm > Forearm > Hand, copied from the player model. The
+    glove layout (a top node R-Forearm with R-Hand under it) loads but
+    the client never draws it for a plugin attachment; the whole chain
+    from Belly, like the necklace, draws (tested with marker cubes in
+    game, Nov 10)."""
     hx, hy, hz = HAND
     g, h = WORN_GAP, WORN_HEIGHT
-    faces = {f: layout((0, 0)) for f in ("front", "back", "left",
-                                           "right", "top", "bottom")}
+    # the metal of the ring item textures (a coloured texture the
+    # client has loaded; see DECAL)
+    faces = {f: layout(METAL["outer"]) for f in ("front", "back", "left",
+                                                 "right", "top", "bottom")}
     y = 5 + WORN_Y
+    # a finger ring: the hand box has no fingers, so the band wraps a
+    # finger-sized column at the hand's front outer corner (the index
+    # finger), finger-wide both ways (Mark, Nov 10). Only the two
+    # outside faces show; the rest would be inside the hand. The outer
+    # side is -x on the right hand and +x on the left: the left arm's
+    # mirrored bones don't mirror their children (in game, Nov 10, a
+    # shared -x put the left ring by the thumb).
+    f = FINGER
+    out = -1 if side == "R" else 1
     parts = [
-        ("Band_PX", (hx / 2 + g / 2, y, 0), (g, h, hz + 2 * g)),
-        ("Band_NX", (-hx / 2 - g / 2, y, 0), (g, h, hz + 2 * g)),
-        ("Band_PZ", (0, y, hz / 2 + g / 2), (hx, h, g)),
-        ("Band_NZ", (0, y, -hz / 2 - g / 2), (hx, h, g)),
+        ("Band_Front", (out * (hx / 2 - f / 2 + g / 2), y, hz / 2 + g / 2),
+         (f + g, h, g)),
+        ("Band_Out", (out * (hx / 2 + g / 2), y, hz / 2 - f / 2 + g / 2),
+         (g, h, f + g)),
     ]
     children = []
     for i, (name, pos, size) in enumerate(parts):
-        node = box(10 + i, name, pos, (0, 0, 0, 1), (8, 4, 8), size, faces)
+        node = box(10 + i, name, pos, (0, 0, 0, 1), (4, 2, 4), size, faces)
         node["shape"]["offset"] = {"x": 0, "y": -5, "z": 0}
         children.append(node)
-    hand = "R-Hand" if side == "R" else "L-Hand"
-    root = dict(brilliant.ROOT_SHAPE)
-    root["offset"] = {"x": 0, "y": -5, "z": 0}
-    return {"nodes": [{"id": "1", "name": hand, "children": children,
-                       "position": {"x": 0, "y": -10, "z": 0},
-                       "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
-                       "shape": root}],
-            "lod": "auto"}
-
-
-def worn_texture():
-    """Greyscale: the gradient tint maps light to the metal's bright
-    end, so a light band with a brighter middle line."""
-    im = Image.new("RGBA", (WORN_TEX, WORN_TEX), (0, 0, 0, 0))
-    for v in range(8):
-        d = abs(v + 0.5 - 4) / 4
-        g = 235 if d < 0.3 else 200 if d < 0.7 else 160
-        for u in range(16):
-            im.putpixel((u, v), (g, g, g, 255))
-    return im
+    node_id = 1
+    for bone in reversed(skeleton_chain(assets, side)):
+        shape = dict(brilliant.ROOT_SHAPE)
+        shape["offset"] = bone["shape"].get("offset", shape["offset"])
+        shape["stretch"] = bone["shape"].get("stretch", shape["stretch"])
+        position = dict(bone["position"])
+        if bone["name"] == "Belly":
+            # top nodes are in model space, like the necklace's Belly
+            # (the player's Pelvis is at y 51)
+            position["y"] = 55
+        children = [{"id": str(node_id), "name": bone["name"],
+                     "children": children, "position": position,
+                     "orientation": bone.get("orientation") or
+                     {"x": 0, "y": 0, "z": 0, "w": 1},
+                     "shape": shape}]
+        node_id += 1
+    return {"nodes": children, "lod": "auto"}
 
 
 def item_id(material, gem, style):
@@ -349,9 +415,8 @@ def main():
                     str(icon_out / f"{iid}{suffix}.png"),
                     margin=4, pitch=24, yaw=35, span=span)
     if not a.variant:
-        write(WORN_OUT / "Ring_Worn_R.blockymodel", worn_model("R"))
-        write(WORN_OUT / "Ring_Worn_L.blockymodel", worn_model("L"))
-        worn_texture().save(WORN_OUT / "Ring_Worn_Greyscale.png")
+        write(WORN_OUT / "Ring_Worn_R.blockymodel", worn_model("R", a.assets))
+        write(WORN_OUT / "Ring_Worn_L.blockymodel", worn_model("L", a.assets))
     print(f"Wrote {2 * len(STYLES)} ring models{suffix} and "
           f"{len(icons)} icons.")
 

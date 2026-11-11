@@ -27,6 +27,8 @@ import com.hypixel.hytale.server.core.modules.interaction.interaction.config.ser
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import mod.gottsch.hytale.magictreasures.core.cutting.GemCutPageSupplier;
+import mod.gottsch.hytale.magictreasures.core.cutting.GemCuttingSkill;
 import mod.gottsch.hytale.magictreasures.core.command.MagicTreasuresCommand;
 import mod.gottsch.hytale.magictreasures.core.imbue.ImbuePageSupplier;
 import mod.gottsch.hytale.magictreasures.core.imbue.LearnJewelryRecipesInteraction;
@@ -75,6 +77,12 @@ public class MagicTreasures extends JavaPlugin {
                 new ImbuePageSupplier());
         this.getCodecRegistry(Interaction.CODEC).register(LearnJewelryRecipesInteraction.TYPE_NAME,
                 LearnJewelryRecipesInteraction.class, LearnJewelryRecipesInteraction.CODEC);
+        // gem cutting (M6): the gem cutter's kit opens the cutting page; the skill is saved
+        // with the player
+        GemCuttingSkill.setComponentType(this.getEntityStoreRegistry().registerComponent(GemCuttingSkill.class,
+                GemCuttingSkill.ID, GemCuttingSkill.CODEC));
+        OpenCustomUIInteraction.registerCustomPageSupplier(this, GemCutPageSupplier.class, GemCutPageSupplier.ID,
+                new GemCutPageSupplier());
         this.getEventRegistry().register(PlayerDisconnectEvent.class, event -> {
             JewelryWear.onLeave(event.getPlayerRef().getUuid());
             SpellEngine.onLeave(event.getPlayerRef().getUuid());

@@ -1,11 +1,11 @@
 {
   "Item": "Rock_Gem_Zephyr",
-  "Mana": 100,
-  "Recharges": 2,
+  "Mana": 60,
+  "Recharges": 1,
   "Factors": {
-    "Cooldown": 0.96,
-    "Cost": 0.96,
-    "Effect": 1.03
+    "Cooldown": 0.98,
+    "Cost": 0.98,
+    "Effect": 1.015
   },
   "Quality": "Rare"
 }

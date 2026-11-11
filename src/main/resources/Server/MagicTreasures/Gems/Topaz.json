@@ -1,6 +1,6 @@
 {
   "Item": "Rock_Gem_Topaz",
-  "Mana": 25,
-  "Recharges": 1,
+  "Mana": 15,
+  "Recharges": 0,
   "Quality": "Common"
 }

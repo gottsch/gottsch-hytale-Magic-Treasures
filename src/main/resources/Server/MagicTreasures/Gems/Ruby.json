@@ -1,12 +1,12 @@
 {
   "Item": "Rock_Gem_Ruby",
-  "Mana": 125,
-  "Recharges": 3,
+  "Mana": 75,
+  "Recharges": 1,
   "Factors": {
-    "Cooldown": 0.94,
-    "Cost": 0.94,
-    "Effect": 1.06,
-    "Range": 1.03
+    "Cooldown": 0.97,
+    "Cost": 0.97,
+    "Effect": 1.03,
+    "Range": 1.015
   },
   "Quality": "Rare"
 }

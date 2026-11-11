@@ -51,8 +51,11 @@ import java.util.List;
 public class JewelryHud extends CustomUIHud {
     public static final String KEY = "MagicTreasuresHud";
 
-    /** Position on screen, in UI pixels. Below Mage Flame's HUD, which sits at Top 120. */
-    private static final String ANCHOR = "(Left: 20, Top: 330, Width: 360)";
+    /**
+     * Position on screen, in UI pixels. Was Top 330, below Mage Flame's HUD (Top 120); Mark
+     * (Nov 10): start higher in the view. Top 70 is just under the compass.
+     */
+    private static final String ANCHOR = "(Left: 20, Top: 70, Width: 360)";
 
     private static final int ROWS = 4;
 
@@ -150,11 +153,12 @@ public class JewelryHud extends CustomUIHud {
             JewelryStats stats = Jewelry.stats(piece);
             JewelryState state = Jewelry.state(piece);
             double mana = state == null ? 0 : state.getMana();
-            String name = Jewelry.displayName(piece);
+            // the item's own name (named jewelry shows its name), translated by the client
+            String name = piece.getItemId();
             String charge = String.format("Charge %.0f/%.0f", mana, stats.maxMana());
             float share = stats.maxMana() <= 0 ? 0f : (float) Math.clamp(mana / stats.maxMana(), 0.0, 1.0);
             String spells = spells(playerRef, slot, state);
-            builder.set("#JewelName" + i + ".Text", name);
+            builder.set("#JewelName" + i + ".TextSpans", Jewelry.name(piece));
             builder.set("#JewelCharge" + i + ".Text", charge);
             builder.set("#JewelBar" + i + ".Value", share);
             builder.set("#JewelSpells" + i + ".Text", spells);

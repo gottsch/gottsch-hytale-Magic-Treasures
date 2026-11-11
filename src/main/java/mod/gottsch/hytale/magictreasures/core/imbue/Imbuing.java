@@ -23,6 +23,7 @@ import com.hypixel.hytale.server.core.inventory.ItemStack;
 import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryState;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryStats;
+import mod.gottsch.hytale.magictreasures.core.cutting.GemCut;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.Gemstone;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryDefinition;
 import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
@@ -40,9 +41,10 @@ import java.util.Objects;
  *     Minecraft.</li>
  *     <li><b>Core rune</b> (a vanilla {@code Rune_*} with an ability): socketed, if a socket
  *     is free and the piece doesn't hold that rune already.</li>
- *     <li><b>Gem</b> (an item named by a gemstone asset): set, if the piece has no gem and
+ *     <li><b>Cut gem</b> ({@code MT_Gem_<Gem>_<Cut>}, M6): set, if the piece has no gem and
  *     the gemmed item exists. The piece becomes that item and keeps its state, plus the
- *     gem's extra charge and recharges.</li>
+ *     gem's extra charge and recharges, scaled by the cut, which the state records. A raw
+ *     gem ({@code Rock_Gem_*}) is listed but refused: it must be cut first.</li>
  *     <li><b>Crystal</b> (any {@code Ingredient_Crystal_*} but Void, Mark's choice Nov 10):
  *     refills the charge and uses one recharge.</li>
  *     <li><b>Another piece of jewelry</b>: repairs, refilling the uses and using one
@@ -100,7 +102,7 @@ public final class Imbuing {
         return switch (kind) {
             case SPELL -> spell(piece, stats, state, name, Spell.get(id.substring(SCROLL_PREFIX.length())));
             case RUNE -> rune(piece, stats, state, name, id);
-            case GEM -> gem(piece, stats, state, name, gemOf(id));
+            case GEM -> gem(piece, stats, state, name, id);
             case RECHARGE -> recharge(piece, stats, state, name);
             case REPAIR -> repair(piece, stats, state, name);
         };
@@ -124,7 +126,8 @@ public final class Imbuing {
         if (Jewelry.isJewelry(stack)) {
             return Kind.REPAIR;
         }
-        if (gemOf(id) != null) {
+        if (GemCut.ofItem(id) != null || GemCut.gemOfRaw(id) != null) {
+            // cut gems are set; raw ones are listed, refused, with the reason
             return Kind.GEM;
         }
         Item item = stack.getItem();
@@ -168,9 +171,13 @@ public final class Imbuing {
                         + " from your ability slots is now boosted while you wear it.");
     }
 
-    private static Outcome gem(ItemStack piece, JewelryStats stats, JewelryState state, String name,
-                               @Nullable Gemstone gem) {
-        if (gem == null) {
+    private static Outcome gem(ItemStack piece, JewelryStats stats, JewelryState state, String name, String gemItemId) {
+        if (GemCut.gemOfRaw(gemItemId) != null) {
+            return refused(Kind.GEM, "Raw gem: cut it with a gem cutter's kit first");
+        }
+        GemCut cut = GemCut.ofItem(gemItemId);
+        Gemstone gem = GemCut.gemOfItem(gemItemId);
+        if (cut == null || gem == null) {
             return refused(Kind.GEM, "Unknown gem");
         }
         if (stats.gem() != null) {
@@ -182,16 +189,18 @@ public final class Imbuing {
             return refused(Kind.GEM, "No " + definition.getMaterial() + " " + gem.getId() + " "
                     + definition.getType() + " yet");
         }
-        JewelryStats target = JewelryStats.of(targetId);
+        JewelryStats target = JewelryStats.of(JewelryDefinition.get(targetId), cut);
         // as in Minecraft: the gem adds its extra charge and recharges to the current values
         double extraMana = Math.max(0, target.maxMana() - stats.maxMana());
         int extraRecharges = Math.max(0, target.maxRecharges() - stats.maxRecharges());
         JewelryState next = state.copy()
                 .setMana(Math.min(target.maxMana(), state.getMana() + extraMana))
-                .setRecharges(Math.min(target.maxRecharges(), state.getRecharges() + extraRecharges));
+                .setRecharges(Math.min(target.maxRecharges(), state.getRecharges() + extraRecharges))
+                .setCut(cut.getName());
         ItemStack result = Jewelry.withState(new ItemStack(targetId, 1), next);
         return new Outcome(Kind.GEM, result, String.format("Set: charge +%.0f, recharges +%d", extraMana, extraRecharges),
-                "Your " + name + " is now a " + Jewelry.displayName(result) + ".");
+                "Your " + name + " is now a " + Jewelry.displayName(result) + ", with a "
+                        + cut.getName().toLowerCase() + " " + gem.getId().toLowerCase() + ".");
     }
 
     private static Outcome recharge(ItemStack piece, JewelryStats stats, JewelryState state, String name) {
@@ -224,19 +233,6 @@ public final class Imbuing {
 
     private static Outcome refused(Kind kind, String why) {
         return new Outcome(kind, null, why, why + ".");
-    }
-
-    /**
-     * @return the gemstone whose item this is, or null
-     */
-    @Nullable
-    public static Gemstone gemOf(String itemId) {
-        for (Gemstone gem : Gemstone.getAssetMap().getAssetMap().values()) {
-            if (itemId.equals(gem.getItem())) {
-                return gem;
-            }
-        }
-        return null;
     }
 
     /**

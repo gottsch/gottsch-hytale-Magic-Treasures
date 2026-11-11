@@ -3,7 +3,7 @@
     "Name": "server.items.MT_Necklace_Gold_Ruby_Great.name",
     "Description": "server.items.MT_Necklace_Gold_Ruby_Great.description"
   },
-  "Icon": "Icons/ItemsGenerated/Rock_Gem_Ruby.png",
+  "Icon": "Icons/Items/MagicTreasures/MT_Necklace_Gold_Ruby_Great.png",
   "Quality": "Epic",
   "ItemLevel": 7,
   "Categories": [
@@ -14,11 +14,11 @@
       "MT_Jewelry"
     ]
   },
-  "Model": "Items/Runes/Rune_Ability.blockymodel",
-  "Texture": "Items/Runes/Rune_Textures/Rune_Ability_Blank.png",
+  "Model": "Items/MagicTreasures/Necklaces/Necklace_Great_Set.blockymodel",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Gold_Ruby.png",
   "PlayerAnimationsId": "Item",
   "MaxStack": 1,
-  "Scale": 0.6,
+  "Scale": 1.0,
   "ItemSoundSetId": "ISS_Items_Gems",
   "Interactions": {
     "Secondary": {

@@ -1,12 +1,12 @@
 {
   "Item": "Rock_Gem_Voidstone",
-  "Mana": 150,
-  "Recharges": 4,
+  "Mana": 90,
+  "Recharges": 2,
   "Factors": {
-    "Cooldown": 0.92,
-    "Cost": 0.92,
-    "Effect": 1.1,
-    "Range": 1.06
+    "Cooldown": 0.96,
+    "Cost": 0.96,
+    "Effect": 1.05,
+    "Range": 1.03
   },
   "Quality": "Epic"
 }
