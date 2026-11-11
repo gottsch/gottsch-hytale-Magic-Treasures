@@ -38,7 +38,7 @@ from PIL import Image
 import blocky_render
 import make_brilliant_gem as brilliant
 from make_gem_art import COMMON
-from make_ring_art import DECAL, METAL, RINGS_OUT, box, layout
+from make_ring_art import DECAL, METAL, RINGS_OUT, as_pieces, box, layout
 
 NECK_OUT = COMMON / "Items" / "MagicTreasures" / "Necklaces"
 ICON_OUT = COMMON / "Icons" / "Items" / "MagicTreasures"
@@ -239,7 +239,7 @@ def worn_model(vanilla_model, style, gem):
                             st["worn_coin"], collar, st["worn_gem"],
                             with_gem=True)
     chest["children"] = chest["children"] + [bail, pendant]
-    return {"nodes": [belly], "lod": "auto"}
+    return as_pieces({"nodes": [belly], "lod": "auto"})
 
 
 def item_id(material, gem, style):

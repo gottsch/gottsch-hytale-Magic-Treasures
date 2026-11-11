@@ -397,6 +397,27 @@ KIT_USES = 10
 def shape_of(gem_id):
     return GEM_SHAPES.get(gem_id, "Brilliant")
 CUT_PAGE = {"Type": "OpenCustomUI", "Page": {"Id": "MT_GemCut"}}
+# The raw gem's glow and sparks (vanilla Rock_Gem_<Gem>.json: Light
+# colour, Block_Gem_Sparks colour), so a cut gem shines like the ore
+# (Mark, Nov 11).
+GEM_GLOW = {
+    "Diamond": ("#bbb", "#c2ebf4"),
+    "Emerald": ("#5b6", "#60d682"),
+    "Ruby": ("#b75", "#ffaa99"),
+    "Sapphire": ("#58b", "#64c1ff"),
+    "Topaz": ("#bb5", "#e2ae76"),
+    "Voidstone": ("#514", "#c9b1ff"),
+    "Zephyr": ("#5ab", "#9cebff"),
+}
+
+
+def glow(gem_id):
+    """The item JSON's Light and Particles for a cut gem."""
+    light, sparks = GEM_GLOW.get(gem_id, ("#bbb", "#ffffff"))
+    return {
+        "Light": {"Color": light, "Radius": 0},
+        "Particles": [{"SystemId": "Block_Gem_Sparks", "Color": sparks}],
+    }
 
 
 def write_gems(gems, lang):
@@ -427,6 +448,7 @@ def write_gems(gems, lang):
                 "Scale": 1.0,
                 "MaxStack": 64,
                 "ItemSoundSetId": "ISS_Items_Gems",
+                **glow(gem_id),
                 # right-click: choose the jewelry to set it in
                 "Interactions": {
                     "Primary": {"Interactions": [IMBUE]},

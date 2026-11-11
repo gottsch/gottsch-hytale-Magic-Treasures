@@ -1772,7 +1772,9 @@
                           "y": 1,
                           "z": 1
                         },
-                        "settings": {},
+                        "settings": {
+                          "isPiece": true
+                        },
                         "textureLayout": {},
                         "unwrapMode": "custom",
                         "visible": true,
@@ -1804,7 +1806,9 @@
                       "y": 1,
                       "z": 1
                     },
-                    "settings": {},
+                    "settings": {
+                      "isPiece": true
+                    },
                     "textureLayout": {},
                     "unwrapMode": "custom",
                     "visible": true,
@@ -1836,7 +1840,9 @@
                   "y": 1,
                   "z": 1
                 },
-                "settings": {},
+                "settings": {
+                  "isPiece": true
+                },
                 "textureLayout": {},
                 "unwrapMode": "custom",
                 "visible": true,
@@ -1868,7 +1874,9 @@
               "y": 0.98,
               "z": 0.95
             },
-            "settings": {},
+            "settings": {
+              "isPiece": true
+            },
             "textureLayout": {},
             "unwrapMode": "custom",
             "visible": true,
@@ -1900,7 +1908,9 @@
           "y": 1,
           "z": 1
         },
-        "settings": {},
+        "settings": {
+          "isPiece": true
+        },
         "textureLayout": {},
         "unwrapMode": "custom",
         "visible": true,
@@ -1909,5 +1919,6 @@
       }
     }
   ],
-  "lod": "auto"
+  "lod": "auto",
+  "format": "character"
 }

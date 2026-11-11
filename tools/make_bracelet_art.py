@@ -22,9 +22,9 @@ Worn models, Common/Cosmetics/MagicTreasures/:
   the left forearm, resting on the hand (Regular 5 tall, Great 7, like
   the vanilla Bracers, which are 10), with rims, and the gem set into
   the outer side. It hangs from the player's bone chain, Belly >
-  Chest > L-Shoulder > L-Arm > L-Forearm, like the worn rings: the
-  client draws a plugin attachment only from the whole chain (see
-  make_ring_art.worn_model). It is worn with the ring item texture of
+  Chest > L-Shoulder > L-Arm > L-Forearm, like the worn rings, each
+  bone node marked "isPiece" so it follows the arm
+  (make_ring_art.as_pieces). It is worn with the ring item texture of
   its metal and gem. Every body type uses the same player model
   (BodyCharacteristics.json), so one size fits all.
 
@@ -182,7 +182,7 @@ def worn_model(assets, style, gem, side=WORN_SIDE):
                      {"x": 0, "y": 0, "z": 0, "w": 1},
                      "shape": shape}]
         node_id += 1
-    return {"nodes": children, "lod": "auto"}
+    return ring.as_pieces({"nodes": children, "lod": "auto"})
 
 
 def item_id(material, gem, style):

@@ -19,8 +19,11 @@ rendered with blocky_render.
 
 Worn models, Common/Cosmetics/MagicTreasures/:
 - Ring_Worn_R.blockymodel and Ring_Worn_L: a thin band around a
-  finger-wide slice at the front of the hand, hung from the player's bone chain Belly > ... > R-Hand (or
-  L-Hand), 0.4 units off the skin, so it shows on a bare hand and
+  finger-wide slice at the front of the hand, hung from the player's
+  bone chain Belly > ... > R-Hand (or L-Hand), each bone node marked
+  "isPiece" like vanilla cosmetics (without it a worn ring hid the
+  first-person arms, Nov 11). The band is 0.4 units
+  off the skin, so it shows on a bare hand and
   mostly stays inside a glove (vanilla gloves are
   the hand box stretched about 1.05). Mark, Nov 9: a glove covers the
   ring, and that's fine.
@@ -295,16 +298,37 @@ def skeleton_chain(assets, side):
     return chain[start:]
 
 
+PLAYER_BONES = {"Pelvis", "Belly", "Chest", "Head"} | {
+    f"{s}-{b}" for s in "RL" for b in ("Shoulder", "Arm", "Forearm", "Hand")}
+
+
+def as_pieces(model):
+    """Marks every node named after a player bone "isPiece" and the file
+    "format": "character", as vanilla cosmetics do. Without it the
+    client doesn't attach a node to the player's bone of the same name:
+    the jewelry only looked right in the rest pose, a lone top node
+    stayed at the hip, and a worn ring hid the first-person arms
+    (found Nov 11)."""
+    def mark(nodes):
+        for n in nodes:
+            if n["name"] in PLAYER_BONES:
+                n["shape"]["settings"] = dict(
+                    n["shape"].get("settings") or {}, isPiece=True)
+            mark(n.get("children") or [])
+    mark(model["nodes"])
+    model["format"] = "character"
+    return model
+
+
 def worn_model(side, assets):
     """A thin band around the index finger, in the hand's frame
     (children of the hand are placed from its box centre).
 
-    The band hangs from the player's whole bone chain, Belly > Chest >
-    Shoulder > Arm > Forearm > Hand, copied from the player model. The
-    glove layout (a top node R-Forearm with R-Hand under it) loads but
-    the client never draws it for a plugin attachment; the whole chain
-    from Belly, like the necklace, draws (tested with marker cubes in
-    game, Nov 10)."""
+    The band hangs from the player's bone chain, Belly > Chest >
+    Shoulder > Arm > Forearm > Hand, copied from the player model, each
+    bone node marked isPiece (as_pieces) so it follows the arm. Tested
+    Nov 11: the arms show in first person and the ring stays on the
+    hand."""
     hx, hy, hz = HAND
     g, h = WORN_GAP, WORN_HEIGHT
     # the metal of the ring item textures (a coloured texture the
@@ -348,7 +372,7 @@ def worn_model(side, assets):
                      {"x": 0, "y": 0, "z": 0, "w": 1},
                      "shape": shape}]
         node_id += 1
-    return {"nodes": children, "lod": "auto"}
+    return as_pieces({"nodes": children, "lod": "auto"})
 
 
 def item_id(material, gem, style):

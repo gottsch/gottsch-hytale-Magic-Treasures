@@ -1906,5 +1906,6 @@
       ]
     }
   ],
-  "lod": "auto"
+  "lod": "auto",
+  "format": "character"
 }

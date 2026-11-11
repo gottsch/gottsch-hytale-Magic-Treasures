@@ -19,6 +19,16 @@
   "Scale": 1.0,
   "MaxStack": 64,
   "ItemSoundSetId": "ISS_Items_Gems",
+  "Light": {
+    "Color": "#b75",
+    "Radius": 0
+  },
+  "Particles": [
+    {
+      "SystemId": "Block_Gem_Sparks",
+      "Color": "#ffaa99"
+    }
+  ],
   "Interactions": {
     "Primary": {
       "Interactions": [
