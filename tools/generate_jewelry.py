@@ -61,7 +61,7 @@ QUALITIES = ["Junk", "Common", "Uncommon", "Rare", "Epic", "Legendary"]
 # bone, the other gems and Lord's come later.
 STARTER_TYPES = ["Ring", "Necklace", "Bracelet"]
 STARTER_MATERIALS = ["Copper", "Silver", "Gold"]
-STARTER_GEMS = [None, "Topaz", "Ruby", "Sapphire"]
+STARTER_GEMS = [None, "Topaz", "Ruby", "Sapphire", "Diamond"]
 STARTER_STYLES = ["Regular", "Great"]
 
 # Placeholder art until real jewelry models exist.
@@ -83,16 +83,22 @@ RECIPE_QUANTITY = 4
 RECIPE_BENCH = {"Id": "Workbench", "Type": "Crafting",
                 "Categories": ["Workbench_Tinkering"]}
 
-# Scroll art: vanilla scroll and recipe models until we have our own.
+# Scroll art: the vanilla scroll model with our violet parchment, and its
+# icon rendered from the model, like Mage Flame's scrolls (Nov 11,
+# tools/make_scroll_art.py); vanilla recipe page until we have our own.
 SCROLL_MODEL = "Items/Consumables/Scrolls/Scroll.blockymodel"
-SCROLL_TEXTURE = "Items/Consumables/Scrolls/Scroll_Texture.png"
-SCROLL_ICON = "Icons/ItemsGenerated/Deco_Scroll.png"
+SCROLL_TEXTURE = "Items/MagicTreasures/Scrolls/Spell_Scroll_Texture.png"
+SCROLL_ICON = "Icons/Items/MagicTreasures/MT_Spell_Scroll.png"
+SCROLL_ICON_PROPERTIES = {"Scale": 0.735, "Translation": [0, -7.495],
+                          "Rotation": [22.5, 45, 22.5]}
 RECIPE_MODEL = "Items/Consumables/Recipes/Recipe.blockymodel"
 RECIPE_TEXTURE = "Items/Consumables/Recipes/Recipe_Texture.png"
 RECIPE_ICON = "Icons/ItemsGenerated/Recipe_Page.png"
-# a spell scroll's quality by spell level
-SCROLL_QUALITIES = {1: "Common", 2: "Common", 3: "Uncommon",
-                    4: "Uncommon", 5: "Rare", 6: "Rare"}
+# a spell scroll's quality by spell level: the MT_Spell_* qualities are the
+# vanilla tiers with a violet slot (tools/make_slot_art.py)
+SCROLL_QUALITIES = {1: "MT_Spell_Common", 2: "MT_Spell_Common",
+                    3: "MT_Spell_Uncommon", 4: "MT_Spell_Uncommon",
+                    5: "MT_Spell_Rare", 6: "MT_Spell_Rare"}
 
 
 def load(folder):
@@ -125,7 +131,7 @@ def fits(style, jewelry_type):
 # styles and metals. Anything else keeps the placeholder.
 RING_STYLES = ["Regular", "Great"]
 RING_MATERIALS = ["Copper", "Silver", "Gold"]
-RING_GEMS = [None, "Topaz", "Ruby", "Sapphire"]
+RING_GEMS = [None, "Topaz", "Ruby", "Sapphire", "Diamond"]
 
 
 def ring_art(jewelry_type, material_id, gem_id, style_id, iid):
@@ -319,7 +325,8 @@ def write_scrolls(spells, types, lang):
                 "Description": f"server.items.{sid}.description",
             },
             "Icon": SCROLL_ICON,
-            "Quality": SCROLL_QUALITIES.get(level, "Epic"),
+            "IconProperties": SCROLL_ICON_PROPERTIES,
+            "Quality": SCROLL_QUALITIES.get(level, "MT_Spell_Epic"),
             "ItemLevel": level,
             "Categories": ["Items.Recipes"],
             "Tags": {"Type": ["MT_Spell_Scroll"]},
@@ -351,7 +358,7 @@ def write_scrolls(spells, types, lang):
                 "Description": f"server.items.{rid}.description",
             },
             "Icon": RECIPE_ICON,
-            "Quality": "Uncommon",
+            "Quality": "MT_Recipe_Uncommon",
             "Categories": ["Items.Recipes"],
             "Tags": {"Type": ["Recipe"]},
             "Model": RECIPE_MODEL,

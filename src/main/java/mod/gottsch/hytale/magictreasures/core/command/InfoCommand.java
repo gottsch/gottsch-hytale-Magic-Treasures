@@ -32,6 +32,8 @@ import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import mod.gottsch.hytale.magictreasures.core.element.ElementProperty;
+import mod.gottsch.hytale.magictreasures.core.element.ElementRolling;
 import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryState;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryStats;
@@ -39,6 +41,7 @@ import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.List;
 import java.util.TreeSet;
 
 /**
@@ -59,6 +62,7 @@ public class InfoCommand extends AbstractPlayerCommand {
     private final OptionalArg<Integer> usesArg;
     private final DefaultArg<Boolean> clearSpellsArg;
     private final DefaultArg<Boolean> clearRunesArg;
+    private final DefaultArg<Boolean> rerollArg;
 
     public InfoCommand() {
         super("info", "Show the held jewelry's stats and state.");
@@ -69,6 +73,8 @@ public class InfoCommand extends AbstractPlayerCommand {
         this.clearSpellsArg = withDefaultArg("clearspells", "Test: remove the held piece's spells", ArgTypes.BOOLEAN,
                 false, "false");
         this.clearRunesArg = withDefaultArg("clearrunes", "Test: remove the held piece's runes", ArgTypes.BOOLEAN,
+                false, "false");
+        this.rerollArg = withDefaultArg("reroll", "Test: roll the held piece's elements again", ArgTypes.BOOLEAN,
                 false, "false");
     }
 
@@ -93,8 +99,13 @@ public class InfoCommand extends AbstractPlayerCommand {
         boolean saved = stack.getFromMetadataOrNull(JewelryState.KEYED_CODEC) != null;
 
         if (manaArg.provided(context) || runeArg.provided(context) || spellArg.provided(context)
-                || usesArg.provided(context) || clearSpellsArg.get(context) || clearRunesArg.get(context)) {
+                || usesArg.provided(context) || clearSpellsArg.get(context) || clearRunesArg.get(context)
+                || rerollArg.get(context)) {
             state = state.copy();
+            if (rerollArg.get(context)) {
+                // withState rolls metal and gem again
+                state.setElements().setRolled(false);
+            }
             if (manaArg.provided(context)) {
                 state.setMana(manaArg.get(context));
             }
@@ -139,7 +150,9 @@ public class InfoCommand extends AbstractPlayerCommand {
                 runes[runes.length - 1] = runeArg.get(context);
                 state.setRunes(runes);
             }
-            hotbar.getInventory().setItemStackForSlot(slot, Jewelry.withState(stack, state));
+            ItemStack updated = Jewelry.withState(stack, state);
+            hotbar.getInventory().setItemStackForSlot(slot, updated);
+            state = Jewelry.state(updated);
             saved = true;
             context.sendMessage(Message.raw("Updated the held piece. Hover it to check the tooltip."));
         }
@@ -155,5 +168,9 @@ public class InfoCommand extends AbstractPlayerCommand {
                 stats.sockets(), stats.quality())));
         context.sendMessage(Message.raw("Factors: " + stats.factors()));
         context.sendMessage(Message.raw("State" + (saved ? "" : " (not saved yet, shown fresh)") + ": " + state));
+        List<ElementProperty> elements = ElementRolling.decode(state);
+        context.sendMessage(Message.raw("Elements" + (state.isRolled() ? "" : " (not rolled yet)") + ": "
+                + (elements.isEmpty() ? "none" : String.join(", ",
+                elements.stream().map(ElementProperty::describe).toList()))));
     }
 }

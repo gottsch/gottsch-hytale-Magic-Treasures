@@ -56,7 +56,7 @@ ICON_OUT = COMMON / "Icons" / "Items" / "MagicTreasures"
 WORN_OUT = COMMON / "Cosmetics" / "MagicTreasures"
 
 MATERIALS = ["Copper", "Silver", "Gold"]
-GEMS = [None, "Topaz", "Ruby", "Sapphire"]
+GEMS = [None, "Topaz", "Ruby", "Sapphire", "Diamond"]
 TEX = 64
 METAL_Y = 32
 # --segments: band segments for every style, instead of the style's own

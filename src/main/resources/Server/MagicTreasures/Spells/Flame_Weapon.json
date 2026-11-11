@@ -1,0 +1,10 @@
+{
+  "Name": "Flame Weapon",
+  "Kind": "Weapon",
+  "Level": 4,
+  "Cost": 8,
+  "Cooldown": 120,
+  "Duration": 30,
+  "EntityEffect": "MT_Spell_Flame_Weapon",
+  "OnHit": "Burn"
+}

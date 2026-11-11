@@ -2,5 +2,28 @@
   "Item": "Rock_Gem_Topaz",
   "Mana": 15,
   "Recharges": 0,
-  "Quality": "Common"
+  "Quality": "Common",
+  "Elements": [
+    {
+      "Element": "Lightning",
+      "Kind": "Resistance",
+      "Min": 0.12,
+      "Max": 0.15
+    },
+    {
+      "Element": "Lightning",
+      "Kind": "Damage",
+      "Min": 0.12,
+      "Max": 0.15
+    }
+  ],
+  "Weakness": "Water",
+  "Bonus": [
+    {
+      "Element": "Elemental",
+      "Kind": "Resistance",
+      "Min": 0.03,
+      "Max": 0.05
+    }
+  ]
 }

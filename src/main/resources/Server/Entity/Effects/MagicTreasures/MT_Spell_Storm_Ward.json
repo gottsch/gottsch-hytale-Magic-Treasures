@@ -1,0 +1,21 @@
+{
+  "Duration": 60,
+  "OverlapBehavior": "Overwrite",
+  "RemovalBehavior": "Duration",
+  "Debuff": false,
+  "StatusEffectIcon": "Icons/ItemsGenerated/Ingredient_Lightning_Essence.png",
+  "DamageResistance": {
+    "Lightning": [
+      {
+        "CalculationType": "Percent",
+        "Amount": 0.4
+      }
+    ],
+    "Wind": [
+      {
+        "CalculationType": "Percent",
+        "Amount": 0.4
+      }
+    ]
+  }
+}

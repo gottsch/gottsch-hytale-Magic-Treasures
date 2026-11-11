@@ -45,7 +45,7 @@ ICON_OUT = COMMON / "Icons" / "Items" / "MagicTreasures"
 WORN_OUT = COMMON / "Cosmetics" / "MagicTreasures"
 
 MATERIALS = ["Copper", "Silver", "Gold"]
-GEMS = [None, "Topaz", "Ruby", "Sapphire"]
+GEMS = [None, "Topaz", "Ruby", "Sapphire", "Diamond"]
 
 STYLES = {
     # chain loop radii, link count and thickness; medallion size;

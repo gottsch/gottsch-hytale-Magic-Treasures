@@ -47,6 +47,10 @@ public class JewelryState {
             .append(new KeyedCodec<>("Runes", Codec.STRING_ARRAY), (s, v) -> s.runes = v, s -> s.runes).add()
             // how well its gem is cut (GemCut name); none on pieces set before M6, read as Fine
             .append(new KeyedCodec<>("Cut", Codec.STRING), (s, v) -> s.cut = v, s -> s.cut).add()
+            // elemental properties rolled for the piece (ElementProperty.encode); Rolled marks a
+            // piece whose metal (and gem) were rolled, even if nothing came up
+            .append(new KeyedCodec<>("Elements", Codec.STRING_ARRAY), (s, v) -> s.elements = v, s -> s.elements).add()
+            .append(new KeyedCodec<>("Rolled", Codec.BOOLEAN), (s, v) -> s.rolled = v, s -> s.rolled).add()
             .build();
 
     public static final KeyedCodec<JewelryState> KEYED_CODEC = new KeyedCodec<>(KEY, CODEC);
@@ -60,6 +64,8 @@ public class JewelryState {
     protected String[] spells = NONE;
     protected String[] runes = NONE;
     protected String cut;
+    protected String[] elements = NONE;
+    protected Boolean rolled;
 
     public JewelryState() {
     }
@@ -85,7 +91,33 @@ public class JewelryState {
         c.spells = getSpells().clone();
         c.runes = getRunes().clone();
         c.cut = cut;
+        c.elements = getElements().clone();
+        c.rolled = rolled;
         return c;
+    }
+
+    /**
+     * @return the piece's rolled elemental properties, encoded ({@code ElementProperty})
+     */
+    public String[] getElements() {
+        return elements == null ? NONE : elements;
+    }
+
+    public JewelryState setElements(String... elements) {
+        this.elements = elements == null ? NONE : elements;
+        return this;
+    }
+
+    /**
+     * @return true once the piece's elemental properties were rolled
+     */
+    public boolean isRolled() {
+        return rolled != null && rolled;
+    }
+
+    public JewelryState setRolled(boolean rolled) {
+        this.rolled = rolled;
+        return this;
     }
 
     public double getMana() {

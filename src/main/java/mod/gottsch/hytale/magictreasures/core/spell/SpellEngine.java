@@ -219,7 +219,7 @@ public final class SpellEngine {
             case HEALING -> heal(ref, store, spell.getEffect() * factors.getEffect());
             // drain heals by part of the hit: at most the spell's amount, at most the damage dealt
             case DRAIN -> heal(ref, store, Math.min(spell.getEffect() * factors.getEffect(), damage));
-            case SPEED, STRENGTH -> buff(spell, factors, ref, store) != null;
+            case SPEED, STRENGTH, WARD, WEAPON -> buff(spell, factors, ref, store) != null;
             case CAT_SIGHT -> {
                 EntityEffect effect = buff(spell, factors, ref, store);
                 if (effect == null) {

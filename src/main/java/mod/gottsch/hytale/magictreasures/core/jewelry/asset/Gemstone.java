@@ -26,6 +26,7 @@ import com.hypixel.hytale.assetstore.map.DefaultAssetMap;
 import com.hypixel.hytale.assetstore.map.JsonAssetWithMap;
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
+import mod.gottsch.hytale.magictreasures.core.element.ElementRoll;
 
 import javax.annotation.Nullable;
 
@@ -46,6 +47,11 @@ public class Gemstone implements JsonAssetWithMap<String, DefaultAssetMap<String
             .append(new KeyedCodec<>("Recharges", Codec.INTEGER), (a, v) -> a.recharges = v, a -> a.recharges).add()
             .append(new KeyedCodec<>("Quality", Codec.STRING), (a, v) -> a.quality = v, a -> a.quality).add()
             .append(new KeyedCodec<>("Factors", SpellFactors.CODEC), (a, v) -> a.factors = v, a -> a.factors).add()
+            // elemental properties (Nov 11): its element at Flawless strength, the element a
+            // Flawed cut may leave the wearer weak to, and the Perfect cut's extra roll
+            .append(new KeyedCodec<>("Elements", ElementRoll.ARRAY_CODEC), (a, v) -> a.elements = v, a -> a.elements).add()
+            .append(new KeyedCodec<>("Weakness", Codec.STRING), (a, v) -> a.weakness = v, a -> a.weakness).add()
+            .append(new KeyedCodec<>("Bonus", ElementRoll.ARRAY_CODEC), (a, v) -> a.bonus = v, a -> a.bonus).add()
             .build();
 
     private static AssetStore<String, Gemstone, DefaultAssetMap<String, Gemstone>> assetStore;
@@ -57,6 +63,9 @@ public class Gemstone implements JsonAssetWithMap<String, DefaultAssetMap<String
     protected int recharges = 0;
     protected String quality = "Common";
     protected SpellFactors factors;
+    protected ElementRoll[] elements;
+    protected String weakness;
+    protected ElementRoll[] bonus;
 
     protected Gemstone() {
     }
@@ -104,6 +113,28 @@ public class Gemstone implements JsonAssetWithMap<String, DefaultAssetMap<String
 
     public SpellFactors getFactors() {
         return factors == null ? SpellFactors.NONE : factors;
+    }
+
+    /**
+     * @return the gem's elemental properties at Flawless strength
+     */
+    public ElementRoll[] getElements() {
+        return elements == null ? ElementRoll.NONE : elements;
+    }
+
+    /**
+     * @return the element a Flawed cut may leave the wearer weak to, or null
+     */
+    @Nullable
+    public String getWeakness() {
+        return weakness;
+    }
+
+    /**
+     * @return what a Perfect cut may add
+     */
+    public ElementRoll[] getBonus() {
+        return bonus == null ? ElementRoll.NONE : bonus;
     }
 
 

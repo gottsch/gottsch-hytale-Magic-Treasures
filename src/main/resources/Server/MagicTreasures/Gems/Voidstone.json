@@ -8,5 +8,33 @@
     "Effect": 1.05,
     "Range": 1.03
   },
-  "Quality": "Epic"
+  "Quality": "Epic",
+  "Elements": [
+    {
+      "Element": "Elemental",
+      "Kind": "Damage",
+      "Min": 0.12,
+      "Max": 0.15
+    },
+    {
+      "Element": "Elemental",
+      "Kind": "Resistance",
+      "Min": -0.1,
+      "Max": -0.1
+    }
+  ],
+  "Weakness": "Elemental",
+  "Bonus": [
+    {
+      "Element": "Elemental",
+      "Kind": "Damage",
+      "Min": 0.05,
+      "Max": 0.05
+    },
+    {
+      "Kind": "Crit",
+      "Min": 0.05,
+      "Max": 0.05
+    }
+  ]
 }

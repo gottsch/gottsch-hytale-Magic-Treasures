@@ -28,6 +28,8 @@ import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import mod.gottsch.hytale.magictreasures.core.element.ElementProperty;
+import mod.gottsch.hytale.magictreasures.core.element.ElementWear;
 import mod.gottsch.hytale.magictreasures.core.wear.JewelryWear;
 import mod.gottsch.hytale.magictreasures.core.wear.WornJewelry;
 
@@ -62,6 +64,23 @@ public class WornCommand extends AbstractPlayerCommand {
                 context.sendMessage(Message.raw("  " + piece.getItemId()
                         + (JewelryWear.wornModels(piece, 0).isEmpty() ? "" : " (shown on you)")));
             }
+        }
+        // the worn elemental properties, added up per kind and element (Nov 11)
+        java.util.Map<String, Double> totals = new java.util.TreeMap<>();
+        java.util.Map<String, ElementProperty> examples = new java.util.HashMap<>();
+        for (ElementProperty property : ElementWear.properties(playerRef.getUuid())) {
+            String key = property.kind() + ":" + property.element() + ":" + property.effect();
+            totals.merge(key, property.value(), Double::sum);
+            examples.putIfAbsent(key, property);
+        }
+        if (!totals.isEmpty()) {
+            context.sendMessage(Message.raw("Elements worn (resistance held within "
+                    + Math.round(ElementWear.RESISTANCE_CAP * 100) + "%):"));
+            totals.forEach((key, value) -> {
+                ElementProperty e = examples.get(key);
+                ElementProperty sum = new ElementProperty(e.kind(), e.element(), value, e.effect());
+                context.sendMessage(Message.raw("  " + sum.describe()).color(sum.good() ? "#7ddc7d" : "#ff7070"));
+            });
         }
         if (!recorded.itemIds().equals(fresh.itemIds())) {
             context.sendMessage(Message.raw("The plugin last recorded: " + recorded.itemIds()

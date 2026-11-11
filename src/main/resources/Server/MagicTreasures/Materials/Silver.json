@@ -9,5 +9,14 @@
   "Gradient": "Silver_Blue",
   "Factors": {
     "Cost": 0.95
-  }
+  },
+  "Elements": [
+    {
+      "Element": "Poison",
+      "Kind": "Resistance",
+      "Chance": 0.5,
+      "Min": 0.08,
+      "Max": 0.15
+    }
+  ]
 }

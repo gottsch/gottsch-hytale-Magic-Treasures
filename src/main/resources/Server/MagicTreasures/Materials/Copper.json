@@ -9,5 +9,21 @@
   "Gradient": "Copper_Green",
   "Factors": {
     "Cooldown": 0.95
-  }
+  },
+  "Elements": [
+    {
+      "Element": "Lightning",
+      "Kind": "Damage",
+      "Chance": 0.5,
+      "Min": 0.05,
+      "Max": 0.1
+    },
+    {
+      "Element": "Lightning",
+      "Kind": "Resistance",
+      "Chance": 0.3,
+      "Min": -0.05,
+      "Max": -0.03
+    }
+  ]
 }

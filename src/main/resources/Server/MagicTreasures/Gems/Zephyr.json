@@ -7,5 +7,28 @@
     "Cost": 0.98,
     "Effect": 1.015
   },
-  "Quality": "Rare"
+  "Quality": "Rare",
+  "Elements": [
+    {
+      "Element": "Wind",
+      "Kind": "Resistance",
+      "Min": 0.12,
+      "Max": 0.15
+    },
+    {
+      "Element": "Wind",
+      "Kind": "Damage",
+      "Min": 0.12,
+      "Max": 0.15
+    }
+  ],
+  "Weakness": "Earth",
+  "Bonus": [
+    {
+      "Element": "Earth",
+      "Kind": "Resistance",
+      "Min": 0.05,
+      "Max": 0.08
+    }
+  ]
 }

@@ -37,6 +37,10 @@ public enum SpellKind {
     SPEED(Trigger.TICK),
     STRENGTH(Trigger.TICK),
     CAT_SIGHT(Trigger.TICK),
+    /** A buff of elemental resistance (Fire Ward, ...), Nov 11. */
+    WARD(Trigger.TICK),
+    /** A buff of elemental damage that also gives a status on every hit (Flame Weapon, ...). */
+    WEAPON(Trigger.TICK),
     DRAIN(Trigger.HIT);
 
     public enum Trigger {

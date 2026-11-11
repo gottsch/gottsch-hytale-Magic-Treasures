@@ -4,7 +4,7 @@
     "Description": "server.items.MT_Recipe_Bracelet.description"
   },
   "Icon": "Icons/ItemsGenerated/Recipe_Page.png",
-  "Quality": "Uncommon",
+  "Quality": "MT_Recipe_Uncommon",
   "Categories": [
     "Items.Recipes"
   ],

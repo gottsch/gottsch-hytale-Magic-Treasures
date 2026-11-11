@@ -8,5 +8,35 @@
     "Effect": 1.05,
     "Range": 1.03
   },
-  "Quality": "Epic"
+  "Quality": "Epic",
+  "Elements": [
+    {
+      "Element": "Ice",
+      "Kind": "Resistance",
+      "Min": 0.12,
+      "Max": 0.15
+    },
+    {
+      "Element": "Water",
+      "Kind": "Resistance",
+      "Min": 0.12,
+      "Max": 0.15
+    },
+    {
+      "Element": "Ice",
+      "Kind": "OnHit",
+      "Min": 0.08,
+      "Max": 0.1,
+      "Effect": "Slow"
+    }
+  ],
+  "Weakness": "Fire",
+  "Bonus": [
+    {
+      "Element": "Ice",
+      "Kind": "Damage",
+      "Min": 0.08,
+      "Max": 0.1
+    }
+  ]
 }

@@ -26,6 +26,7 @@ import com.hypixel.hytale.assetstore.map.DefaultAssetMap;
 import com.hypixel.hytale.assetstore.map.JsonAssetWithMap;
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
+import mod.gottsch.hytale.magictreasures.core.element.ElementRoll;
 
 import javax.annotation.Nullable;
 
@@ -51,6 +52,8 @@ public class JewelryMaterial implements JsonAssetWithMap<String, DefaultAssetMap
             .append(new KeyedCodec<>("GradientSet", Codec.STRING), (a, v) -> a.gradientSet = v, a -> a.gradientSet).add()
             .append(new KeyedCodec<>("Gradient", Codec.STRING), (a, v) -> a.gradient = v, a -> a.gradient).add()
             .append(new KeyedCodec<>("Factors", SpellFactors.CODEC), (a, v) -> a.factors = v, a -> a.factors).add()
+            // elemental properties a piece of this metal may roll when made (Nov 11)
+            .append(new KeyedCodec<>("Elements", ElementRoll.ARRAY_CODEC), (a, v) -> a.elements = v, a -> a.elements).add()
             .build();
 
     private static AssetStore<String, JewelryMaterial, DefaultAssetMap<String, JewelryMaterial>> assetStore;
@@ -67,8 +70,16 @@ public class JewelryMaterial implements JsonAssetWithMap<String, DefaultAssetMap
     protected String gradientSet;
     protected String gradient;
     protected SpellFactors factors;
+    protected ElementRoll[] elements;
 
     protected JewelryMaterial() {
+    }
+
+    /**
+     * @return the elemental properties a piece of this material may roll
+     */
+    public ElementRoll[] getElements() {
+        return elements == null ? ElementRoll.NONE : elements;
     }
 
     public static AssetStore<String, JewelryMaterial, DefaultAssetMap<String, JewelryMaterial>> getAssetStore() {

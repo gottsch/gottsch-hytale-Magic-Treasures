@@ -1,0 +1,15 @@
+{
+  "Duration": 30,
+  "OverlapBehavior": "Overwrite",
+  "RemovalBehavior": "Duration",
+  "Debuff": false,
+  "StatusEffectIcon": "Icons/ItemsGenerated/Ingredient_Fire_Essence.png",
+  "OutgoingDamage": {
+    "Fire": [
+      {
+        "CalculationType": "Percent",
+        "Amount": 0.25
+      }
+    ]
+  }
+}

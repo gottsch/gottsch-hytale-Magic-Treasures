@@ -1,0 +1,55 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Scroll_Greater_Ward.name",
+    "Description": "server.items.MT_Scroll_Greater_Ward.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/MT_Spell_Scroll.png",
+  "IconProperties": {
+    "Scale": 0.735,
+    "Translation": [
+      0,
+      -7.495
+    ],
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ]
+  },
+  "Quality": "MT_Spell_Rare",
+  "ItemLevel": 5,
+  "Categories": [
+    "Items.Recipes"
+  ],
+  "Tags": {
+    "Type": [
+      "MT_Spell_Scroll"
+    ]
+  },
+  "Model": "Items/Consumables/Scrolls/Scroll.blockymodel",
+  "Texture": "Items/MagicTreasures/Scrolls/Spell_Scroll_Texture.png",
+  "PlayerAnimationsId": "Item",
+  "MaxStack": 10,
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  }
+}

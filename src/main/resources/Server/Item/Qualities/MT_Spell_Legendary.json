@@ -1,0 +1,15 @@
+{
+  "QualityValue": 5,
+  "ItemTooltipTexture": "UI/ItemQualities/Tooltips/ItemTooltipLegendary.png",
+  "ItemTooltipArrowTexture": "UI/ItemQualities/Tooltips/ItemTooltipLegendaryArrow.png",
+  "SlotTexture": "UI/ItemQualities/Slots/MagicTreasures/MT_Slot_Spell_Legendary.png",
+  "BlockSlotTexture": "UI/ItemQualities/Slots/MagicTreasures/MT_Slot_Spell_Legendary.png",
+  "SpecialSlotTexture": "UI/ItemQualities/Slots/MagicTreasures/MT_Slot_Spell_Legendary.png",
+  "TextColor": "#bb8a2c",
+  "LocalizationKey": "server.general.qualities.Legendary",
+  "VisibleQualityLabel": true,
+  "RenderSpecialSlot": true,
+  "ItemEntityConfig": {
+    "ParticleSystemId": "Drop_Legendary"
+  }
+}

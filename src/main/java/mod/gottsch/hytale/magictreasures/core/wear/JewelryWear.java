@@ -28,6 +28,7 @@ import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
 import com.hypixel.hytale.server.core.modules.entity.player.PlayerSkinComponent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import mod.gottsch.hytale.magictreasures.core.element.ElementWear;
 import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryDefinition;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryStats;
@@ -134,6 +135,7 @@ public final class JewelryWear {
             shown = List.copyOf(visibleIds);
         }
         WORN.put(uuid, new Worn(jewelry, shown));
+        ElementWear.update(uuid, jewelry);
         if (previous == null || !previous.jewelry().itemIds().equals(jewelry.itemIds())) {
             LOGGER.atInfo().log("%s wears %s (case: %s)%s", playerRef.getUsername(), jewelry.itemIds(),
                     jewelry.caseLocation(), send ? ", look sent" : "");
@@ -154,6 +156,7 @@ public final class JewelryWear {
 
     public static void onLeave(UUID uuid) {
         WORN.remove(uuid);
+        ElementWear.onLeave(uuid);
     }
 
     private static boolean sendLook(Ref<EntityStore> ref, ComponentAccessor<EntityStore> accessor,

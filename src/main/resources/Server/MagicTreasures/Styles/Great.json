@@ -5,5 +5,7 @@
   "MaxLevel": 1,
   "Repairs": 1,
   "QualitySteps": 1,
-  "Sockets": 2
+  "Sockets": 2,
+  "ElementRerolls": 1,
+  "ElementGuaranteed": false
 }

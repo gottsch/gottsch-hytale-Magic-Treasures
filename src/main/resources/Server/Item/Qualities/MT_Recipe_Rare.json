@@ -1,0 +1,15 @@
+{
+  "QualityValue": 3,
+  "ItemTooltipTexture": "UI/ItemQualities/Tooltips/ItemTooltipRare.png",
+  "ItemTooltipArrowTexture": "UI/ItemQualities/Tooltips/ItemTooltipRareArrow.png",
+  "SlotTexture": "UI/ItemQualities/Slots/MagicTreasures/MT_Slot_Recipe_Rare.png",
+  "BlockSlotTexture": "UI/ItemQualities/Slots/MagicTreasures/MT_Slot_Recipe_Rare.png",
+  "SpecialSlotTexture": "UI/ItemQualities/Slots/MagicTreasures/MT_Slot_Recipe_Rare.png",
+  "TextColor": "#2770b7",
+  "LocalizationKey": "server.general.qualities.Rare",
+  "VisibleQualityLabel": true,
+  "RenderSpecialSlot": true,
+  "ItemEntityConfig": {
+    "ParticleSystemId": "Drop_Rare"
+  }
+}

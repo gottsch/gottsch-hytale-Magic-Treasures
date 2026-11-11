@@ -1,0 +1,33 @@
+{
+  "Source": "Chest",
+  "Match": [
+    "Container_.*",
+    "Barrels"
+  ],
+  "Priority": 5,
+  "Chance": 0.08,
+  "MinRolls": 1,
+  "MaxRolls": 1,
+  "Entries": [
+    {
+      "Items": [
+        "MT_Recipe_.*"
+      ],
+      "Weight": 10
+    },
+    {
+      "Items": [
+        "MT_Scroll_.*"
+      ],
+      "Weight": 20,
+      "MinItemLevel": 1,
+      "MaxItemLevel": 1
+    },
+    {
+      "Items": [
+        "MT_Gem_(Ruby|Topaz|Sapphire|Emerald|Diamond|Zephyr|Voidstone)_(Flawed)"
+      ],
+      "Weight": 20
+    }
+  ]
+}

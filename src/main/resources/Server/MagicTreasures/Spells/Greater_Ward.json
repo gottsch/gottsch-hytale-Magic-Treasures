@@ -1,0 +1,9 @@
+{
+  "Name": "Greater Ward",
+  "Kind": "Ward",
+  "Level": 5,
+  "Cost": 10,
+  "Cooldown": 240,
+  "Duration": 60,
+  "EntityEffect": "MT_Spell_Greater_Ward"
+}

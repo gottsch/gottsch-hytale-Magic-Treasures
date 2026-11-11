@@ -30,6 +30,12 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import mod.gottsch.hytale.magictreasures.core.cutting.GemCutPageSupplier;
 import mod.gottsch.hytale.magictreasures.core.cutting.GemCuttingSkill;
 import mod.gottsch.hytale.magictreasures.core.command.MagicTreasuresCommand;
+import com.hypixel.hytale.server.core.inventory.ItemStack;
+import mod.gottsch.hytale.magictreasures.core.element.ElementDamageSystem;
+import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
+import mod.gottsch.hytale.magictreasures.core.loot.ChestLootSystem;
+import mod.gottsch.hytale.magictreasures.core.loot.LootRoller;
+import mod.gottsch.hytale.magictreasures.core.loot.MobLootSystem;
 import mod.gottsch.hytale.magictreasures.core.imbue.ImbuePageSupplier;
 import mod.gottsch.hytale.magictreasures.core.imbue.LearnJewelryRecipesInteraction;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryAssets;
@@ -69,6 +75,16 @@ public class MagicTreasures extends JavaPlugin {
         this.getEntityStoreRegistry().registerSystem(new DrainDamageSystem());
         this.getEntityStoreRegistry().registerSystem(new HitMeter.Before());
         this.getEntityStoreRegistry().registerSystem(new HitMeter.After());
+        // elements (Nov 11): worn resistances, damage bonuses and on-hit statuses
+        this.getEntityStoreRegistry().registerSystem(new ElementDamageSystem());
+        // loot (Nov 11): added in code to world chests and mob deaths, by our own loot tables,
+        // so mods replacing vanilla drop lists can't remove it; jewelry comes out rolled
+        LootRoller.setItemFactory((id, count, cut) -> {
+            ItemStack jewelry = Jewelry.create(id, cut);
+            return jewelry != null ? jewelry : new ItemStack(id, count);
+        });
+        this.getChunkStoreRegistry().registerSystem(new ChestLootSystem());
+        this.getEntityStoreRegistry().registerSystem(new MobLootSystem());
         // runes: a rune held by worn jewelry boosts the same rune cast from the ability slots
         this.getEntityStoreRegistry().registerSystem(new RuneBoostSystem());
         // imbuing (M5): a held spell scroll or piece of jewelry opens the imbue page, and

@@ -3,8 +3,20 @@
     "Name": "server.items.MT_Scroll_Cat_Sight.name",
     "Description": "server.items.MT_Scroll_Cat_Sight.description"
   },
-  "Icon": "Icons/ItemsGenerated/Deco_Scroll.png",
-  "Quality": "Common",
+  "Icon": "Icons/Items/MagicTreasures/MT_Spell_Scroll.png",
+  "IconProperties": {
+    "Scale": 0.735,
+    "Translation": [
+      0,
+      -7.495
+    ],
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ]
+  },
+  "Quality": "MT_Spell_Common",
   "ItemLevel": 1,
   "Categories": [
     "Items.Recipes"
@@ -15,7 +27,7 @@
     ]
   },
   "Model": "Items/Consumables/Scrolls/Scroll.blockymodel",
-  "Texture": "Items/Consumables/Scrolls/Scroll_Texture.png",
+  "Texture": "Items/MagicTreasures/Scrolls/Spell_Scroll_Texture.png",
   "PlayerAnimationsId": "Item",
   "MaxStack": 10,
   "Interactions": {

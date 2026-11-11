@@ -10,5 +10,20 @@
   "Factors": {
     "Cooldown": 0.96,
     "Cost": 0.925
-  }
+  },
+  "Elements": [
+    {
+      "Element": "Fire",
+      "Kind": "Resistance",
+      "Chance": 0.5,
+      "Min": 0.05,
+      "Max": 0.12
+    },
+    {
+      "Kind": "Crit",
+      "Chance": 0.2,
+      "Min": 0.02,
+      "Max": 0.04
+    }
+  ]
 }

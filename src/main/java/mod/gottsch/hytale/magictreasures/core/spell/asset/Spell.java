@@ -43,6 +43,8 @@ import javax.annotation.Nullable;
  *     <li>{@code Duration}: seconds a buff lasts.</li>
  *     <li>{@code EntityEffect}: the effect asset a buff applies (speed, strength, and the
  *     status icon).</li>
+ *     <li>{@code OnHit}: a weapon spell's status effect, given to the target on every melee or
+ *     ranged hit while the spell's effect runs (Nov 11).</li>
  * </ul>
  * The wearing piece's factors scale cost, cooldown, effect and duration when it casts.
  *
@@ -60,6 +62,7 @@ public class Spell implements JsonAssetWithMap<String, DefaultAssetMap<String, S
             .append(new KeyedCodec<>("Effect", Codec.DOUBLE), (a, v) -> a.effect = v, a -> a.effect).add()
             .append(new KeyedCodec<>("Duration", Codec.DOUBLE), (a, v) -> a.duration = v, a -> a.duration).add()
             .append(new KeyedCodec<>("EntityEffect", Codec.STRING), (a, v) -> a.entityEffect = v, a -> a.entityEffect).add()
+            .append(new KeyedCodec<>("OnHit", Codec.STRING), (a, v) -> a.onHit = v, a -> a.onHit).add()
             .build();
 
     private static AssetStore<String, Spell, DefaultAssetMap<String, Spell>> assetStore;
@@ -74,6 +77,7 @@ public class Spell implements JsonAssetWithMap<String, DefaultAssetMap<String, S
     protected double effect = 0;
     protected double duration = 0;
     protected String entityEffect;
+    protected String onHit;
 
     protected Spell() {
     }
@@ -140,6 +144,15 @@ public class Spell implements JsonAssetWithMap<String, DefaultAssetMap<String, S
     @Nullable
     public String getEntityEffect() {
         return entityEffect;
+    }
+
+    /**
+     * @return the status effect every hit gives while this spell's effect runs (a weapon
+     * spell, e.g. {@code Burn}), or null
+     */
+    @Nullable
+    public String getOnHit() {
+        return onHit;
     }
 
     @Override

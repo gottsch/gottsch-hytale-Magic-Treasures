@@ -1,0 +1,42 @@
+{
+  "Source": "Chest",
+  "Match": [
+    ".*_Tier5"
+  ],
+  "Priority": 50,
+  "Chance": 0.75,
+  "MinRolls": 2,
+  "MaxRolls": 3,
+  "Entries": [
+    {
+      "Items": [
+        "MT_Scroll_.*"
+      ],
+      "Weight": 30,
+      "MinItemLevel": 4,
+      "MaxItemLevel": 6
+    },
+    {
+      "Items": [
+        "MT_(Ring|Necklace|Bracelet)_(Gold)_Great"
+      ],
+      "Weight": 10
+    },
+    {
+      "Items": [
+        "MT_(Ring|Necklace|Bracelet)_(Gold)_(Ruby|Topaz|Sapphire|Emerald|Diamond|Zephyr|Voidstone)_Great"
+      ],
+      "Weight": 25,
+      "Cuts": [
+        "Flawless",
+        "Perfect"
+      ]
+    },
+    {
+      "Items": [
+        "MT_Gem_(Ruby|Topaz|Sapphire|Emerald|Diamond|Zephyr|Voidstone)_(Perfect)"
+      ],
+      "Weight": 15
+    }
+  ]
+}

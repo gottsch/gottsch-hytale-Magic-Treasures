@@ -6,5 +6,29 @@
     "Cooldown": 0.99,
     "Cost": 0.99
   },
-  "Quality": "Uncommon"
+  "Quality": "Uncommon",
+  "Elements": [
+    {
+      "Element": "Poison",
+      "Kind": "Resistance",
+      "Min": 0.12,
+      "Max": 0.15
+    },
+    {
+      "Element": "Poison",
+      "Kind": "OnHit",
+      "Min": 0.08,
+      "Max": 0.1,
+      "Effect": "Poison"
+    }
+  ],
+  "Weakness": "Wind",
+  "Bonus": [
+    {
+      "Element": "Poison",
+      "Kind": "Damage",
+      "Min": 0.08,
+      "Max": 0.1
+    }
+  ]
 }

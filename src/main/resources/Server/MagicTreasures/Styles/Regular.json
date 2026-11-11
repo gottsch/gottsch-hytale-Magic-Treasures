@@ -1,4 +1,6 @@
 {
   "Name": "",
-  "Sockets": 1
+  "Sockets": 1,
+  "ElementRerolls": 0,
+  "ElementGuaranteed": false
 }

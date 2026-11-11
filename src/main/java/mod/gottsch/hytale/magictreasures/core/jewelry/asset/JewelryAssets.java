@@ -20,6 +20,7 @@ package mod.gottsch.hytale.magictreasures.core.jewelry.asset;
 import com.hypixel.hytale.assetstore.map.DefaultAssetMap;
 import com.hypixel.hytale.server.core.asset.HytaleAssetStore;
 import com.hypixel.hytale.server.core.plugin.registry.AssetRegistry;
+import mod.gottsch.hytale.magictreasures.core.loot.LootTable;
 import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
 
 /**
@@ -35,6 +36,7 @@ public final class JewelryAssets {
     public static final String GEMS_PATH = "MagicTreasures/Gems";
     public static final String JEWELRY_PATH = "MagicTreasures/Jewelry";
     public static final String SPELLS_PATH = "MagicTreasures/Spells";
+    public static final String LOOT_PATH = "MagicTreasures/Loot";
 
     private JewelryAssets() {
     }
@@ -64,6 +66,11 @@ public final class JewelryAssets {
                 .setPath(SPELLS_PATH)
                 .setCodec(Spell.CODEC)
                 .setKeyFunction(Spell::getId)
+                .build());
+        registry.register(HytaleAssetStore.builder(LootTable.class, new DefaultAssetMap<>())
+                .setPath(LOOT_PATH)
+                .setCodec(LootTable.CODEC)
+                .setKeyFunction(LootTable::getId)
                 .build());
     }
 }

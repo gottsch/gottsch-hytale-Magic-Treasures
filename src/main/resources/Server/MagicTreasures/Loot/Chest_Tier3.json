@@ -1,0 +1,49 @@
+{
+  "Source": "Chest",
+  "Match": [
+    ".*_Tier3",
+    "Zone3_.*"
+  ],
+  "Priority": 30,
+  "Chance": 0.45,
+  "MinRolls": 1,
+  "MaxRolls": 2,
+  "Entries": [
+    {
+      "Items": [
+        "MT_Recipe_.*"
+      ],
+      "Weight": 5
+    },
+    {
+      "Items": [
+        "MT_Scroll_.*"
+      ],
+      "Weight": 30,
+      "MinItemLevel": 2,
+      "MaxItemLevel": 4
+    },
+    {
+      "Items": [
+        "MT_(Ring|Necklace|Bracelet)_(Copper|Silver|Gold)_Great"
+      ],
+      "Weight": 20
+    },
+    {
+      "Items": [
+        "MT_(Ring|Necklace|Bracelet)_(Copper|Silver|Gold)_(Ruby|Topaz|Sapphire|Emerald|Diamond|Zephyr|Voidstone)"
+      ],
+      "Weight": 20,
+      "Cuts": [
+        "Fine",
+        "Flawless"
+      ]
+    },
+    {
+      "Items": [
+        "MT_Gem_(Ruby|Topaz|Sapphire|Emerald|Diamond|Zephyr|Voidstone)_(Fine|Flawless)"
+      ],
+      "Weight": 15
+    }
+  ]
+}

@@ -19,6 +19,8 @@ package mod.gottsch.hytale.magictreasures.core.wear;
 
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
+import com.hypixel.hytale.component.Ref;
+import mod.gottsch.hytale.magictreasures.core.element.ElementWear;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.EntityEventSystem;
@@ -50,6 +52,16 @@ public class WornJewelrySystem extends EntityEventSystem<EntityStore, InventoryC
     @Override
     public void handle(int index, @Nonnull ArchetypeChunk<EntityStore> chunk, @Nonnull Store<EntityStore> store,
                        @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InventoryChangeEvent event) {
-        JewelryWear.update(chunk.getReferenceTo(index), commandBuffer, false);
+        Ref<EntityStore> ref = chunk.getReferenceTo(index);
+        JewelryWear.update(ref, commandBuffer, false);
+        // jewelry that was crafted or made before elements gets its roll (Nov 11); writing the
+        // inventory raises this event again, with nothing left to stamp
+        if (ElementWear.needsStamp(ref, commandBuffer)) {
+            store.getExternalData().getWorld().execute(() -> {
+                if (ref.isValid()) {
+                    ElementWear.stamp(ref, ref.getStore());
+                }
+            });
+        }
     }
 }

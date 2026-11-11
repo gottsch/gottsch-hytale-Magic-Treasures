@@ -1,0 +1,15 @@
+{
+  "QualityValue": 4,
+  "ItemTooltipTexture": "UI/ItemQualities/Tooltips/ItemTooltipEpic.png",
+  "ItemTooltipArrowTexture": "UI/ItemQualities/Tooltips/ItemTooltipEpicArrow.png",
+  "SlotTexture": "UI/ItemQualities/Slots/MagicTreasures/MT_Slot_Spell_Epic.png",
+  "BlockSlotTexture": "UI/ItemQualities/Slots/MagicTreasures/MT_Slot_Spell_Epic.png",
+  "SpecialSlotTexture": "UI/ItemQualities/Slots/MagicTreasures/MT_Slot_Spell_Epic.png",
+  "TextColor": "#8b339e",
+  "LocalizationKey": "server.general.qualities.Epic",
+  "VisibleQualityLabel": true,
+  "RenderSpecialSlot": true,
+  "ItemEntityConfig": {
+    "ParticleSystemId": "Drop_Epic"
+  }
+}

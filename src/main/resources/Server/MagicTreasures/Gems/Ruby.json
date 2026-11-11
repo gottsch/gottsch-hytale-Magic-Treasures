@@ -8,5 +8,29 @@
     "Effect": 1.03,
     "Range": 1.015
   },
-  "Quality": "Rare"
+  "Quality": "Rare",
+  "Elements": [
+    {
+      "Element": "Fire",
+      "Kind": "Resistance",
+      "Min": 0.12,
+      "Max": 0.15
+    },
+    {
+      "Element": "Fire",
+      "Kind": "OnHit",
+      "Min": 0.08,
+      "Max": 0.1,
+      "Effect": "Burn"
+    }
+  ],
+  "Weakness": "Ice",
+  "Bonus": [
+    {
+      "Element": "Fire",
+      "Kind": "Damage",
+      "Min": 0.08,
+      "Max": 0.1
+    }
+  ]
 }

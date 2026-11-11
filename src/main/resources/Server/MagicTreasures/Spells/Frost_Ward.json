@@ -1,0 +1,9 @@
+{
+  "Name": "Frost Ward",
+  "Kind": "Ward",
+  "Level": 3,
+  "Cost": 6,
+  "Cooldown": 180,
+  "Duration": 60,
+  "EntityEffect": "MT_Spell_Frost_Ward"
+}

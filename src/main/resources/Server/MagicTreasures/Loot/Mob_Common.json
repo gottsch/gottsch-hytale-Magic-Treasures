@@ -1,0 +1,38 @@
+{
+  "Source": "Mob",
+  "Match": [
+    "Drop_(Skeleton|Zombie|Goblin|Trork|Outlander|Void|Scarak|Spider|Spirit|Golem).*"
+  ],
+  "Priority": 10,
+  "Chance": 0.03,
+  "MinRolls": 1,
+  "MaxRolls": 1,
+  "Entries": [
+    {
+      "Items": [
+        "MT_Scroll_.*"
+      ],
+      "Weight": 40,
+      "MinItemLevel": 1,
+      "MaxItemLevel": 3
+    },
+    {
+      "Items": [
+        "MT_Recipe_.*"
+      ],
+      "Weight": 20
+    },
+    {
+      "Items": [
+        "MT_Gem_(Ruby|Topaz|Sapphire|Emerald|Diamond|Zephyr|Voidstone)_(Flawed|Fine)"
+      ],
+      "Weight": 30
+    },
+    {
+      "Items": [
+        "MT_(Ring|Necklace|Bracelet)_(Copper|Silver)"
+      ],
+      "Weight": 10
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "QualityValue": 1,
+  "ItemTooltipTexture": "UI/ItemQualities/Tooltips/ItemTooltipCommon.png",
+  "ItemTooltipArrowTexture": "UI/ItemQualities/Tooltips/ItemTooltipCommonArrow.png",
+  "SlotTexture": "UI/ItemQualities/Slots/MagicTreasures/MT_Slot_Recipe_Common.png",
+  "BlockSlotTexture": "UI/ItemQualities/Slots/MagicTreasures/MT_Slot_Recipe_Common.png",
+  "SpecialSlotTexture": "UI/ItemQualities/Slots/MagicTreasures/MT_Slot_Recipe_Common.png",
+  "TextColor": "#c9d2dd",
+  "LocalizationKey": "server.general.qualities.Common",
+  "VisibleQualityLabel": true,
+  "RenderSpecialSlot": true,
+  "ItemEntityConfig": {
+    "ParticleSystemId": "Drop_Common"
+  }
+}

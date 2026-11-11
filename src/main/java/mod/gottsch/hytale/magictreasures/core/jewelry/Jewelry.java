@@ -19,6 +19,8 @@ package mod.gottsch.hytale.magictreasures.core.jewelry;
 
 import com.hypixel.hytale.server.core.asset.type.item.config.Item;
 import mod.gottsch.hytale.magictreasures.core.cutting.GemCut;
+import mod.gottsch.hytale.magictreasures.core.element.ElementProperty;
+import mod.gottsch.hytale.magictreasures.core.element.ElementRolling;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.item.config.metadata.ItemDisplayMetadata;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
@@ -43,6 +45,8 @@ public final class Jewelry {
     private static final String LABEL = "#a0a0a0";
     private static final String VALUE = "#ffffff";
     private static final String MANA = "#5aa9ff";
+    private static final String GOOD = "#7ddc7d";
+    private static final String BAD = "#ff7070";
 
     private Jewelry() {
     }
@@ -104,18 +108,35 @@ public final class Jewelry {
      */
     @Nullable
     public static ItemStack create(String itemId) {
+        return create(itemId, null);
+    }
+
+    /**
+     * @param cut the gem's cut for a gemmed piece ({@code GemCut} name), or null for Fine
+     * @return a new stack of the jewelry item with this id, with a fresh, rolled state, or null
+     * if the id isn't a jewelry item
+     */
+    @Nullable
+    public static ItemStack create(String itemId, @Nullable String cut) {
         JewelryDefinition definition = JewelryDefinition.get(itemId);
         if (definition == null) {
             return null;
         }
-        JewelryStats stats = JewelryStats.of(definition);
-        return withState(new ItemStack(itemId, 1), JewelryState.fresh(stats));
+        GemCut gemCut = definition.getGem() == null ? null : GemCut.byName(cut);
+        JewelryStats stats = JewelryStats.of(definition, gemCut);
+        JewelryState state = JewelryState.fresh(stats);
+        if (gemCut != null) {
+            state.setCut(gemCut.getName());
+        }
+        return withState(new ItemStack(itemId, 1), state);
     }
 
     /**
      * @return a copy of the stack carrying this state and a tooltip that shows it
      */
     public static ItemStack withState(ItemStack stack, JewelryState state) {
+        // a piece's elemental properties are rolled the first time its state is written
+        state = ElementRolling.ensureRolled(definition(stack), state);
         JewelryStats stats = JewelryStats.of(definition(stack), GemCut.byName(state.getCut()));
         // keep a name the stack was given (a named piece), and refresh the description
         ItemDisplayMetadata old = stack.getFromMetadataOrNull(ItemDisplayMetadata.KEYED_CODEC);
@@ -149,6 +170,10 @@ public final class Jewelry {
         line(parts, "Spells", state.getSpells().length == 0 ? "none" : spellNames(state.getSpells()), VALUE);
         if (state.getRunes().length > 0) {
             line(parts, "Runes", String.join(", ", state.getRunes()), VALUE);
+        }
+        for (ElementProperty property : ElementRolling.decode(state)) {
+            parts.add(Message.raw(property.describe()).color(property.good() ? GOOD : BAD));
+            parts.add(Message.raw("\n"));
         }
         // drop the trailing newline
         parts.removeLast();

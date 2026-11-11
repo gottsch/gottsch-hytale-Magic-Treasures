@@ -1,0 +1,51 @@
+{
+  "Duration": 60,
+  "OverlapBehavior": "Overwrite",
+  "RemovalBehavior": "Duration",
+  "Debuff": false,
+  "StatusEffectIcon": "Icons/ItemsGenerated/Potion_Signature_Greater.png",
+  "DamageResistance": {
+    "Fire": [
+      {
+        "CalculationType": "Percent",
+        "Amount": 0.25
+      }
+    ],
+    "Ice": [
+      {
+        "CalculationType": "Percent",
+        "Amount": 0.25
+      }
+    ],
+    "Lightning": [
+      {
+        "CalculationType": "Percent",
+        "Amount": 0.25
+      }
+    ],
+    "Earth": [
+      {
+        "CalculationType": "Percent",
+        "Amount": 0.25
+      }
+    ],
+    "Water": [
+      {
+        "CalculationType": "Percent",
+        "Amount": 0.25
+      }
+    ],
+    "Wind": [
+      {
+        "CalculationType": "Percent",
+        "Amount": 0.25
+      }
+    ],
+    "Poison": [
+      {
+        "CalculationType": "Percent",
+        "Amount": 0.25
+      }
+    ]
+  }
+}

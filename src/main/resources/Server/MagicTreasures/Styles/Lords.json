@@ -9,5 +9,7 @@
   "Types": [
     "Ring",
     "Necklace"
-  ]
+  ],
+  "ElementRerolls": 1,
+  "ElementGuaranteed": true
 }

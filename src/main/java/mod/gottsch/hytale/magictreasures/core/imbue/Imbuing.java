@@ -20,6 +20,7 @@ package mod.gottsch.hytale.magictreasures.core.imbue;
 import com.hypixel.hytale.server.core.asset.type.item.config.CoreItemAbility;
 import com.hypixel.hytale.server.core.asset.type.item.config.Item;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
+import mod.gottsch.hytale.magictreasures.core.element.ElementRolling;
 import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryState;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryStats;
@@ -197,6 +198,11 @@ public final class Imbuing {
                 .setMana(Math.min(target.maxMana(), state.getMana() + extraMana))
                 .setRecharges(Math.min(target.maxRecharges(), state.getRecharges() + extraRecharges))
                 .setCut(cut.getName());
+        if (next.isRolled()) {
+            // the metal was rolled already: add the gem's roll for its cut (an unrolled piece
+            // rolls metal and gem together when written)
+            next = ElementRolling.addGem(next, gem, cut);
+        }
         ItemStack result = Jewelry.withState(new ItemStack(targetId, 1), next);
         return new Outcome(Kind.GEM, result, String.format("Set: charge +%.0f, recharges +%d", extraMana, extraRecharges),
                 "Your " + name + " is now a " + Jewelry.displayName(result) + ", with a "

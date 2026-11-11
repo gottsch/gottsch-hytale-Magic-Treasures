@@ -49,6 +49,10 @@ public class JewelryStyle implements JsonAssetWithMap<String, DefaultAssetMap<St
             .append(new KeyedCodec<>("QualitySteps", Codec.INTEGER), (a, v) -> a.qualitySteps = v, a -> a.qualitySteps).add()
             .append(new KeyedCodec<>("Sockets", Codec.INTEGER), (a, v) -> a.sockets = v, a -> a.sockets).add()
             .append(new KeyedCodec<>("Types", Codec.STRING_ARRAY), (a, v) -> a.types = v, a -> a.types).add()
+            // elemental rolls (Nov 11): extra tries for a metal property that missed, and
+            // whether at least one good metal property is guaranteed
+            .append(new KeyedCodec<>("ElementRerolls", Codec.INTEGER), (a, v) -> a.elementRerolls = v, a -> a.elementRerolls).add()
+            .append(new KeyedCodec<>("ElementGuaranteed", Codec.BOOLEAN), (a, v) -> a.elementGuaranteed = v, a -> a.elementGuaranteed).add()
             .build();
 
     private static AssetStore<String, JewelryStyle, DefaultAssetMap<String, JewelryStyle>> assetStore;
@@ -63,8 +67,24 @@ public class JewelryStyle implements JsonAssetWithMap<String, DefaultAssetMap<St
     protected int qualitySteps = 0;
     protected int sockets = 1;
     protected String[] types;
+    protected int elementRerolls = 0;
+    protected boolean elementGuaranteed = false;
 
     protected JewelryStyle() {
+    }
+
+    /**
+     * @return extra tries for each metal elemental property that didn't come up
+     */
+    public int getElementRerolls() {
+        return elementRerolls;
+    }
+
+    /**
+     * @return true if a piece of this style always gets at least one good metal property
+     */
+    public boolean isElementGuaranteed() {
+        return elementGuaranteed;
     }
 
     public static AssetStore<String, JewelryStyle, DefaultAssetMap<String, JewelryStyle>> getAssetStore() {
