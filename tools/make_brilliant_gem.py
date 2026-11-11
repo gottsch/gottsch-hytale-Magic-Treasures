@@ -11,7 +11,10 @@ the facet's real shape:
 - the pavilion: 8 triangles meeting at the culet, below.
 
 Each quad's texture region is 16 x 16 texels; its stretch sets its
-real size, so every facet keeps the same texel density.
+real size, so every facet keeps the same texel density. Facets are
+drawn a little wider and longer than exact (OVERLAP), so neighbours
+overlap: exact edges left see-through specks along the seams in game
+(Nov 10), where the transparent texels step along a sloped edge.
 
 Writes:
 - Common/Items/MagicTreasures/Gems/Brilliant_Gem.blockymodel
@@ -41,6 +44,7 @@ CROWN_H = 3.2      # girdle top to table
 GIRDLE_H = 1.0
 PAVILION_H = 7.0   # girdle bottom to culet
 Q = 16             # texels per quad side
+OVERLAP = (1.02, 1.01)  # width and length, beyond the exact facet
 TEX_SIZE = 64
 
 # texture regions (x, y), each Q x Q
@@ -118,17 +122,18 @@ def brilliant_nodes(scale=1.0, center=(0.0, 0.0, 0.0), id_base=0):
         nodes.append(quad_node(
             n, f"Crown_{k}", (cx + r * c, cy + top + crown_h / 2, cz + r * s),
             facet_rotation(theta, math.pi / 2 - crown_tilt),
-            s_g, crown_len, f"crown_{ab}"))
+            s_g * OVERLAP[0], crown_len * OVERLAP[1], f"crown_{ab}"))
         n += 1
         nodes.append(quad_node(
             n, f"Girdle_{k}", (cx + a_g * c, cy, cz + a_g * s),
-            facet_rotation(theta, 0), s_g, girdle_h, "girdle"))
+            facet_rotation(theta, 0), s_g * OVERLAP[0], girdle_h * OVERLAP[1],
+            "girdle"))
         n += 1
         nodes.append(quad_node(
             n, f"Pavilion_{k}",
             (cx + a_g / 2 * c, cy + bottom - pav_h / 2, cz + a_g / 2 * s),
             facet_rotation(theta, -(math.pi / 2 - pav_tilt)),
-            s_g, pav_len, f"pavilion_{ab}"))
+            s_g * OVERLAP[0], pav_len * OVERLAP[1], f"pavilion_{ab}"))
         n += 1
     # the table: a flat octagon, as a square with its corners cut
     nodes.append(quad_node(n, "Table", (cx, cy + top + crown_h, cz),
@@ -167,7 +172,9 @@ def paint_trapezoid(im, ox, oy, top_frac, pal, light):
         t = (v + 0.5) / Q
         half = (top_frac + (1 - top_frac) * t) * Q / 2
         for u in range(Q):
-            if abs(u + 0.5 - Q / 2) > half:
+            # any texel the facet touches is drawn: centre-only left
+            # see-through steps along the sloped edges
+            if abs(u + 0.5 - Q / 2) > half + 0.5:
                 continue
             col = (lerp(high, mid, t) if light
                    else lerp(mid, dark, t))
@@ -186,7 +193,7 @@ def paint_triangle(im, ox, oy, pal, light):
         half = (1 - t) * Q / 2
         for u in range(Q):
             d = abs(u + 0.5 - Q / 2)
-            if d > half:
+            if d > half + 0.5:
                 continue
             col = lerp(mid if light else low, dark, t)
             # a bright keel line down the middle

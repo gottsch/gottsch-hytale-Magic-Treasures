@@ -146,7 +146,7 @@ def facet(nid, name, outer, inner, regions, key, tone):
     brilliant.REGIONS[key] = region
     # a little wider and taller than exact, so neighbours overlap and
     # no seam shows between the narrow corner facets
-    return brilliant.quad_node(nid, name, centre, rot, lo * 1.06, h * 1.04,
+    return brilliant.quad_node(nid, name, centre, rot, lo * 1.01, h * 1.01,
                                key)
 
 
@@ -225,7 +225,8 @@ def paint_step(im, ox, oy, top_frac, pal, tone):
         half = (top_frac + (1 - top_frac) * t) * Q / 2
         for u in range(Q):
             d = abs(u + 0.5 - Q / 2)
-            if d > half:
+            # any texel the facet touches (see make_brilliant_gem)
+            if d > half + 0.5:
                 continue
             col = lerp(base[0], base[1], t)
             if v == 0 and tone != "girdle":
