@@ -28,6 +28,9 @@ customUI.mtImbuePage.title=Imbue Jewelry
 customUI.mtImbuePage.item=Item
 customUI.mtImbuePage.result=What it does
 customUI.mtGemCutPage.title=Cut Gems
+customUI.mtJewelryCase.title=Jewelry Case
+customUI.mtJewelryCase.worn=Worn: click a piece to take it off
+customUI.mtJewelryCase.carried=Your jewelry: click a piece to put it on
 customUI.mtGemCutPage.item=Raw gem
 customUI.mtGemCutPage.result=Your odds
 

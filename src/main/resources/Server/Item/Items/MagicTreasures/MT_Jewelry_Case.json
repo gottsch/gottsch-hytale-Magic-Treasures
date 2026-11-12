@@ -50,7 +50,10 @@
     "Secondary": {
       "Interactions": [
         {
-          "Type": "OpenItemStackContainer"
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_JewelryCase"
+          }
         }
       ]
     }

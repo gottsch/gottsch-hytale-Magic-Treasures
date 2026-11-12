@@ -75,8 +75,9 @@ public class DrainDamageSystem extends DamageEventSystem {
             float base = reading[0];
             float bonus = reading[1] - reading[0];
             String percent = base > 0 ? String.format(" (+%.0f%%)", bonus / base * 100) : "";
-            attackerPlayer.sendMessage(Message.raw(String.format("Hit: base %.1f, bonus %.1f%s, after armor %.1f",
-                    base, bonus, percent, amount)).color("#ffd27a"));
+            String crit = HitMeter.takeCrit(damage) ? ", CRIT x1.5" : "";
+            attackerPlayer.sendMessage(Message.raw(String.format("Hit: base %.1f, bonus %.1f%s, after armor %.1f%s",
+                    base, bonus, percent, amount, crit)).color("#ffd27a"));
         }
         Store<EntityStore> attackerStore = attacker.getStore();
         attackerStore.getExternalData().getWorld().execute(() -> {

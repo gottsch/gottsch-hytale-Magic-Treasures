@@ -37,9 +37,13 @@ import com.hypixel.hytale.server.core.modules.entity.damage.DamageEventSystem;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageModule;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageSystems;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.ParticleUtil;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import mod.gottsch.hytale.magictreasures.core.spell.HitMeter;
 import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
+import org.joml.Vector3d;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -69,6 +73,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public class ElementDamageSystem extends DamageEventSystem {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static final String CRIT_PARTICLES = "Impact_Critical";
+    /** Above the target's feet: about chest height on a person-sized mob. */
+    private static final double CRIT_HEIGHT = 1.0;
 
     private static final Set<Dependency<EntityStore>> DEPENDENCIES = Set.of(
             new SystemDependency<>(Order.AFTER, DamageSystems.ScaleOutgoingDamageFromEntityEffects.class),
@@ -115,9 +121,12 @@ public class ElementDamageSystem extends DamageEventSystem {
         }
         boolean weaponHit = attackerPlayer != null
                 && (ElementWear.matches("Physical", cause) || ElementWear.matches("Projectile", cause));
-        if (weaponHit && ThreadLocalRandom.current().nextDouble() < ElementWear.critChance(attackerPlayer.getUuid())) {
+        if (weaponHit && (HitMeter.FORCE_CRITS.contains(attackerPlayer.getUuid())
+                || ThreadLocalRandom.current().nextDouble() < ElementWear.critChance(attackerPlayer.getUuid()))) {
             amount *= (float) ElementWear.CRIT_MULTIPLIER;
+            HitMeter.markCrit(damage);
             critParticles(damage);
+            spawnCritParticles(victim, store);
         }
         damage.setAmount(Math.max(0, amount));
 
@@ -181,6 +190,29 @@ public class ElementDamageSystem extends DamageEventSystem {
             // the crit still counts; only its look is lost
             LOGGER.atFine().log("No crit particles: %s", e);
         }
+    }
+
+    /**
+     * Spawns the crit particles at the target's chest as well. The hit's own impact particles
+     * didn't show in game (Nov 11), so this doesn't rely on them. Done on the world thread,
+     * after the damage systems.
+     */
+    private static void spawnCritParticles(Ref<EntityStore> victim, Store<EntityStore> store) {
+        store.getExternalData().getWorld().execute(() -> {
+            if (!victim.isValid()) {
+                return;
+            }
+            TransformComponent transform = store.getComponent(victim, TransformComponent.getComponentType());
+            if (transform == null) {
+                return;
+            }
+            try {
+                ParticleUtil.spawnParticleEffect(CRIT_PARTICLES,
+                        new Vector3d(transform.getPosition()).add(0, CRIT_HEIGHT, 0), store);
+            } catch (RuntimeException e) {
+                LOGGER.atFine().log("No crit particles: %s", e);
+            }
+        });
     }
 
     private static void add(List<EntityEffect> out, String effectId) {

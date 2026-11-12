@@ -87,6 +87,19 @@ public record ItemSlot(ItemContainer container, short slot, short innerSlot) {
     }
 
     /**
+     * Empties the slot.
+     *
+     * @return false if it couldn't be emptied
+     */
+    public boolean clear() {
+        ItemContainer target = inCase() ? caseContainer() : container;
+        if (target == null) {
+            return false;
+        }
+        return target.removeItemStackFromSlot(inCase() ? innerSlot : slot).succeeded();
+    }
+
+    /**
      * @return true if both point at the same section slot (a case and a piece in it count as
      * the same slot)
      */

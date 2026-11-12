@@ -1,0 +1,333 @@
+$C = "../Common.ui";
+
+// The Jewelry Case page (Nov 11), opened by right-clicking the case
+// (JewelryCasePage.java). The top row is what the case holds: two
+// rings, a necklace and a bracelet, each slot with a picture of what
+// goes in it. Below are the pieces the player carries. Moving is by
+// click: each slot is a one-slot ItemGrid with an invisible Button
+// over it, because page item grids don't send clicks or take drags.
+// The button carries the piece's tooltip (it covers the grid's own).
+// Generated once by hand; keep the ids in step with the Java.
+
+@Slot = 74;
+
+@Grid = ItemGridStyle(
+  SlotSize: @Slot,
+  SlotIconSize: 64,
+  SlotSpacing: 2,
+  SlotBackground: "MagicTreasures/CaseSlot_Plain.png"
+);
+
+@Label = (FontSize: 14, TextColor: #c9d2dd);
+@Hint = (FontSize: 13, TextColor: #8f9bab);
+
+$C.@PageOverlay {}
+
+$C.@DecoratedContainer {
+  Anchor: (Width: 730, Height: 440);
+
+  #Title {
+    Group {
+      $C.@Title {
+        @Text = %server.customUI.mtJewelryCase.title;
+      }
+    }
+  }
+
+  #Content {
+    LayoutMode: Top;
+
+    Label {
+      Text: %server.customUI.mtJewelryCase.worn;
+      Style: @Label;
+    }
+    Group {
+      LayoutMode: Left;
+      Anchor: (Height: @Slot + 4);
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #WornGrid0 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Ring.png");
+        }
+        Button #WornButton0 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #WornGrid1 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Ring.png");
+        }
+        Button #WornButton1 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #WornGrid2 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Necklace.png");
+        }
+        Button #WornButton2 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #WornGrid3 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Bracelet.png");
+        }
+        Button #WornButton3 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+    }
+
+    Label {
+      Padding: (Top: 10);
+      Text: %server.customUI.mtJewelryCase.carried;
+      Style: @Label;
+    }
+    Group {
+      LayoutMode: Left;
+      Anchor: (Height: @Slot + 4);
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid0 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton0 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid1 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton1 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid2 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton2 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid3 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton3 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid4 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton4 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid5 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton5 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid6 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton6 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid7 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton7 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid8 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton8 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+    }
+    Group {
+      LayoutMode: Left;
+      Anchor: (Height: @Slot + 4);
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid9 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton9 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid10 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton10 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid11 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton11 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid12 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton12 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid13 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton13 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid14 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton14 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid15 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton15 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid16 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton16 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+      Group {
+        Anchor: (Width: @Slot + 2, Height: @Slot + 2);
+        ItemGrid #CarryGrid17 {
+          Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
+          SlotsPerRow: 1;
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Plain.png");
+        }
+        Button #CarryButton17 {
+          Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
+          TextTooltipStyle: $C.@DefaultTextTooltipStyle;
+        }
+      }
+    }
+
+    Label #Message {
+      Padding: (Top: 6);
+      Text: "";
+      Style: @Hint;
+    }
+  }
+}

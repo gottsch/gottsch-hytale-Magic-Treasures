@@ -37,6 +37,7 @@ import mod.gottsch.hytale.magictreasures.core.loot.ChestLootSystem;
 import mod.gottsch.hytale.magictreasures.core.loot.LootRoller;
 import mod.gottsch.hytale.magictreasures.core.loot.MobLootSystem;
 import mod.gottsch.hytale.magictreasures.core.imbue.ImbuePageSupplier;
+import mod.gottsch.hytale.magictreasures.core.wear.JewelryCasePageSupplier;
 import mod.gottsch.hytale.magictreasures.core.imbue.LearnJewelryRecipesInteraction;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryAssets;
 import mod.gottsch.hytale.magictreasures.core.spell.DrainDamageSystem;
@@ -73,10 +74,11 @@ public class MagicTreasures extends JavaPlugin {
         // passive spells: tick spells once a second, hit spells (Drain) on damage dealt
         this.getEntityStoreRegistry().registerSystem(new SpellTickSystem());
         this.getEntityStoreRegistry().registerSystem(new DrainDamageSystem());
+        // elements (Nov 11): worn resistances, damage bonuses, crits and on-hit statuses.
+        // Registered before HitMeter.After, which orders itself after it.
+        this.getEntityStoreRegistry().registerSystem(new ElementDamageSystem());
         this.getEntityStoreRegistry().registerSystem(new HitMeter.Before());
         this.getEntityStoreRegistry().registerSystem(new HitMeter.After());
-        // elements (Nov 11): worn resistances, damage bonuses and on-hit statuses
-        this.getEntityStoreRegistry().registerSystem(new ElementDamageSystem());
         // loot (Nov 11): added in code to world chests and mob deaths, by our own loot tables,
         // so mods replacing vanilla drop lists can't remove it; jewelry comes out rolled
         LootRoller.setItemFactory((id, count, cut) -> {
@@ -99,6 +101,9 @@ public class MagicTreasures extends JavaPlugin {
                 GemCuttingSkill.ID, GemCuttingSkill.CODEC));
         OpenCustomUIInteraction.registerCustomPageSupplier(this, GemCutPageSupplier.class, GemCutPageSupplier.ID,
                 new GemCutPageSupplier());
+        // the Jewelry Case opens its own page (Nov 11): a picture per slot, moving by click
+        OpenCustomUIInteraction.registerCustomPageSupplier(this, JewelryCasePageSupplier.class,
+                JewelryCasePageSupplier.ID, new JewelryCasePageSupplier());
         this.getEventRegistry().register(PlayerDisconnectEvent.class, event -> {
             JewelryWear.onLeave(event.getPlayerRef().getUuid());
             SpellEngine.onLeave(event.getPlayerRef().getUuid());

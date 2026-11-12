@@ -33,6 +33,7 @@ import com.hypixel.hytale.server.core.modules.entity.damage.DamageSystems;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import mod.gottsch.hytale.magictreasures.core.element.ElementDamageSystem;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -59,10 +60,28 @@ public final class HitMeter {
     /** Players who asked to see their hits ({@code /mt hits}). */
     public static final Set<UUID> SHOW_HITS = ConcurrentHashMap.newKeySet();
 
+    /** Players whose weapon hits always crit ({@code /mt hits --crit=true}), for testing. */
+    public static final Set<UUID> FORCE_CRITS = ConcurrentHashMap.newKeySet();
+
     /** Per measured hit: {base, with bonus}. Weak, so dropped hits don't pile up. */
     private static final Map<Damage, float[]> READINGS = Collections.synchronizedMap(new WeakHashMap<>());
 
+    /** Hits that critted, so the hit line can say so. Weak, like the readings. */
+    private static final Set<Damage> CRITS = Collections.newSetFromMap(Collections.synchronizedMap(new WeakHashMap<>()));
+
     private HitMeter() {
+    }
+
+    /** Notes that this hit critted. */
+    public static void markCrit(Damage damage) {
+        CRITS.add(damage);
+    }
+
+    /**
+     * @return true if this hit critted (and forgets it)
+     */
+    public static boolean takeCrit(Damage damage) {
+        return CRITS.remove(damage);
     }
 
     /**
@@ -128,6 +147,8 @@ public final class HitMeter {
     public static class After extends DamageEventSystem {
         private static final Set<Dependency<EntityStore>> DEPENDENCIES = Set.of(
                 new SystemDependency<>(Order.AFTER, DamageSystems.ScaleOutgoingDamageFromEntityEffects.class),
+                // so the bonus includes element damage and crits
+                new SystemDependency<>(Order.AFTER, ElementDamageSystem.class),
                 new SystemDependency<>(Order.BEFORE, DamageSystems.ArmorDamageReduction.class));
 
         @Nullable

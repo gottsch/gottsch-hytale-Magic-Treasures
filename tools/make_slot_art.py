@@ -6,8 +6,8 @@ tier gets its own quality (Server/Item/Qualities/MT_<Family>_<Tier>.json)
 whose slot is the vanilla tier's slot, tinted:
 
 - Spell scrolls: violet, with a faint rune circle and eight-point star.
-- Recipe scrolls: gold, with a faint plain ring and square, so the two
-  kinds read apart at a glance.
+- Recipe scrolls: crimson, with a faint plain ring and square, so the
+  two kinds read apart at a glance. Not gold: that reads as Legendary.
 
 How the tint works:
 - the body (dark, low-saturation texels) is blended toward the family's
@@ -46,8 +46,9 @@ TIERS = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
 FAMILIES = {
     "Spell": {"dark": (20, 12, 34), "light": (78, 42, 122), "tint": 0.5,
               "sigil": (196, 150, 255), "alpha": 26, "star": True},
-    "Recipe": {"dark": (34, 24, 10), "light": (128, 92, 34), "tint": 0.5,
-               "sigil": (255, 214, 130), "alpha": 26, "star": False},
+    # crimson: no rarity tier uses red (gold would read as Legendary)
+    "Recipe": {"dark": (36, 10, 14), "light": (132, 34, 44), "tint": 0.7,
+               "sigil": (255, 150, 150), "alpha": 30, "star": False},
 }
 
 
