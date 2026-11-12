@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The jewelry a player is wearing: the pieces in their Jewelry Case.
+ * The jewelry a player is wearing: the pieces in their Treasures Case.
  * <p>
  * The rules (port plan, decision 2):
  * <ul>
@@ -67,7 +67,7 @@ public record WornJewelry(@Nullable String caseLocation, List<ItemStack> pieces,
     public static final Map<String, Integer> LIMITS = Map.of("Ring", 2, "Necklace", 1, "Bracelet", 1);
 
     /**
-     * Reads what the player is wearing: the first Jewelry Case found in the utility section,
+     * Reads what the player is wearing: the first Treasures Case found in the utility section,
      * hotbar, storage or backpack, in that order. The case counts from anywhere in the
      * inventory (changed Nov 10, Mark: it no longer needs a quick slot); it is only opened
      * from the hand.
@@ -109,7 +109,7 @@ public record WornJewelry(@Nullable String caseLocation, List<ItemStack> pieces,
     }
 
     /**
-     * @return the stacks inside a Jewelry Case stack, empty slots included as null
+     * @return the stacks inside a Treasures Case stack, empty slots included as null
      */
     public static ItemStack[] contents(ItemStack caseStack) {
         BsonDocument containerDocument = caseStack.getFromMetadataOrNull(ItemStackItemContainer.CONTAINER_CODEC);

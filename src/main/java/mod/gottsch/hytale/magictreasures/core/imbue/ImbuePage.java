@@ -46,7 +46,7 @@ import java.util.List;
  * a list of buttons, one per choice). It opens two ways:
  * <ul>
  *     <li>from a <b>held spell scroll</b>: it lists your jewelry, including the pieces in a
- *     Jewelry Case, and what the scroll would do to each;</li>
+ *     Treasures Case, and what the scroll would do to each;</li>
  *     <li>from a <b>held piece of jewelry</b>: it lists what you carry that works on it
  *     (spell scrolls, runes, gems, crystals and other jewelry) and what each would do.</li>
  * </ul>
@@ -137,7 +137,7 @@ public class ImbuePage extends ChoiceBasePage {
 
     /**
      * @return every piece of jewelry the player carries: in the hotbar, utility, storage and
-     * backpack, and inside any Jewelry Case there
+     * backpack, and inside any Treasures Case there
      */
     static List<ItemSlot> pieces(ComponentAccessor<EntityStore> accessor, Ref<EntityStore> ref) {
         List<ItemSlot> found = new ArrayList<>();

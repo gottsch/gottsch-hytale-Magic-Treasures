@@ -163,7 +163,7 @@ public final class ElementWear {
     }
 
     /**
-     * Rolls every unrolled piece the player carries, in the inventory and in Jewelry Cases.
+     * Rolls every unrolled piece the player carries, in the inventory and in Treasures Cases.
      * Writes the inventory, so call it on the world thread, outside the systems.
      */
     public static void stamp(Ref<EntityStore> ref, ComponentAccessor<EntityStore> accessor) {

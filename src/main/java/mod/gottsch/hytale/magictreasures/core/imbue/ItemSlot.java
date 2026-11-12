@@ -27,13 +27,13 @@ import javax.annotation.Nullable;
 
 /**
  * Where an item is in a player's inventory: a slot of one section, or a slot inside a
- * Jewelry Case that sits in that slot. The stack is read again on every call, because the
+ * Treasures Case that sits in that slot. The stack is read again on every call, because the
  * player can move things while a page is open, and a case's inner container must be fetched
  * again for each write.
  *
  * @param container the inventory section (hotbar, utility, storage or backpack)
  * @param slot      the slot in that section
- * @param innerSlot the slot inside the Jewelry Case at {@code slot}, or -1 for the section's
+ * @param innerSlot the slot inside the Treasures Case at {@code slot}, or -1 for the section's
  *                  own slot
  * @author Mark Gottschling on 11/10/2026
  */

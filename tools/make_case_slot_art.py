@@ -1,9 +1,9 @@
-"""Jewelry Case slot art: a slot background per jewelry type.
+"""Treasures Case slot art: a slot background per jewelry type.
 
 Each image is an empty inventory slot with a faint silhouette of what
 goes in it (ring, necklace or bracelet), drawn in the style of vanilla's
 armor slot icons: a dark navy fill with a lighter outline. They are for
-the Jewelry Case page (MagicTreasures_JewelryCasePage.ui).
+the Treasures Case page (MagicTreasures_JewelryCasePage.ui).
 
 Output, in Common/UI/Custom/Pages/MagicTreasures/ (148 x 148, @2x like
 vanilla's slots):

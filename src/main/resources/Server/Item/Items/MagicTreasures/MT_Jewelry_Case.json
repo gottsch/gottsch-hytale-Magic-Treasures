@@ -3,7 +3,7 @@
     "Name": "server.items.MT_Jewelry_Case.name",
     "Description": "server.items.MT_Jewelry_Case.description"
   },
-  "Icon": "Icons/ItemsGenerated/Utility_Bag_Seed.png",
+  "Icon": "Icons/Items/MagicTreasures/MT_Jewelry_Case.png",
   "IconProperties": {
     "Scale": 0.5,
     "Rotation": [
@@ -22,7 +22,7 @@
     "Items.Armors"
   ],
   "Model": "Items/MagicTreasures/Jewelry_Case.blockymodel",
-  "Texture": "Items/Tools/Feedbag/Seedbag_Texture.png",
+  "Texture": "Items/MagicTreasures/Jewelry_Case.png",
   "PlayerAnimationsId": "Shield",
   "Scale": 1.0,
   "MaxStack": 1,

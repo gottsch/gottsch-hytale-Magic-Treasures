@@ -33,7 +33,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Opens the {@link JewelryCasePage} when the Jewelry Case is right-clicked, from the hand or the
+ * Opens the {@link JewelryCasePage} when the Treasures Case is right-clicked, from the hand or the
  * utility slot: {@code "Page": {"Id": "MT_JewelryCase"}} in the case's item JSON. Like vanilla's
  * {@code OpenItemStackContainer}, it first makes sure the case has its container, then moves any
  * piece sitting in another type's slot to its own.

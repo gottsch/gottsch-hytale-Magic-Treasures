@@ -36,7 +36,7 @@ import mod.gottsch.hytale.magictreasures.core.wear.WornJewelry;
 import javax.annotation.Nonnull;
 
 /**
- * /mt worn: shows where the player's Jewelry Case is and which pieces count as worn, read
+ * /mt worn: shows where the player's Treasures Case is and which pieces count as worn, read
  * fresh from the inventory, and what the plugin last recorded. {@code --refresh=true} also
  * sends the look again.
  *
@@ -56,9 +56,9 @@ public class WornCommand extends AbstractPlayerCommand {
         WornJewelry fresh = WornJewelry.of(ref, store);
         WornJewelry recorded = JewelryWear.worn(playerRef.getUuid());
         if (fresh.caseLocation() == null) {
-            context.sendMessage(Message.raw("No Jewelry Case in your inventory, so nothing is worn."));
+            context.sendMessage(Message.raw("No Treasures Case in your inventory, so nothing is worn."));
         } else {
-            context.sendMessage(Message.raw("Jewelry Case in " + fresh.caseLocation() + ". Worn ("
+            context.sendMessage(Message.raw("Treasures Case in " + fresh.caseLocation() + ". Worn ("
                     + fresh.pieces().size() + "): " + (fresh.pieces().isEmpty() ? "nothing" : String.join(", ", fresh.itemIds()))));
             for (ItemStack piece : fresh.pieces()) {
                 context.sendMessage(Message.raw("  " + piece.getItemId()

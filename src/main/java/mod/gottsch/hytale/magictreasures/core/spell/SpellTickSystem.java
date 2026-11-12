@@ -31,7 +31,7 @@ import javax.annotation.Nonnull;
 /**
  * Once a second, runs each player's tick spells ({@link SpellEngine#tick}). The work is
  * queued to the world thread to run after the systems, because a cast can rewrite the
- * Jewelry Case in the player's inventory.
+ * Treasures Case in the player's inventory.
  *
  * @author Mark Gottschling on 11/09/2026
  */

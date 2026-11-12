@@ -48,7 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The Jewelry Case page (Nov 11), opened by right-clicking the case in place of the vanilla
+ * The Treasures Case page (Nov 11), opened by right-clicking the case in place of the vanilla
  * container window, so each slot can show what goes in it.
  * <ul>
  *     <li>The top row is the case: slots 0 and 1 take rings, slot 2 a necklace and slot 3 a

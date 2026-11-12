@@ -31,7 +31,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import javax.annotation.Nonnull;
 
 /**
- * Re-reads a player's worn jewelry whenever their inventory changes: the Jewelry Case
+ * Re-reads a player's worn jewelry whenever their inventory changes: the Treasures Case
  * moved, added or removed, or a piece put into or taken out of the case (the case's
  * contents are saved back to its stack, which changes the inventory).
  *

@@ -1,4 +1,4 @@
-items.MT_Jewelry_Case.name=Jewelry Case
+items.MT_Jewelry_Case.name=Treasures Case
 items.MT_Jewelry_Case.description=Holds the jewelry you wear: 2 rings, a necklace and a bracelet. It works from anywhere in your inventory. To change jewelry, hold it and right-click.
 items.Test_Ring_Fireball.name=Test Ring of Fireball
 items.Test_Ring_Fireball.description=Feasibility test: right-click to cast the Fireball rune ability.
@@ -28,7 +28,7 @@ customUI.mtImbuePage.title=Imbue Jewelry
 customUI.mtImbuePage.item=Item
 customUI.mtImbuePage.result=What it does
 customUI.mtGemCutPage.title=Cut Gems
-customUI.mtJewelryCase.title=Jewelry Case
+customUI.mtJewelryCase.title=Treasures Case
 customUI.mtJewelryCase.worn=Worn: click a piece to take it off
 customUI.mtJewelryCase.carried=Your jewelry: click a piece to put it on
 customUI.mtGemCutPage.item=Raw gem

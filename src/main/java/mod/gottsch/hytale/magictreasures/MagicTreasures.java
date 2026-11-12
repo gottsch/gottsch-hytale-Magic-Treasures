@@ -101,7 +101,7 @@ public class MagicTreasures extends JavaPlugin {
                 GemCuttingSkill.ID, GemCuttingSkill.CODEC));
         OpenCustomUIInteraction.registerCustomPageSupplier(this, GemCutPageSupplier.class, GemCutPageSupplier.ID,
                 new GemCutPageSupplier());
-        // the Jewelry Case opens its own page (Nov 11): a picture per slot, moving by click
+        // the Treasures Case opens its own page (Nov 11): a picture per slot, moving by click
         OpenCustomUIInteraction.registerCustomPageSupplier(this, JewelryCasePageSupplier.class,
                 JewelryCasePageSupplier.ID, new JewelryCasePageSupplier());
         this.getEventRegistry().register(PlayerDisconnectEvent.class, event -> {

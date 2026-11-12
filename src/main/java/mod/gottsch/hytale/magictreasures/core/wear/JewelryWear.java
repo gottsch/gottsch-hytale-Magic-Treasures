@@ -42,7 +42,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Keeps each player's worn jewelry and their look in step with their Jewelry Case.
+ * Keeps each player's worn jewelry and their look in step with their Treasures Case.
  * <p>
  * {@link #update} reads what is worn ({@link WornJewelry}) and, when the visible pieces
  * changed, sends a new look: the player's whole skin rebuilt ({@link PlayerLook}) plus a
