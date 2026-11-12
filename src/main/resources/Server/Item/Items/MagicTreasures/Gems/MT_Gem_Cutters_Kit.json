@@ -3,7 +3,7 @@
     "Name": "server.items.MT_Gem_Cutters_Kit.name",
     "Description": "server.items.MT_Gem_Cutters_Kit.description"
   },
-  "Icon": "Icons/ItemsGenerated/Tool_Repair_Kit_Iron.png",
+  "Icon": "Icons/Items/MagicTreasures/MT_Gem_Cutters_Kit.png",
   "Quality": "Uncommon",
   "Categories": [
     "Items.Tools"
@@ -14,7 +14,7 @@
     ]
   },
   "Model": "Items/Tools/Repair_Kit/Repair_Kit_Iron.blockymodel",
-  "Texture": "Items/Tools/Repair_Kit/Repair_Kit_Iron_Texture.png",
+  "Texture": "Items/MagicTreasures/Gems/Gem_Cutters_Kit_Texture.png",
   "IconProperties": {
     "Scale": 0.58823,
     "Rotation": [

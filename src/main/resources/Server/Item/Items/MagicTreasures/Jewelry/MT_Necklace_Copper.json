@@ -38,6 +38,10 @@
       {
         "ItemId": "Ingredient_Bar_Copper",
         "Quantity": 4
+      },
+      {
+        "ItemId": "MT_Recipe_Necklace",
+        "Quantity": 1
       }
     ],
     "BenchRequirement": [
@@ -48,7 +52,6 @@
           "Workbench_Tinkering"
         ]
       }
-    ],
-    "KnowledgeRequired": true
+    ]
   }
 }

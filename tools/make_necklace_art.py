@@ -32,6 +32,7 @@ import io
 import json
 import math
 import zipfile
+from pathlib import Path
 
 from PIL import Image
 
@@ -199,6 +200,67 @@ def item_model(style, gem):
             "lod": "auto"}
 
 
+def coil_points(st, bail_y):
+    """The chain bunched up for the icon (Nov 12): from the bail it winds
+    round two loose, overlapping loops above the pendant and back, so
+    the icon is mostly pendant and can be drawn larger, like a necklace
+    tossed on a table."""
+    pts = []
+    loops = [(-1.1, bail_y + 3.0, 2.7, 2.0, 0.0),
+             (1.2, bail_y + 2.5, 2.4, 1.8, 2.2)]
+    steps = 16
+    for cx, cy, rx, ry, phase in loops:
+        for k in range(steps + 1):
+            a = -math.pi / 2 + 2 * math.pi * k / steps
+            wobble = 1 + 0.12 * math.sin(3 * a + phase)
+            pts.append((cx + rx * wobble * math.cos(a),
+                        cy + ry * wobble * math.sin(a),
+                        1.3 * math.sin(2 * a + phase)))
+    pts = [(0.0, bail_y + 0.3, 0.0)] + pts + [(0.0, bail_y + 0.3, 0.0)]
+    return pts
+
+
+def path_nodes(pts, st, nid=2000):
+    """Chain links along a 3D path, every other link turned."""
+    nodes = []
+    t = st["link"]
+    for k in range(len(pts) - 1):
+        (x0, y0, z0), (x1, y1, z1) = pts[k], pts[k + 1]
+        d = (x1 - x0, y1 - y0, z1 - z0)
+        length = math.sqrt(sum(v * v for v in d))
+        if length < 1e-6:
+            continue
+        u = tuple(v / length for v in d)
+        # the rotation taking +x onto the link's direction
+        axis = (0.0, -u[2], u[1])
+        n = math.hypot(axis[1], axis[2])
+        if n < 1e-6:
+            rot = (0, 0, 0, 1) if u[0] > 0 else (0, 0, 1, 0)
+        else:
+            rot = brilliant.quat_axis((0, axis[1] / n, axis[2] / n),
+                                      math.acos(max(-1.0, min(1.0, u[0]))))
+        if k % 2:
+            rot = blocky_render.quat_mul(rot, quat_x(math.pi / 2))
+        region = "prong" if k % 2 == 0 else "edge"
+        nodes.append(box(nid + k, f"Link_{k}",
+                         ((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2), rot,
+                         (2, 1, 2), (length * 1.15, t * 0.6, t * 1.4),
+                         all_faces(region, METAL)))
+    return nodes
+
+
+def icon_model(style, gem):
+    """The item model with its chain bunched up (coil_points): the model
+    held, dropped and drawn as the icon."""
+    model = item_model(style, gem)
+    root = model["nodes"][0]
+    kept = [n for n in root["children"] if not n["name"].startswith("Link_")]
+    bail_y = -STYLES[style]["ry"] - 0.4
+    root["children"] = path_nodes(coil_points(STYLES[style], bail_y),
+                                  STYLES[style]) + kept
+    return model
+
+
 def vanilla_necklace(assets):
     with zipfile.ZipFile(assets) as z:
         model = json.loads(z.read(
@@ -267,9 +329,11 @@ def main():
         return NECK_OUT / (f"Necklace_{style}" + ("_Set" if gem else "")
                            + ".blockymodel")
 
+    # the held and dropped model is the bunched one (icon_model), and the
+    # icons are drawn from it too, one scale for all, fitted to the largest
     for style in STYLES:
-        write(model_path(style, None), item_model(style, None))
-        write(model_path(style, "x"), item_model(style, "x"))
+        write(model_path(style, None), icon_model(style, None))
+        write(model_path(style, "x"), icon_model(style, "x"))
     span = max(blocky_render.fit_span(str(model_path(style, gem)),
                                       str(RINGS_OUT / "Ring_Gold_Ruby.png"),
                                       yaw=30, pitch=15)
@@ -283,7 +347,7 @@ def main():
                 iid = item_id(material, gem, style)
                 icons[iid] = blocky_render.render(
                     str(model_path(style, gem)), str(tex),
-                    str(ICON_OUT / f"{iid}.png"), margin=4, pitch=15, yaw=30,
+                    str(ICON_OUT / f"{iid}.png"), margin=3, pitch=15, yaw=30,
                     span=span)
 
     vmodel, _ = vanilla_necklace(a.assets)

@@ -38,6 +38,10 @@
       {
         "ItemId": "Ingredient_Bar_Gold",
         "Quantity": 4
+      },
+      {
+        "ItemId": "MT_Recipe_Bracelet",
+        "Quantity": 1
       }
     ],
     "BenchRequirement": [
@@ -48,7 +52,6 @@
           "Workbench_Tinkering"
         ]
       }
-    ],
-    "KnowledgeRequired": true
+    ]
   }
 }

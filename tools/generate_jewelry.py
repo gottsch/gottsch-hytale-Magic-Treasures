@@ -11,7 +11,8 @@ For every combination of type, material, gem and style it writes:
   Server/Languages/en-US/server.lang
 
 Plain pieces (Regular style, no gem) get a workbench recipe of 4 of
-the material's ingredient, which a Recipe scroll must teach first.
+the material's ingredient plus that type's Recipe scroll, which the
+craft uses up.
 Every piece opens the imbue page on right-click.
 
 It also writes the scrolls (M5, Nov 10) to
@@ -19,8 +20,8 @@ Server/Item/Items/MagicTreasures/Scrolls/:
 
 - a spell scroll per spell, MT_Scroll_<SpellId>, which opens the
   imbue page;
-- a recipe scroll per jewelry type, MT_Recipe_<Type>, which teaches
-  that type's recipes.
+- a recipe scroll per jewelry type, MT_Recipe_<Type>: an ingredient,
+  one per craft, of that type's recipes.
 
 Ids look like MT_Ring_Gold, MT_Ring_Gold_Ruby_Great or
 MT_Necklace_Silver_Lords; the Regular style is left out.
@@ -75,9 +76,10 @@ MATERIAL_ICONS = {
 # vanilla repair kit.
 IMBUE = {"Type": "OpenCustomUI", "Page": {"Id": "MT_Imbue"}}
 
-# Crafting (decision, Mark Nov 10): learned workbench recipes for
-# plain pieces only. Gems are set by imbuing; Great and Lord's pieces
-# come from loot.
+# Crafting (decision, Mark Nov 10; scroll as ingredient Nov 12): workbench
+# recipes for plain pieces only, each needing one of the type's Recipe
+# scrolls, used up by the craft (nothing is learned). Gems are set by
+# imbuing; Great and Lord's pieces come from loot.
 RECIPE_STYLE = "Regular"
 RECIPE_QUANTITY = 4
 RECIPE_BENCH = {"Id": "Workbench", "Type": "Crafting",
@@ -286,9 +288,10 @@ def main():
                         item["Recipe"] = {
                             "TimeSeconds": 2,
                             "Input": [{"ItemId": ingredient,
-                                       "Quantity": RECIPE_QUANTITY}],
+                                       "Quantity": RECIPE_QUANTITY},
+                                      {"ItemId": f"MT_Recipe_{jewelry_type}",
+                                       "Quantity": 1}],
                             "BenchRequirement": [RECIPE_BENCH],
-                            "KnowledgeRequired": True,
                         }
                     write_json(ITEMS_OUT / f"{iid}.json", item)
                     definition = {"Type": jewelry_type,
@@ -348,10 +351,6 @@ def write_scrolls(spells, types, lang):
         count += 1
     for jewelry_type in types:
         rid = f"MT_Recipe_{jewelry_type}"
-        learn = {"Type": "MT_LearnJewelryRecipes",
-                 "JewelryType": jewelry_type,
-                 "Next": {"Type": "ModifyInventory",
-                          "AdjustHeldItemQuantity": -1}}
         write_json(SCROLLS_OUT / f"{rid}.json", {
             "TranslationProperties": {
                 "Name": f"server.items.{rid}.name",
@@ -365,17 +364,12 @@ def write_scrolls(spells, types, lang):
             "Texture": RECIPE_TEXTURE,
             "PlayerAnimationsId": "Item",
             "MaxStack": 10,
-            "Consumable": True,
-            "Interactions": {
-                "Primary": {"Interactions": [learn]},
-                "Secondary": {"Interactions": [learn]},
-            },
         })
         lang.append(f"items.{rid}.name={jewelry_type} Recipe")
-        lang.append(f"items.{rid}.description=Right-click to learn "
-                    f"to craft {jewelry_type.lower()}s from "
-                    f"{RECIPE_QUANTITY} copper, silver or gold bars "
-                    "at a workbench. Used up once learned.")
+        lang.append(f"items.{rid}.description=Needed to craft a "
+                    f"{jewelry_type.lower()} at a workbench, with "
+                    f"{RECIPE_QUANTITY} copper, silver or gold bars. "
+                    "Each craft uses up one.")
         count += 1
     return count
 
@@ -474,12 +468,12 @@ def write_gems(gems, lang):
             "Description": f"server.items.{KIT_ID}.description",
         },
         # the vanilla iron repair kit's art until the kit has its own
-        "Icon": "Icons/ItemsGenerated/Tool_Repair_Kit_Iron.png",
+        "Icon": "Icons/Items/MagicTreasures/MT_Gem_Cutters_Kit.png",
         "Quality": "Uncommon",
         "Categories": ["Items.Tools"],
         "Tags": {"Type": ["Tool"]},
         "Model": "Items/Tools/Repair_Kit/Repair_Kit_Iron.blockymodel",
-        "Texture": "Items/Tools/Repair_Kit/Repair_Kit_Iron_Texture.png",
+        "Texture": "Items/MagicTreasures/Gems/Gem_Cutters_Kit_Texture.png",
         "IconProperties": {"Scale": 0.58823, "Rotation": [341, 141, 8],
                            "Translation": [1, -13.5]},
         "PlayerAnimationsId": "Item",

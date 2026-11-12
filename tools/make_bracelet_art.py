@@ -69,6 +69,10 @@ WORN_GAP = 0.3
 WORN_SIDE = "L"
 
 
+# bracelet icons are drawn this much smaller than fitted (see main)
+ICON_SHRINK = 1.4
+
+
 def band_nodes(style, nid=1000, radius_add=0.0, width=None, prefix="Band",
                region="outer"):
     # make_ring_art builds bands from its own STYLES table
@@ -216,8 +220,10 @@ def main():
             write(WORN_OUT / (f"Bracelet_Worn_{style}"
                               + ("_Set" if gem else "") + ".blockymodel"),
                   worn_model(a.assets, style, gem))
-    # one scale for every bracelet icon, fitted to the largest
-    span = max(blocky_render.fit_span(str(model_path(style, gem)),
+    # one scale for every bracelet icon, fitted to the largest, then
+    # widened by ICON_SHRINK so a bracelet doesn't fill its slot while a
+    # ring fills about half of one (Nov 12)
+    span = ICON_SHRINK * max(blocky_render.fit_span(str(model_path(style, gem)),
                                       str(RINGS_OUT / "Ring_Gold_Ruby.png"),
                                       yaw=35, pitch=24)
                for style in STYLES for gem in (None, "x"))

@@ -16,32 +16,5 @@
   "Model": "Items/Consumables/Recipes/Recipe.blockymodel",
   "Texture": "Items/Consumables/Recipes/Recipe_Texture.png",
   "PlayerAnimationsId": "Item",
-  "MaxStack": 10,
-  "Consumable": true,
-  "Interactions": {
-    "Primary": {
-      "Interactions": [
-        {
-          "Type": "MT_LearnJewelryRecipes",
-          "JewelryType": "Ring",
-          "Next": {
-            "Type": "ModifyInventory",
-            "AdjustHeldItemQuantity": -1
-          }
-        }
-      ]
-    },
-    "Secondary": {
-      "Interactions": [
-        {
-          "Type": "MT_LearnJewelryRecipes",
-          "JewelryType": "Ring",
-          "Next": {
-            "Type": "ModifyInventory",
-            "AdjustHeldItemQuantity": -1
-          }
-        }
-      ]
-    }
-  }
+  "MaxStack": 10
 }
