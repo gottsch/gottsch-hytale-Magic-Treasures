@@ -428,7 +428,8 @@ def element_name(element):
 
 def describe_rolls(rolls):
     """A gem's element rolls in a few words, for example "Wind
-    resistance and damage" or "Fire resistance, and Burn on hit"."""
+    resistance and Wind damage added to hits" or "Fire resistance and
+    Burn on hit"."""
     groups, extras, penalty = {}, [], ""
     for r in rolls:
         kind, element = r["Kind"], r.get("Element")
@@ -438,6 +439,9 @@ def describe_rolls(rolls):
             extras.append(f"{r.get('Effect', element)} on hit")
         elif kind == "Resistance" and r["Max"] < 0:
             penalty = ", but less resistance to every element"
+        elif kind == "Damage":
+            # a share of each hit added as this element (Nov 12)
+            extras.insert(0, f"{element_name(element)} damage added to hits")
         else:
             groups.setdefault(element, []).append(kind.lower())
     parts = [f"{element_name(e)} {' and '.join(k)}"

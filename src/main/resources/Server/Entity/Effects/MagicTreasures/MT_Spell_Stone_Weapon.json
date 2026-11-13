@@ -1,0 +1,7 @@
+{
+  "Duration": 30,
+  "OverlapBehavior": "Overwrite",
+  "RemovalBehavior": "Duration",
+  "Debuff": false,
+  "StatusEffectIcon": "Icons/ItemsGenerated/Rock_Stone.png"
+}

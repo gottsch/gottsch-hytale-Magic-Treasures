@@ -8,43 +8,13 @@
     "Fire": [
       {
         "CalculationType": "Percent",
-        "Amount": 0.25
-      }
-    ],
-    "Ice": [
-      {
-        "CalculationType": "Percent",
-        "Amount": 0.25
-      }
-    ],
-    "Lightning": [
-      {
-        "CalculationType": "Percent",
-        "Amount": 0.25
-      }
-    ],
-    "Earth": [
-      {
-        "CalculationType": "Percent",
-        "Amount": 0.25
-      }
-    ],
-    "Water": [
-      {
-        "CalculationType": "Percent",
-        "Amount": 0.25
-      }
-    ],
-    "Wind": [
-      {
-        "CalculationType": "Percent",
-        "Amount": 0.25
+        "Amount": 0.4
       }
     ],
     "Poison": [
       {
         "CalculationType": "Percent",
-        "Amount": 0.25
+        "Amount": 0.4
       }
     ]
   }

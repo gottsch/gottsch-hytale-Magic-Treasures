@@ -3,13 +3,5 @@
   "OverlapBehavior": "Overwrite",
   "RemovalBehavior": "Duration",
   "Debuff": false,
-  "StatusEffectIcon": "Icons/ItemsGenerated/Potion_Poison.png",
-  "OutgoingDamage": {
-    "Poison": [
-      {
-        "CalculationType": "Percent",
-        "Amount": 0.25
-      }
-    ]
-  }
+  "StatusEffectIcon": "Icons/ItemsGenerated/Potion_Poison.png"
 }

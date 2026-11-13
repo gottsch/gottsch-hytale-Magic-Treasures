@@ -43,6 +43,8 @@ import com.hypixel.hytale.server.core.universe.world.ParticleUtil;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import mod.gottsch.hytale.magictreasures.core.spell.HitMeter;
 import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
+import mod.gottsch.hytale.magictreasures.core.spell.SpellEngine;
+import mod.gottsch.hytale.magictreasures.core.spell.SpellKind;
 import org.joml.Vector3d;
 
 import javax.annotation.Nonnull;
@@ -50,6 +52,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -59,14 +62,20 @@ import java.util.concurrent.ThreadLocalRandom;
  * <ul>
  *     <li>a player hit by elemental damage takes less (or, with a weakness, more) by their
  *     worn resistance to it, held within {@link ElementWear#RESISTANCE_CAP};</li>
- *     <li>a player dealing elemental damage deals more by their worn damage bonus for it;</li>
- *     <li>a player's melee or ranged hit may give the target a status: each worn on-hit
- *     property tries its chance, and an active weapon spell (Flame Weapon) always does;</li>
- *     <li>a player's melee or ranged hit may crit, by their worn crit chance: x1.5 damage,
- *     with vanilla's {@code Impact_Critical} particles.</li>
+ *     <li>a player's weapon hit may crit, by their worn crit chance: x1.5 damage, with
+ *     vanilla's {@code Impact_Critical} particles;</li>
+ *     <li>a player's weapon hit may give the target a status: each worn on-hit property tries
+ *     its chance, and an active weapon spell (Flame Weapon) its {@code OnHitChance};</li>
+ *     <li>a player's weapon hit adds element bonus hits (Nov 12): each worn element damage
+ *     ("+10% as Fire damage") and active weapon spell (25% as Fire) deals that share of the
+ *     hit, after crits, as a separate hit of its element ({@link ElementBonusSource}), so the
+ *     target's resistances and weaknesses apply to it. They were multipliers on damage already
+ *     of that element, and almost no weapon deals elemental damage.</li>
  * </ul>
- * Timed resistance and damage buffs (the Ward and Weapon spells) are vanilla entity effects,
- * which vanilla applies itself.
+ * A weapon hit is a player's direct hit, melee or ranged, of any damage type (the Flame
+ * Longsword's swings are Fire): not a status tick ({@code EntityEffectSource}) and not a bonus
+ * hit. Timed resistance buffs (the Ward spells) are vanilla entity effects, which vanilla applies
+ * itself.
  *
  * @author Mark Gottschling on 11/11/2026
  */
@@ -75,6 +84,8 @@ public class ElementDamageSystem extends DamageEventSystem {
     private static final String CRIT_PARTICLES = "Impact_Critical";
     /** Above the target's feet: about chest height on a person-sized mob. */
     private static final double CRIT_HEIGHT = 1.0;
+    /** The smallest element bonus hit dealt; less isn't worth a hit. */
+    private static final float MIN_BONUS = 0.1f;
 
     private static final Set<Dependency<EntityStore>> DEPENDENCIES = Set.of(
             new SystemDependency<>(Order.AFTER, DamageSystems.ScaleOutgoingDamageFromEntityEffects.class),
@@ -107,23 +118,30 @@ public class ElementDamageSystem extends DamageEventSystem {
         }
         Ref<EntityStore> victim = chunk.getReferenceTo(index);
         float amount = damage.getAmount();
+        // the hit before the victim's resistances: what bonus hits are a share of
+        float dealt = amount;
 
         PlayerRef victimPlayer = commandBuffer.getComponent(victim, PlayerRef.getComponentType());
         if (victimPlayer != null && !cause.doesBypassResistances()) {
             amount *= (float) (1 - ElementWear.resistance(victimPlayer.getUuid(), cause));
         }
+        if (victimPlayer != null) {
+            // a Ward of this element starts now (Nov 12), after the damage systems
+            store.getExternalData().getWorld().execute(() -> {
+                if (victim.isValid()) {
+                    SpellEngine.onHurt(victim, store, cause);
+                }
+            });
+        }
 
         Ref<EntityStore> attacker = damage.getSource() instanceof Damage.EntitySource source ? source.getRef() : null;
         PlayerRef attackerPlayer = attacker == null || !attacker.isValid() || attacker.getIndex() == victim.getIndex()
                 ? null : commandBuffer.getComponent(attacker, PlayerRef.getComponentType());
-        if (attackerPlayer != null) {
-            amount *= (float) (1 + ElementWear.damage(attackerPlayer.getUuid(), cause));
-        }
-        boolean weaponHit = attackerPlayer != null
-                && (ElementWear.matches("Physical", cause) || ElementWear.matches("Projectile", cause));
+        boolean weaponHit = attackerPlayer != null && isWeaponHit(damage);
         if (weaponHit && (HitMeter.FORCE_CRITS.contains(attackerPlayer.getUuid())
                 || ThreadLocalRandom.current().nextDouble() < ElementWear.critChance(attackerPlayer.getUuid()))) {
             amount *= (float) ElementWear.CRIT_MULTIPLIER;
+            dealt *= (float) ElementWear.CRIT_MULTIPLIER;
             HitMeter.markCrit(damage);
             critParticles(damage);
             spawnCritParticles(victim, store);
@@ -131,20 +149,59 @@ public class ElementDamageSystem extends DamageEventSystem {
         damage.setAmount(Math.max(0, amount));
 
         if (weaponHit) {
-            List<EntityEffect> statuses = onHit(attackerPlayer, attacker, commandBuffer);
-            if (!statuses.isEmpty()) {
-                // effects change the target's components: do it after the systems
-                store.getExternalData().getWorld().execute(() -> give(victim, statuses));
+            List<Spell> weaponSpells = activeWeaponSpells(attacker, commandBuffer);
+            List<EntityEffect> statuses = onHit(attackerPlayer, weaponSpells);
+            Map<String, Double> shares = bonusShares(attackerPlayer, weaponSpells);
+            float base = dealt;
+            if (!statuses.isEmpty() || !shares.isEmpty()) {
+                // these change the target's components: do it after the systems
+                store.getExternalData().getWorld().execute(() -> {
+                    give(victim, statuses);
+                    dealBonus(victim, attacker, shares, base);
+                });
             }
         }
     }
 
     /**
-     * @return the statuses this hit gives: worn on-hit properties that win their roll, and
-     * every active weapon spell's
+     * @return true if this is a direct melee or ranged hit by an entity: not a status tick
+     * (Burn, Poison) and not an element bonus hit
      */
-    private static List<EntityEffect> onHit(PlayerRef player, Ref<EntityStore> attacker,
-                                            CommandBuffer<EntityStore> commandBuffer) {
+    private static boolean isWeaponHit(Damage damage) {
+        Damage.Source source = damage.getSource();
+        return source instanceof Damage.EntitySource
+                && !(source instanceof Damage.EntityEffectSource)
+                && !(source instanceof ElementBonusSource);
+    }
+
+    /**
+     * @return the weapon spells whose effect runs on the attacker now
+     */
+    private static List<Spell> activeWeaponSpells(Ref<EntityStore> attacker,
+                                                  CommandBuffer<EntityStore> commandBuffer) {
+        List<Spell> out = new ArrayList<>();
+        EffectControllerComponent effects = commandBuffer.getComponent(attacker,
+                EffectControllerComponent.getComponentType());
+        if (effects == null) {
+            return out;
+        }
+        for (Spell spell : Spell.getAssetMap().getAssetMap().values()) {
+            if (spell.getKind() != SpellKind.WEAPON || spell.getEntityEffect() == null) {
+                continue;
+            }
+            EntityEffect active = EntityEffect.getAssetMap().getAsset(spell.getEntityEffect());
+            if (active != null && effects.hasEffect(active)) {
+                out.add(spell);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * @return the statuses this hit gives: worn on-hit properties that win their roll, and
+     * every active weapon spell's that wins its {@code OnHitChance}
+     */
+    private static List<EntityEffect> onHit(PlayerRef player, List<Spell> weaponSpells) {
         List<EntityEffect> out = new ArrayList<>();
         ThreadLocalRandom random = ThreadLocalRandom.current();
         for (ElementProperty property : ElementWear.properties(player.getUuid())) {
@@ -153,19 +210,47 @@ public class ElementDamageSystem extends DamageEventSystem {
                 add(out, property.effect());
             }
         }
-        EffectControllerComponent effects = commandBuffer.getComponent(attacker, EffectControllerComponent.getComponentType());
-        if (effects != null) {
-            for (Spell spell : Spell.getAssetMap().getAssetMap().values()) {
-                if (spell.getOnHit() == null || spell.getEntityEffect() == null) {
-                    continue;
-                }
-                EntityEffect active = EntityEffect.getAssetMap().getAsset(spell.getEntityEffect());
-                if (active != null && effects.hasEffect(active)) {
-                    add(out, spell.getOnHit());
-                }
+        for (Spell spell : weaponSpells) {
+            if (spell.getOnHit() != null && random.nextDouble() < spell.getOnHitChance()) {
+                add(out, spell.getOnHit());
             }
         }
         return out;
+    }
+
+    /**
+     * @return element id to the share of this hit to add as that element's damage: worn element
+     * damage plus active weapon spells' {@code Effect}
+     */
+    private static Map<String, Double> bonusShares(PlayerRef player, List<Spell> weaponSpells) {
+        Map<String, Double> out = ElementWear.damageShares(player.getUuid());
+        for (Spell spell : weaponSpells) {
+            if (spell.getElement() != null && spell.getEffect() > 0) {
+                out.merge(spell.getElement(), spell.getEffect(), Double::sum);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Deals each element's share of the hit as its own hit, from the attacker, after the hit's
+     * systems. A share too small to matter (under {@link #MIN_BONUS}) is skipped.
+     */
+    private static void dealBonus(Ref<EntityStore> victim, Ref<EntityStore> attacker,
+                                  Map<String, Double> shares, float base) {
+        if (shares.isEmpty() || !victim.isValid() || !attacker.isValid()) {
+            return;
+        }
+        Store<EntityStore> store = victim.getStore();
+        for (Map.Entry<String, Double> share : shares.entrySet()) {
+            DamageCause cause = DamageCause.getAssetMap().getAsset(share.getKey());
+            float extra = (float) (base * share.getValue());
+            if (cause == null || extra < MIN_BONUS) {
+                continue;
+            }
+            DamageSystems.executeDamage(victim, store,
+                    new Damage(new ElementBonusSource(attacker), cause, extra));
+        }
     }
 
     /**

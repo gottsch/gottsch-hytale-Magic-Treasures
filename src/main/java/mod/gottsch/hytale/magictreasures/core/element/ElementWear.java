@@ -32,6 +32,7 @@ import mod.gottsch.hytale.magictreasures.core.wear.WornJewelry;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -99,10 +100,19 @@ public final class ElementWear {
     }
 
     /**
-     * @return the player's extra share of this damage when they deal it
+     * @return the player's worn element damage, element id to the share of each weapon hit it
+     * adds as that element's damage ("+10% as Fire damage" is {@code Fire -> 0.10}); only
+     * positive shares (Nov 12: these were multipliers on damage already of that element, and
+     * almost no weapon deals elemental damage)
      */
-    public static double damage(UUID uuid, DamageCause cause) {
-        return Math.max(-0.9, sum(uuid, ElementProperty.Kind.DAMAGE, cause));
+    public static Map<String, Double> damageShares(UUID uuid) {
+        Map<String, Double> out = new LinkedHashMap<>();
+        for (ElementProperty property : properties(uuid)) {
+            if (property.kind() == ElementProperty.Kind.DAMAGE && property.value() > 0) {
+                out.merge(property.element(), property.value(), Double::sum);
+            }
+        }
+        return out;
     }
 
     /**

@@ -1,0 +1,10 @@
+{
+  "Name": "Stone Ward",
+  "Kind": "Ward",
+  "Level": 3,
+  "Cost": 6,
+  "Cooldown": 180,
+  "Duration": 60,
+  "Element": "Earth",
+  "EntityEffect": "MT_Spell_Stone_Ward"
+}

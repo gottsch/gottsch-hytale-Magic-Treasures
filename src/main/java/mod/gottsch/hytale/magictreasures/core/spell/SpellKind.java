@@ -23,10 +23,14 @@ import javax.annotation.Nullable;
  * The kinds of passive spell, each with the code that runs it ({@link SpellEngine}) and when
  * it is tried:
  * <ul>
- *     <li>{@link Trigger#TICK}: once a second while worn. Healing heals when hurt; Speed,
- *     Strength and Cat Sight start a buff when it isn't already running.</li>
- *     <li>{@link Trigger#HIT}: when the wearer damages something. Drain heals the wearer by
- *     part of the damage.</li>
+ *     <li>{@link Trigger#TICK}: once a second while worn. Healing heals when hurt; Speed
+ *     and Cat Sight start a buff when it isn't already running.</li>
+ *     <li>{@link Trigger#HIT}: when the wearer hits something directly (not with a status
+ *     tick). Drain heals the wearer by part of the damage; Strength and the Weapon spells start
+ *     their buff, so it runs during the fight (Nov 12: as tick spells they cast whenever ready,
+ *     in a fight or not, and emptied the piece's mana).</li>
+ *     <li>{@link Trigger#HURT}: when the wearer takes damage. A Ward starts if the damage is
+ *     one of its {@code Element}s; the first hit isn't warded.</li>
  * </ul>
  * A spell asset names its kind in {@code Kind}, for example {@code "Cat_Sight"}.
  *
@@ -35,16 +39,16 @@ import javax.annotation.Nullable;
 public enum SpellKind {
     HEALING(Trigger.TICK),
     SPEED(Trigger.TICK),
-    STRENGTH(Trigger.TICK),
+    STRENGTH(Trigger.HIT),
     CAT_SIGHT(Trigger.TICK),
     /** A buff of elemental resistance (Fire Ward, ...), Nov 11. */
-    WARD(Trigger.TICK),
+    WARD(Trigger.HURT),
     /** A buff of elemental damage that also gives a status on every hit (Flame Weapon, ...). */
-    WEAPON(Trigger.TICK),
+    WEAPON(Trigger.HIT),
     DRAIN(Trigger.HIT);
 
     public enum Trigger {
-        TICK, HIT
+        TICK, HIT, HURT
     }
 
     private final Trigger trigger;

@@ -1,0 +1,12 @@
+{
+  "Name": "Frost Weapon",
+  "Kind": "Weapon",
+  "Level": 4,
+  "Cost": 8,
+  "Cooldown": 120,
+  "Duration": 30,
+  "Effect": 0.25,
+  "Element": "Ice",
+  "EntityEffect": "MT_Spell_Frost_Weapon",
+  "OnHit": "Slow"
+}

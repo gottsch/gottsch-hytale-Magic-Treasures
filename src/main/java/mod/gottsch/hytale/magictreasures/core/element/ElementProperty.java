@@ -98,14 +98,15 @@ public record ElementProperty(Kind kind, String element, double value, @Nullable
 
     /**
      * @return the tooltip line, for example {@code Fire resistance +12%},
-     * {@code Ice resistance -8%}, {@code Fire damage +10%} or {@code Burn on hit 10%}
+     * {@code Ice resistance -8%}, {@code +10% as Fire damage} (each weapon hit adds 10% of
+     * itself as a Fire hit, Nov 12) or {@code Burn on hit 10%}
      */
     public String describe() {
         String name = "Elemental".equalsIgnoreCase(element) ? "Elemental" : element;
         long percent = Math.round(value * 100);
         return switch (kind) {
             case RESISTANCE -> name + " resistance " + (percent >= 0 ? "+" : "") + percent + "%";
-            case DAMAGE -> name + " damage " + (percent >= 0 ? "+" : "") + percent + "%";
+            case DAMAGE -> (percent >= 0 ? "+" : "") + percent + "% as " + name + " damage";
             case ON_HIT -> (effect == null ? name : effect.replace('_', ' ')) + " on hit " + percent + "%";
             case CRIT -> "Critical hit chance " + (percent >= 0 ? "+" : "") + percent + "%";
         };

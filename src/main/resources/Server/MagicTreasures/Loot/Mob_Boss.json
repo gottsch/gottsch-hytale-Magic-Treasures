@@ -10,7 +10,7 @@
   "Entries": [
     {
       "Items": [
-        "MT_Scroll_.*"
+        "MT_Scroll_(?!(Frost|Storm|Stone)_Ward$).*"
       ],
       "Weight": 30,
       "MinItemLevel": 3,

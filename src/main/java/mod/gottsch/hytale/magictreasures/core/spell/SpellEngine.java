@@ -27,11 +27,13 @@ import com.hypixel.hytale.server.core.asset.type.entityeffect.config.OverlapBeha
 import com.hypixel.hytale.server.core.entity.effect.EffectControllerComponent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.entity.component.DynamicLight;
+import com.hypixel.hytale.server.core.modules.entity.damage.DamageCause;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import mod.gottsch.hytale.magictreasures.core.element.ElementWear;
 import mod.gottsch.hytale.magictreasures.core.hud.JewelryHud;
 import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryState;
@@ -42,7 +44,9 @@ import mod.gottsch.hytale.magictreasures.core.wear.WornJewelry;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -54,10 +58,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * ({@link DrainDamageSystem}) and tries every {@link SpellKind.Trigger#HIT} spell. Both run on
  * the player's world thread, outside the ECS systems, so they can change the inventory.
  * <p>
+ * {@link #onHurt} runs when the player takes damage and tries every
+ * {@link SpellKind.Trigger#HURT} spell (the Wards) whose element it is.
+ * <p>
  * A spell casts when the piece's cooldown for it is over and the piece has the mana. A cast
  * that does something (a heal, a buff started) spends the mana and one use, and starts the
  * cooldown, all scaled by the piece's factors. A piece with no uses left breaks, as in 2.0.
- * Mana is the piece's own well (decision 3) and doesn't refill over time.
+ * Mana is the piece's own well (decision 3). A worn piece refills it, empty to full in
+ * {@link #REFILL_SECONDS} (Nov 12: with no refill a plain copper piece had 3 casts in it and
+ * its 75 uses never mattered); Recharges fill it at once.
  *
  * @author Mark Gottschling on 11/09/2026
  */
@@ -73,6 +82,16 @@ public final class SpellEngine {
     /** Players lit by Cat Sight, and the effect that keeps the light on. */
     private static final Map<UUID, String> LIT = new ConcurrentHashMap<>();
 
+    /** Seconds a worn piece takes to refill its mana from empty to full (Nov 12). */
+    public static final double REFILL_SECONDS = 600;
+
+    /**
+     * Per player: refilled mana not yet written to each worn piece, keyed {@code slot:itemId}.
+     * A piece is written only when a whole point is owed, so the inventory doesn't change every
+     * second.
+     */
+    private static final Map<UUID, Map<String, Double>> REFILL = new ConcurrentHashMap<>();
+
     private SpellEngine() {
     }
 
@@ -87,9 +106,15 @@ public final class SpellEngine {
         UUID uuid = playerRef.getUuid();
         endCatSight(uuid, ref, store);
         WornJewelry worn = WornJewelry.of(ref, store);
-        cast(SpellKind.Trigger.TICK, uuid, ref, store, worn, 0);
+        cast(SpellKind.Trigger.TICK, uuid, ref, store, worn, 0, null);
+        if (worn.pieces().isEmpty()) {
+            REFILL.remove(uuid);
+            JewelryHud.refresh(playerRef, ref, store, worn);
+            return;
+        }
         // re-read: a cast may have spent mana or broken a piece
-        JewelryHud.refresh(playerRef, ref, store, worn.pieces().isEmpty() ? worn : WornJewelry.of(ref, store));
+        refill(uuid, WornJewelry.of(ref, store));
+        JewelryHud.refresh(playerRef, ref, store, WornJewelry.of(ref, store));
     }
 
     /**
@@ -103,7 +128,50 @@ public final class SpellEngine {
             return;
         }
         WornJewelry worn = WornJewelry.of(ref, store);
-        cast(SpellKind.Trigger.HIT, playerRef.getUuid(), ref, store, worn, damage);
+        cast(SpellKind.Trigger.HIT, playerRef.getUuid(), ref, store, worn, damage, null);
+    }
+
+    /**
+     * Tries every hurt spell (the Wards) on the player's worn jewelry that wards this damage.
+     */
+    public static void onHurt(Ref<EntityStore> ref, Store<EntityStore> store, DamageCause cause) {
+        PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
+        if (playerRef == null) {
+            return;
+        }
+        WornJewelry worn = WornJewelry.of(ref, store);
+        if (!worn.pieces().isEmpty()) {
+            cast(SpellKind.Trigger.HURT, playerRef.getUuid(), ref, store, worn, 0, cause);
+        }
+    }
+
+    /**
+     * Refills the mana of each worn piece that isn't full: its max mana over
+     * {@link #REFILL_SECONDS}, once a second.
+     */
+    private static void refill(UUID uuid, WornJewelry worn) {
+        Map<String, Double> owed = REFILL.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>());
+        Set<String> kept = new HashSet<>();
+        for (int i = 0; i < worn.pieces().size(); i++) {
+            ItemStack piece = worn.pieces().get(i);
+            short slot = worn.pieceSlots().get(i);
+            JewelryStats stats = Jewelry.stats(piece);
+            JewelryState state = Jewelry.state(piece);
+            if (!stats.known() || state == null || stats.maxMana() <= 0 || state.getMana() >= stats.maxMana()) {
+                continue;
+            }
+            String key = slot + ":" + piece.getItemId();
+            kept.add(key);
+            double total = owed.getOrDefault(key, 0.0)
+                    + stats.maxMana() / REFILL_SECONDS * SpellTickSystem.INTERVAL_SECONDS;
+            double whole = Math.floor(total);
+            owed.put(key, total - whole);
+            if (whole > 0) {
+                double mana = Math.min(stats.maxMana(), state.getMana() + whole);
+                worn.replace(slot, Jewelry.withState(piece, state.copy().setMana(mana)));
+            }
+        }
+        owed.keySet().retainAll(kept);
     }
 
     /**
@@ -144,10 +212,15 @@ public final class SpellEngine {
     public static void onLeave(UUID uuid) {
         COOLDOWNS.remove(uuid);
         LIT.remove(uuid);
+        REFILL.remove(uuid);
     }
 
+    /**
+     * @param cause for a {@link SpellKind.Trigger#HURT} cast, the damage taken: only spells
+     *              warding it are tried
+     */
     private static void cast(SpellKind.Trigger trigger, UUID uuid, Ref<EntityStore> ref, Store<EntityStore> store,
-                             WornJewelry worn, float damage) {
+                             WornJewelry worn, float damage, @Nullable DamageCause cause) {
         long now = System.currentTimeMillis();
         Map<String, Long> cooldowns = COOLDOWNS.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>());
         for (int i = 0; i < worn.pieces().size(); i++) {
@@ -164,6 +237,9 @@ public final class SpellEngine {
             for (String spellId : state.getSpells()) {
                 Spell spell = Spell.get(spellId);
                 if (spell == null || spell.getKind() == null || spell.getKind().getTrigger() != trigger) {
+                    continue;
+                }
+                if (trigger == SpellKind.Trigger.HURT && !wards(spell, cause)) {
                     continue;
                 }
                 String key = slot + ":" + spellId;
@@ -202,6 +278,18 @@ public final class SpellEngine {
                 worn.replace(slot, Jewelry.withState(piece, state));
             }
         }
+    }
+
+    /**
+     * @return true if one of the spell's elements is this damage (or a parent of it)
+     */
+    private static boolean wards(Spell spell, @Nullable DamageCause cause) {
+        for (String element : spell.getElements()) {
+            if (ElementWear.matches(element, cause)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void clearCooldowns(Map<String, Long> cooldowns, short slot) {

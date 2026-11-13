@@ -5,5 +5,6 @@
   "Cost": 6,
   "Cooldown": 180,
   "Duration": 60,
+  "Element": "Ice, Water",
   "EntityEffect": "MT_Spell_Frost_Ward"
 }

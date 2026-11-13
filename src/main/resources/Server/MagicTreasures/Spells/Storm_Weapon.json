@@ -1,0 +1,13 @@
+{
+  "Name": "Storm Weapon",
+  "Kind": "Weapon",
+  "Level": 4,
+  "Cost": 8,
+  "Cooldown": 120,
+  "Duration": 30,
+  "Effect": 0.25,
+  "Element": "Lightning",
+  "EntityEffect": "MT_Spell_Storm_Weapon",
+  "OnHit": "MT_Status_Stun",
+  "OnHitChance": 0.1
+}

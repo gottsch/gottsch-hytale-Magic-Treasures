@@ -5,6 +5,8 @@
   "Cost": 8,
   "Cooldown": 120,
   "Duration": 30,
+  "Effect": 0.25,
+  "Element": "Poison",
   "EntityEffect": "MT_Spell_Venom_Weapon",
   "OnHit": "Poison"
 }

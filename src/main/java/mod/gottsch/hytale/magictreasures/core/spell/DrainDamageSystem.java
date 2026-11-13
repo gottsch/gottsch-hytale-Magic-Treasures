@@ -31,6 +31,7 @@ import com.hypixel.hytale.server.core.modules.entity.damage.DamageEventSystem;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageModule;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import mod.gottsch.hytale.magictreasures.core.element.ElementBonusSource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -60,7 +61,11 @@ public class DrainDamageSystem extends DamageEventSystem {
     public void handle(int index, @Nonnull ArchetypeChunk<EntityStore> chunk, @Nonnull Store<EntityStore> store,
                        @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull Damage damage) {
         if (damage.isCancelled() || damage.getAmount() <= 0
-                || !(damage.getSource() instanceof Damage.EntitySource source)) {
+                || !(damage.getSource() instanceof Damage.EntitySource source)
+                // an element bonus hit is part of a hit already counted, and a status tick
+                // (Burn) isn't a hit: neither starts hit spells (Nov 12)
+                || ElementBonusSource.isBonus(damage)
+                || damage.getSource() instanceof Damage.EntityEffectSource) {
             return;
         }
         Ref<EntityStore> attacker = source.getRef();
