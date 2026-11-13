@@ -27,6 +27,7 @@ import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.modules.entity.damage.Damage;
+import com.hypixel.hytale.server.core.modules.entity.damage.DamageCause;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageEventSystem;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageModule;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
@@ -60,11 +61,14 @@ public class DrainDamageSystem extends DamageEventSystem {
     @Override
     public void handle(int index, @Nonnull ArchetypeChunk<EntityStore> chunk, @Nonnull Store<EntityStore> store,
                        @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull Damage damage) {
+        if (ElementBonusSource.isBonus(damage)) {
+            showBonus(damage, commandBuffer);
+            return;
+        }
         if (damage.isCancelled() || damage.getAmount() <= 0
                 || !(damage.getSource() instanceof Damage.EntitySource source)
                 // an element bonus hit is part of a hit already counted, and a status tick
                 // (Burn) isn't a hit: neither starts hit spells (Nov 12)
-                || ElementBonusSource.isBonus(damage)
                 || damage.getSource() instanceof Damage.EntityEffectSource) {
             return;
         }
@@ -90,5 +94,26 @@ public class DrainDamageSystem extends DamageEventSystem {
                 SpellEngine.onHit(attacker, attackerStore, amount);
             }
         });
+    }
+
+    /**
+     * For {@code /mt hits}: prints an element bonus hit under the hit it came from, for
+     * example {@code + Lightning 0.9 (bonus hit), after armor 0.9}. It isn't measured like a
+     * weapon hit, so only its final amount is known.
+     */
+    private static void showBonus(Damage damage, CommandBuffer<EntityStore> commandBuffer) {
+        if (HitMeter.SHOW_HITS.isEmpty() || damage.isCancelled()
+                || !(damage.getSource() instanceof Damage.EntitySource source)) {
+            return;
+        }
+        Ref<EntityStore> attacker = source.getRef();
+        PlayerRef player = attacker == null || !attacker.isValid() ? null
+                : commandBuffer.getComponent(attacker, PlayerRef.getComponentType());
+        if (player == null || !HitMeter.SHOW_HITS.contains(player.getUuid())) {
+            return;
+        }
+        DamageCause cause = DamageCause.getAssetMap().getAsset(damage.getDamageCauseIndex());
+        player.sendMessage(Message.raw(String.format("  + %s bonus hit, after armor %.1f",
+                cause == null ? "element" : cause.getId(), damage.getAmount())).color("#9fd8ff"));
     }
 }
