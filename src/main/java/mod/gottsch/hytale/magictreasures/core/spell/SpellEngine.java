@@ -336,6 +336,12 @@ public final class SpellEngine {
      * its own hit of the spell's {@code Element}. It's an {@link ElementBonusSource} hit, like
      * worn element damage, so it doesn't crit, give statuses or start hit spells, and
      * {@code /mt hits} shows it (Nov 13).
+     * <p>
+     * It lands after the hit that started it, so that hit may have killed the target: vanilla
+     * then cancels it ({@code DamageSystems.FilterUnkillable} cancels damage to the dying, the
+     * invulnerable and the intangible). A Strike on a target with no health left isn't tried,
+     * and a cancelled one isn't charged, so it fires on the next hit instead (Nov 13: a Storm
+     * Strike went on cooldown with no hit to show).
      *
      * @return true if it dealt the hit
      */
@@ -344,13 +350,27 @@ public final class SpellEngine {
         if (victim == null || !victim.isValid() || spell.getElement() == null) {
             return false;
         }
+        Store<EntityStore> victimStore = victim.getStore();
+        EntityStatMap stats = victimStore.getComponent(victim, EntityStatMap.getComponentType());
+        EntityStatValue health = stats == null ? null : stats.get(DefaultEntityStatTypes.getHealth());
+        if (health == null || health.get() <= health.getMin()) {
+            return false;
+        }
         DamageCause cause = DamageCause.getAssetMap().getAsset(spell.getElement());
         float amount = (float) (spell.getEffect() * factors.getEffect());
         if (cause == null || amount <= 0) {
             return false;
         }
-        DamageSystems.executeDamage(victim, victim.getStore(),
-                new Damage(new ElementBonusSource(attacker), cause, amount));
+        Damage hit = new Damage(new ElementBonusSource(attacker), cause, amount);
+        DamageSystems.executeDamage(victim, victimStore, hit);
+        if (hit.isCancelled()) {
+            PlayerRef player = attacker.getStore().getComponent(attacker, PlayerRef.getComponentType());
+            if (player != null && HitMeter.SHOW_HITS.contains(player.getUuid())) {
+                player.sendMessage(Message.raw("  " + spell.getName() + " cancelled by the target (not spent)")
+                        .color("#9fd8ff"));
+            }
+            return false;
+        }
         return true;
     }
 
