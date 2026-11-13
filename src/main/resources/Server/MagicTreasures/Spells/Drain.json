@@ -1,8 +1,12 @@
 {
   "Name": "Drain",
   "Kind": "Drain",
-  "Level": 3,
-  "Cost": 2,
-  "Cooldown": 9,
-  "Effect": 10
+  "Level": 4,
+  "Cost": 6,
+  "Cooldown": 90,
+  "Duration": 21,
+  "Effect": 2,
+  "Pulse": 3,
+  "MaxTargets": 3,
+  "Radius": 5
 }

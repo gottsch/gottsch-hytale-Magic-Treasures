@@ -2,7 +2,11 @@
   "Name": "Greater Drain",
   "Kind": "Drain",
   "Level": 6,
-  "Cost": 3,
-  "Cooldown": 7.5,
-  "Effect": 20
+  "Cost": 10,
+  "Cooldown": 120,
+  "Duration": 30,
+  "Effect": 3,
+  "Pulse": 3,
+  "MaxTargets": 4,
+  "Radius": 6
 }

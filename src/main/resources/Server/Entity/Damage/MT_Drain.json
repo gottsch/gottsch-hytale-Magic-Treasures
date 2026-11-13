@@ -1,0 +1,8 @@
+{
+  "$Comment": "Magic Treasures: the Drain aura's damage (DrainAura). Magic, so armor and resistances don't reduce it.",
+  "DurabilityLoss": false,
+  "StaminaLoss": false,
+  "BypassResistances": true,
+  "DamageTextColor": "#9B5DE5",
+  "DeathMessageKey": "server.general.deathCause.MT_Drain"
+}

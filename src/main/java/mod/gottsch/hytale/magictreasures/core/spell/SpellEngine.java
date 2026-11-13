@@ -27,12 +27,15 @@ import com.hypixel.hytale.server.core.asset.type.entityeffect.config.OverlapBeha
 import com.hypixel.hytale.server.core.entity.effect.EffectControllerComponent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.entity.component.DynamicLight;
+import com.hypixel.hytale.server.core.modules.entity.damage.Damage;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageCause;
+import com.hypixel.hytale.server.core.modules.entity.damage.DamageSystems;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import mod.gottsch.hytale.magictreasures.core.element.ElementBonusSource;
 import mod.gottsch.hytale.magictreasures.core.element.ElementWear;
 import mod.gottsch.hytale.magictreasures.core.hud.JewelryHud;
 import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
@@ -55,7 +58,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>
  * {@link #tick} runs once a second for each player ({@link SpellTickSystem}) and tries every
  * {@link SpellKind.Trigger#TICK} spell; {@link #onHit} runs when the player damages something
- * ({@link DrainDamageSystem}) and tries every {@link SpellKind.Trigger#HIT} spell. Both run on
+ * ({@link HitSpellDamageSystem}) and tries every {@link SpellKind.Trigger#HIT} spell. Both run on
  * the player's world thread, outside the ECS systems, so they can change the inventory.
  * <p>
  * {@link #onHurt} runs when the player takes damage and tries every
@@ -105,8 +108,9 @@ public final class SpellEngine {
         }
         UUID uuid = playerRef.getUuid();
         endCatSight(uuid, ref, store);
+        DrainAura.tick(uuid, ref, store);
         WornJewelry worn = WornJewelry.of(ref, store);
-        cast(SpellKind.Trigger.TICK, uuid, ref, store, worn, 0, null);
+        cast(SpellKind.Trigger.TICK, uuid, ref, store, worn, 0, null, null);
         if (worn.pieces().isEmpty()) {
             REFILL.remove(uuid);
             JewelryHud.refresh(playerRef, ref, store, worn);
@@ -121,14 +125,16 @@ public final class SpellEngine {
      * Tries every hit spell on the attacker's worn jewelry.
      *
      * @param damage the damage the hit dealt
+     * @param victim what was hit, for the Strikes
      */
-    public static void onHit(Ref<EntityStore> ref, Store<EntityStore> store, float damage) {
+    public static void onHit(Ref<EntityStore> ref, Store<EntityStore> store, float damage,
+                             Ref<EntityStore> victim) {
         PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
         if (playerRef == null || damage <= 0) {
             return;
         }
         WornJewelry worn = WornJewelry.of(ref, store);
-        cast(SpellKind.Trigger.HIT, playerRef.getUuid(), ref, store, worn, damage, null);
+        cast(SpellKind.Trigger.HIT, playerRef.getUuid(), ref, store, worn, damage, null, victim);
     }
 
     /**
@@ -141,7 +147,7 @@ public final class SpellEngine {
         }
         WornJewelry worn = WornJewelry.of(ref, store);
         if (!worn.pieces().isEmpty()) {
-            cast(SpellKind.Trigger.HURT, playerRef.getUuid(), ref, store, worn, 0, cause);
+            cast(SpellKind.Trigger.HURT, playerRef.getUuid(), ref, store, worn, 0, cause, null);
         }
     }
 
@@ -210,6 +216,7 @@ public final class SpellEngine {
     }
 
     public static void onLeave(UUID uuid) {
+        DrainAura.onLeave(uuid);
         COOLDOWNS.remove(uuid);
         LIT.remove(uuid);
         REFILL.remove(uuid);
@@ -218,9 +225,11 @@ public final class SpellEngine {
     /**
      * @param cause for a {@link SpellKind.Trigger#HURT} cast, the damage taken: only spells
      *              warding it are tried
+     * @param victim for a {@link SpellKind.Trigger#HIT} cast, what was hit
      */
     private static void cast(SpellKind.Trigger trigger, UUID uuid, Ref<EntityStore> ref, Store<EntityStore> store,
-                             WornJewelry worn, float damage, @Nullable DamageCause cause) {
+                             WornJewelry worn, float damage, @Nullable DamageCause cause,
+                             @Nullable Ref<EntityStore> victim) {
         long now = System.currentTimeMillis();
         Map<String, Long> cooldowns = COOLDOWNS.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>());
         for (int i = 0; i < worn.pieces().size(); i++) {
@@ -250,7 +259,7 @@ public final class SpellEngine {
                 if (state.getMana() < cost) {
                     continue;
                 }
-                if (!run(spell, factors, uuid, ref, store, damage)) {
+                if (!run(spell, factors, uuid, ref, store, damage, victim)) {
                     continue;
                 }
                 state.setMana(Math.max(0, state.getMana() - cost));
@@ -302,11 +311,13 @@ public final class SpellEngine {
      * @return true if it did something, so it costs mana and a use
      */
     private static boolean run(Spell spell, SpellFactors factors, UUID uuid, Ref<EntityStore> ref,
-                               Store<EntityStore> store, float damage) {
+                               Store<EntityStore> store, float damage, @Nullable Ref<EntityStore> victim) {
         return switch (spell.getKind()) {
             case HEALING -> heal(ref, store, spell.getEffect() * factors.getEffect());
-            // drain heals by part of the hit: at most the spell's amount, at most the damage dealt
-            case DRAIN -> heal(ref, store, Math.min(spell.getEffect() * factors.getEffect(), damage));
+            // vampiric heals by part of the hit: at most the spell's amount, at most the damage dealt
+            case VAMPIRIC -> heal(ref, store, Math.min(spell.getEffect() * factors.getEffect(), damage));
+            case STRIKE -> strike(spell, factors, ref, victim);
+            case DRAIN -> DrainAura.start(uuid, spell, factors, ref, store);
             case SPEED, STRENGTH, WARD, WEAPON -> buff(spell, factors, ref, store) != null;
             case CAT_SIGHT -> {
                 EntityEffect effect = buff(spell, factors, ref, store);
@@ -321,11 +332,34 @@ public final class SpellEngine {
     }
 
     /**
+     * A Strike: deals the spell's flat {@code Effect} (scaled by the piece) to what was hit, as
+     * its own hit of the spell's {@code Element}. It's an {@link ElementBonusSource} hit, like
+     * worn element damage, so it doesn't crit, give statuses or start hit spells, and
+     * {@code /mt hits} shows it (Nov 13).
+     *
+     * @return true if it dealt the hit
+     */
+    private static boolean strike(Spell spell, SpellFactors factors, Ref<EntityStore> attacker,
+                                  @Nullable Ref<EntityStore> victim) {
+        if (victim == null || !victim.isValid() || spell.getElement() == null) {
+            return false;
+        }
+        DamageCause cause = DamageCause.getAssetMap().getAsset(spell.getElement());
+        float amount = (float) (spell.getEffect() * factors.getEffect());
+        if (cause == null || amount <= 0) {
+            return false;
+        }
+        DamageSystems.executeDamage(victim, victim.getStore(),
+                new Damage(new ElementBonusSource(attacker), cause, amount));
+        return true;
+    }
+
+    /**
      * Heals the player, if hurt, by up to {@code amount}.
      *
      * @return true if any health was restored
      */
-    private static boolean heal(Ref<EntityStore> ref, Store<EntityStore> store, double amount) {
+    static boolean heal(Ref<EntityStore> ref, Store<EntityStore> store, double amount) {
         EntityStatMap stats = store.getComponent(ref, EntityStatMap.getComponentType());
         if (stats == null || amount <= 0) {
             return false;

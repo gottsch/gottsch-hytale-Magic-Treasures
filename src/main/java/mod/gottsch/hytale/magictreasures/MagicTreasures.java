@@ -38,7 +38,7 @@ import mod.gottsch.hytale.magictreasures.core.loot.MobLootSystem;
 import mod.gottsch.hytale.magictreasures.core.imbue.ImbuePageSupplier;
 import mod.gottsch.hytale.magictreasures.core.wear.JewelryCasePageSupplier;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryAssets;
-import mod.gottsch.hytale.magictreasures.core.spell.DrainDamageSystem;
+import mod.gottsch.hytale.magictreasures.core.spell.HitSpellDamageSystem;
 import mod.gottsch.hytale.magictreasures.core.spell.HitMeter;
 import mod.gottsch.hytale.magictreasures.core.spell.RuneBoostSystem;
 import mod.gottsch.hytale.magictreasures.core.spell.SpellEngine;
@@ -69,9 +69,9 @@ public class MagicTreasures extends JavaPlugin {
         // worn jewelry: re-read on every inventory change, and shown again after joining
         this.getEntityStoreRegistry().registerSystem(new WornJewelrySystem());
         this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, MagicTreasures::onReady);
-        // passive spells: tick spells once a second, hit spells (Drain) on damage dealt
+        // passive spells: tick spells once a second, hit spells (Vampiric) on damage dealt
         this.getEntityStoreRegistry().registerSystem(new SpellTickSystem());
-        this.getEntityStoreRegistry().registerSystem(new DrainDamageSystem());
+        this.getEntityStoreRegistry().registerSystem(new HitSpellDamageSystem());
         // elements (Nov 11): worn resistances, damage bonuses, crits and on-hit statuses.
         // Registered before HitMeter.After, which orders itself after it.
         this.getEntityStoreRegistry().registerSystem(new ElementDamageSystem());

@@ -41,7 +41,8 @@ import java.util.Arrays;
  *     <li>{@code Level}: the spell level. A piece can hold spells up to its max level.</li>
  *     <li>{@code Cost}: jewelry mana spent per cast.</li>
  *     <li>{@code Cooldown}: seconds before the same piece can cast it again.</li>
- *     <li>{@code Effect}: health healed or drained; for a Weapon spell, the share of each
+ *     <li>{@code Effect}: health healed (by a Vampiric spell, at most the damage dealt); for
+ *     a Weapon spell, the share of each
  *     weapon hit added as {@code Element} damage (0.25: 25% of the hit, Nov 12).</li>
  *     <li>{@code Element}: a Weapon spell's element (a damage cause id such as {@code Fire}),
  *     or the elements a Ward starts on, comma separated ({@code "Fire, Poison"}).</li>
@@ -52,8 +53,12 @@ import java.util.Arrays;
  *     ranged hit while the spell's effect runs (Nov 11).</li>
  *     <li>{@code OnHitChance}: the chance per hit of giving {@code OnHit}, 0 to 1 (default 1,
  *     every hit). Stun and Root use a low chance, so a mob isn't held for good (Nov 12).</li>
+ *     <li>{@code Pulse}, {@code MaxTargets}, {@code Radius}: a Drain aura takes {@code Effect}
+ *     health from up to {@code MaxTargets} hostile mobs within {@code Radius} blocks, every
+ *     {@code Pulse} seconds while it lasts (Nov 13).</li>
  * </ul>
- * The wearing piece's factors scale cost, cooldown, effect and duration when it casts.
+ * The wearing piece's factors scale cost, cooldown, effect, duration and (for an aura's
+ * {@code Radius}) range when it casts.
  *
  * @author Mark Gottschling on 11/09/2026
  */
@@ -72,6 +77,9 @@ public class Spell implements JsonAssetWithMap<String, DefaultAssetMap<String, S
             .append(new KeyedCodec<>("Element", Codec.STRING), (a, v) -> a.element = v, a -> a.element).add()
             .append(new KeyedCodec<>("OnHit", Codec.STRING), (a, v) -> a.onHit = v, a -> a.onHit).add()
             .append(new KeyedCodec<>("OnHitChance", Codec.DOUBLE), (a, v) -> a.onHitChance = v, a -> a.onHitChance).add()
+            .append(new KeyedCodec<>("Pulse", Codec.DOUBLE), (a, v) -> a.pulse = v, a -> a.pulse).add()
+            .append(new KeyedCodec<>("MaxTargets", Codec.INTEGER), (a, v) -> a.maxTargets = v, a -> a.maxTargets).add()
+            .append(new KeyedCodec<>("Radius", Codec.DOUBLE), (a, v) -> a.radius = v, a -> a.radius).add()
             .build();
 
     private static AssetStore<String, Spell, DefaultAssetMap<String, Spell>> assetStore;
@@ -89,6 +97,9 @@ public class Spell implements JsonAssetWithMap<String, DefaultAssetMap<String, S
     protected String element;
     protected String onHit;
     protected double onHitChance = 1;
+    protected double pulse = 3;
+    protected int maxTargets = 1;
+    protected double radius = 0;
 
     protected Spell() {
     }
@@ -188,6 +199,18 @@ public class Spell implements JsonAssetWithMap<String, DefaultAssetMap<String, S
     /** @return the chance per hit of giving {@link #getOnHit()}, 0 to 1 */
     public double getOnHitChance() {
         return onHitChance;
+    }
+
+    public double getPulse() {
+        return pulse;
+    }
+
+    public int getMaxTargets() {
+        return maxTargets;
+    }
+
+    public double getRadius() {
+        return radius;
     }
 
     @Override

@@ -1,0 +1,8 @@
+{
+  "Name": "Vampiric Bite",
+  "Kind": "Vampiric",
+  "Level": 4,
+  "Cost": 3,
+  "Cooldown": 8,
+  "Effect": 15
+}

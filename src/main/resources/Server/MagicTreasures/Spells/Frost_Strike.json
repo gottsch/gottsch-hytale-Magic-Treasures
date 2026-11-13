@@ -1,0 +1,9 @@
+{
+  "Name": "Frost Strike",
+  "Kind": "Strike",
+  "Level": 2,
+  "Cost": 2,
+  "Cooldown": 10,
+  "Effect": 8,
+  "Element": "Ice"
+}

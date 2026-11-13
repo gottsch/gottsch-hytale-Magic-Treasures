@@ -24,9 +24,11 @@ import javax.annotation.Nullable;
  * it is tried:
  * <ul>
  *     <li>{@link Trigger#TICK}: once a second while worn. Healing heals when hurt; Speed
- *     and Cat Sight start a buff when it isn't already running.</li>
+ *     and Cat Sight start a buff when it isn't already running; a Drain aura starts when a
+ *     hostile mob is in range.</li>
  *     <li>{@link Trigger#HIT}: when the wearer hits something directly (not with a status
- *     tick). Drain heals the wearer by part of the damage; Strength and the Weapon spells start
+ *     tick). Vampiric heals the wearer by part of the damage; a Strike deals flat element
+ *     damage to what was hit; Strength and the Weapon spells start
  *     their buff, so it runs during the fight (Nov 12: as tick spells they cast whenever ready,
  *     in a fight or not, and emptied the piece's mana).</li>
  *     <li>{@link Trigger#HURT}: when the wearer takes damage. A Ward starts if the damage is
@@ -45,7 +47,23 @@ public enum SpellKind {
     WARD(Trigger.HURT),
     /** A buff of elemental damage that also gives a status on every hit (Flame Weapon, ...). */
     WEAPON(Trigger.HIT),
-    DRAIN(Trigger.HIT);
+    /**
+     * Heals the wearer by part of each hit, at most the damage dealt (Vampiric Kiss, Bite,
+     * Embrace). Was DRAIN until Nov 13; that name now belongs to the aura.
+     */
+    VAMPIRIC(Trigger.HIT),
+    /**
+     * Deals a flat amount of an element to what was hit, as its own hit, once per cooldown
+     * (Fire Strike, ...). Unlike a Weapon spell it has no buff and no status, and it doesn't
+     * scale with the weapon: it helps weak and fast weapons most (Nov 13).
+     */
+    STRIKE(Trigger.HIT),
+    /**
+     * An aura that takes health from nearby hostile mobs, without contact, every few seconds
+     * while it lasts, and heals the wearer by the total ({@link DrainAura}, Nov 13). Cast only
+     * when a hostile mob is in range; it damages even at full health.
+     */
+    DRAIN(Trigger.TICK);
 
     public enum Trigger {
         TICK, HIT, HURT

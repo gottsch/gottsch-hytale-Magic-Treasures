@@ -1,0 +1,9 @@
+{
+  "Name": "Greater Venom Strike",
+  "Kind": "Strike",
+  "Level": 4,
+  "Cost": 4,
+  "Cooldown": 10,
+  "Effect": 16,
+  "Element": "Poison"
+}

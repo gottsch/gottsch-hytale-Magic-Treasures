@@ -1,0 +1,8 @@
+{
+  "Name": "Vampiric Kiss",
+  "Kind": "Vampiric",
+  "Level": 3,
+  "Cost": 2,
+  "Cooldown": 9,
+  "Effect": 10
+}

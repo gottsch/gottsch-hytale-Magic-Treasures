@@ -1,0 +1,12 @@
+{
+  "Name": "Lesser Drain",
+  "Kind": "Drain",
+  "Level": 2,
+  "Cost": 4,
+  "Cooldown": 60,
+  "Duration": 15,
+  "Effect": 1,
+  "Pulse": 3,
+  "MaxTargets": 2,
+  "Radius": 4
+}

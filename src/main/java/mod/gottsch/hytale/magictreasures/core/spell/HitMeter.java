@@ -49,7 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * checked. Vanilla adds effect bonuses to a hit in one system,
  * {@code DamageSystems.ScaleOutgoingDamageFromEntityEffects} (filter group), and armor is
  * taken off later. Two systems here read the hit's amount just before and just after that
- * system; {@link DrainDamageSystem} reads the final amount and prints all three:
+ * system; {@link HitSpellDamageSystem} reads the final amount and prints all three:
  * the base, the bonus from effects, and the damage after the target's armor.
  * <p>
  * Only hits by players who turned the display on are measured.

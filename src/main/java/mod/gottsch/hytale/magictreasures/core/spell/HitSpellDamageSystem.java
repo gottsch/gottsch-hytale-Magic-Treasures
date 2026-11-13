@@ -39,13 +39,13 @@ import javax.annotation.Nullable;
 
 /**
  * Sees every hit after its damage is final (the inspect group, after vanilla applies it) and,
- * when a player dealt it, runs their hit spells ({@link SpellEngine#onHit}), such as Drain.
+ * when a player dealt it, runs their hit spells ({@link SpellEngine#onHit}), such as Vampiric Kiss.
  * The spells run on the world thread after the systems, because a cast can rewrite the Jewelry
  * Case in the player's inventory.
  *
  * @author Mark Gottschling on 11/09/2026
  */
-public class DrainDamageSystem extends DamageEventSystem {
+public class HitSpellDamageSystem extends DamageEventSystem {
     @Nullable
     @Override
     public SystemGroup<EntityStore> getGroup() {
@@ -89,9 +89,10 @@ public class DrainDamageSystem extends DamageEventSystem {
                     base, bonus, percent, amount, crit)).color("#ffd27a"));
         }
         Store<EntityStore> attackerStore = attacker.getStore();
+        Ref<EntityStore> victim = chunk.getReferenceTo(index);
         attackerStore.getExternalData().getWorld().execute(() -> {
             if (attacker.isValid()) {
-                SpellEngine.onHit(attacker, attackerStore, amount);
+                SpellEngine.onHit(attacker, attackerStore, amount, victim);
             }
         });
     }
@@ -113,6 +114,11 @@ public class DrainDamageSystem extends DamageEventSystem {
             return;
         }
         DamageCause cause = DamageCause.getAssetMap().getAsset(damage.getDamageCauseIndex());
+        if (damage.getSource() instanceof DrainSource) {
+            player.sendMessage(Message.raw(String.format("  ~ Drain aura, %.1f", damage.getAmount()))
+                    .color("#c89cff"));
+            return;
+        }
         player.sendMessage(Message.raw(String.format("  + %s bonus hit, after armor %.1f",
                 cause == null ? "element" : cause.getId(), damage.getAmount())).color("#9fd8ff"));
     }
