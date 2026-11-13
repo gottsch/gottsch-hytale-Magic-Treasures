@@ -1,6 +1,7 @@
 {
   "Mana": 25,
   "Uses": 75,
+  "RefillSeconds": 600,
   "Repairs": 1,
   "MaxLevel": 4,
   "Quality": "Uncommon",
@@ -17,13 +18,6 @@
       "Chance": 0.5,
       "Min": 0.05,
       "Max": 0.1
-    },
-    {
-      "Element": "Lightning",
-      "Kind": "Resistance",
-      "Chance": 0.3,
-      "Min": -0.05,
-      "Max": -0.03
     }
   ]
 }

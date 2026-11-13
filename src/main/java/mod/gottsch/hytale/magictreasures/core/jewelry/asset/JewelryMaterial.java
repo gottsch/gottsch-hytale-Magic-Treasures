@@ -46,6 +46,7 @@ public class JewelryMaterial implements JsonAssetWithMap<String, DefaultAssetMap
             .append(new KeyedCodec<>("Uses", Codec.INTEGER), (a, v) -> a.uses = v, a -> a.uses).add()
             .append(new KeyedCodec<>("Repairs", Codec.INTEGER), (a, v) -> a.repairs = v, a -> a.repairs).add()
             .append(new KeyedCodec<>("Recharges", Codec.INTEGER), (a, v) -> a.recharges = v, a -> a.recharges).add()
+            .append(new KeyedCodec<>("RefillSeconds", Codec.DOUBLE), (a, v) -> a.refillSeconds = v, a -> a.refillSeconds).add()
             .append(new KeyedCodec<>("MaxLevel", Codec.INTEGER), (a, v) -> a.maxLevel = v, a -> a.maxLevel).add()
             .append(new KeyedCodec<>("Quality", Codec.STRING), (a, v) -> a.quality = v, a -> a.quality).add()
             .append(new KeyedCodec<>("Ingredient", Codec.STRING), (a, v) -> a.ingredient = v, a -> a.ingredient).add()
@@ -64,6 +65,8 @@ public class JewelryMaterial implements JsonAssetWithMap<String, DefaultAssetMap
     protected int uses = 0;
     protected int repairs = 0;
     protected int recharges = 0;
+    /** Seconds a worn piece takes to refill its mana from empty; 0 for the default (Nov 13). */
+    protected double refillSeconds = 0;
     protected int maxLevel = 1;
     protected String quality = "Common";
     protected String ingredient;
@@ -120,6 +123,14 @@ public class JewelryMaterial implements JsonAssetWithMap<String, DefaultAssetMap
 
     public int getRecharges() {
         return recharges;
+    }
+
+    /**
+     * @return seconds a worn piece takes to refill its mana from empty, or 0 for the default
+     * ({@code SpellEngine.REFILL_SECONDS})
+     */
+    public double getRefillSeconds() {
+        return refillSeconds;
     }
 
     public int getMaxLevel() {

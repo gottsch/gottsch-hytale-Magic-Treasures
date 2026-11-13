@@ -51,6 +51,8 @@ import java.util.Objects;
  *     <li><b>Another piece of jewelry</b>: repairs, refilling the uses and using one
  *     repair. The other piece is used up.</li>
  * </ul>
+ * A named piece (Nov 13) refuses a recharge if it is {@code Unlimited} and a repair if it is
+ * {@code Unbreakable}, and is never used up to repair another piece.
  * Each item is used up, one at a time.
  *
  * @author Mark Gottschling on 11/10/2026
@@ -105,7 +107,10 @@ public final class Imbuing {
             case RUNE -> rune(piece, stats, state, name, id);
             case GEM -> gem(piece, stats, state, name, id);
             case RECHARGE -> recharge(piece, stats, state, name);
-            case REPAIR -> repair(piece, stats, state, name);
+            // a named piece is never used up to repair another (Nov 13)
+            case REPAIR -> Jewelry.stats(material).definition() != null && Jewelry.stats(material).definition().isNamed()
+                    ? refused(Kind.REPAIR, Jewelry.displayName(material) + " is one of a kind; it won't be used up")
+                    : repair(piece, stats, state, name);
         };
     }
 
@@ -210,6 +215,9 @@ public final class Imbuing {
     }
 
     private static Outcome recharge(ItemStack piece, JewelryStats stats, JewelryState state, String name) {
+        if (stats.definition().isUnlimited()) {
+            return refused(Kind.RECHARGE, "Its charge never runs out");
+        }
         if (state.getRecharges() <= 0) {
             return refused(Kind.RECHARGE, "No recharges left");
         }
@@ -224,6 +232,9 @@ public final class Imbuing {
     }
 
     private static Outcome repair(ItemStack piece, JewelryStats stats, JewelryState state, String name) {
+        if (stats.definition().isUnbreakable()) {
+            return refused(Kind.REPAIR, "It can't wear out");
+        }
         if (state.getRepairs() <= 0) {
             return refused(Kind.REPAIR, "No repairs left");
         }

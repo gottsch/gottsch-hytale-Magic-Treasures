@@ -25,6 +25,7 @@ import com.hypixel.hytale.assetstore.map.DefaultAssetMap;
 import com.hypixel.hytale.assetstore.map.JsonAssetWithMap;
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
+import mod.gottsch.hytale.magictreasures.core.jewelry.asset.SpellOverrides;
 import mod.gottsch.hytale.magictreasures.core.spell.SpellKind;
 
 import javax.annotation.Nullable;
@@ -211,6 +212,34 @@ public class Spell implements JsonAssetWithMap<String, DefaultAssetMap<String, S
 
     public double getRadius() {
         return radius;
+    }
+
+    /**
+     * @return this spell with a named piece's own numbers in place of its base ones, or this
+     * spell itself if there are none. The copy keeps the id, so cooldowns are shared.
+     */
+    public Spell withOverrides(@Nullable SpellOverrides overrides) {
+        if (overrides == null) {
+            return this;
+        }
+        Spell copy = new Spell();
+        copy.data = data;
+        copy.id = id;
+        copy.name = name;
+        copy.kind = kind;
+        copy.level = level;
+        copy.cost = overrides.getCost() != null ? overrides.getCost() : cost;
+        copy.cooldown = overrides.getCooldown() != null ? overrides.getCooldown() : cooldown;
+        copy.effect = overrides.getEffect() != null ? overrides.getEffect() : effect;
+        copy.duration = overrides.getDuration() != null ? overrides.getDuration() : duration;
+        copy.entityEffect = entityEffect;
+        copy.element = element;
+        copy.onHit = onHit;
+        copy.onHitChance = onHitChance;
+        copy.pulse = pulse;
+        copy.maxTargets = maxTargets;
+        copy.radius = radius;
+        return copy;
     }
 
     @Override

@@ -41,6 +41,7 @@ import mod.gottsch.hytale.magictreasures.core.hud.JewelryHud;
 import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryState;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryStats;
+import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryDefinition;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.SpellFactors;
 import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
 import mod.gottsch.hytale.magictreasures.core.wear.WornJewelry;
@@ -68,8 +69,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * that does something (a heal, a buff started) spends the mana and one use, and starts the
  * cooldown, all scaled by the piece's factors. A piece with no uses left breaks, as in 2.0.
  * Mana is the piece's own well (decision 3). A worn piece refills it, empty to full in
- * {@link #REFILL_SECONDS} (Nov 12: with no refill a plain copper piece had 3 casts in it and
- * its 75 uses never mattered); Recharges fill it at once.
+ * its material's {@code RefillSeconds} (default {@link #REFILL_SECONDS}; Nov 12: with no
+ * refill a plain copper piece had 3 casts in it and its 75 uses never mattered); Recharges fill
+ * it at once.
  *
  * @author Mark Gottschling on 11/09/2026
  */
@@ -85,8 +87,19 @@ public final class SpellEngine {
     /** Players lit by Cat Sight, and the effect that keeps the light on. */
     private static final Map<UUID, String> LIT = new ConcurrentHashMap<>();
 
-    /** Seconds a worn piece takes to refill its mana from empty to full (Nov 12). */
+    /**
+     * Seconds a worn piece takes to refill its mana from empty to full, when its material
+     * doesn't say ({@code RefillSeconds}, Nov 13). Was the same for every material (Nov 12).
+     */
     public static final double REFILL_SECONDS = 600;
+
+    /**
+     * Per player: the share of each hit that the last cast of each Weapon spell adds as its
+     * element, keyed by spell id: its {@code Effect} (or the named piece's) times the piece's
+     * effect factor (Nov 13: the 25% ignored the piece's factors, which scaled only the
+     * duration).
+     */
+    private static final Map<UUID, Map<String, Double>> WEAPON_SHARES = new ConcurrentHashMap<>();
 
     /**
      * Per player: refilled mana not yet written to each worn piece, keyed {@code slot:itemId}.
@@ -152,8 +165,8 @@ public final class SpellEngine {
     }
 
     /**
-     * Refills the mana of each worn piece that isn't full: its max mana over
-     * {@link #REFILL_SECONDS}, once a second.
+     * Refills the mana of each worn piece that isn't full: its max mana over its refill time
+     * ({@link #refillSeconds}), once a second.
      */
     private static void refill(UUID uuid, WornJewelry worn) {
         Map<String, Double> owed = REFILL.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>());
@@ -169,7 +182,7 @@ public final class SpellEngine {
             String key = slot + ":" + piece.getItemId();
             kept.add(key);
             double total = owed.getOrDefault(key, 0.0)
-                    + stats.maxMana() / REFILL_SECONDS * SpellTickSystem.INTERVAL_SECONDS;
+                    + stats.maxMana() / refillSeconds(stats) * SpellTickSystem.INTERVAL_SECONDS;
             double whole = Math.floor(total);
             owed.put(key, total - whole);
             if (whole > 0) {
@@ -178,6 +191,15 @@ public final class SpellEngine {
             }
         }
         owed.keySet().retainAll(kept);
+    }
+
+    /**
+     * @return seconds the piece takes to refill from empty: its material's
+     * {@code RefillSeconds}, or {@link #REFILL_SECONDS}
+     */
+    private static double refillSeconds(JewelryStats stats) {
+        double seconds = stats.material() == null ? 0 : stats.material().getRefillSeconds();
+        return seconds > 0 ? seconds : REFILL_SECONDS;
     }
 
     /**
@@ -195,7 +217,7 @@ public final class SpellEngine {
         }
         ItemStack piece = worn.pieces().get(i);
         JewelryState state = Jewelry.state(piece);
-        if (state == null) {
+        if (state == null || Jewelry.stats(piece).definition().isUnbreakable()) {
             return;
         }
         state = state.copy().setUses(state.getUses() - 1);
@@ -215,8 +237,18 @@ public final class SpellEngine {
         }
     }
 
+    /**
+     * @return the share of each hit this Weapon spell adds as its element for the player, as
+     * the piece that last cast it set it, or the spell's own {@code Effect} if none is known
+     */
+    public static double weaponShare(UUID uuid, Spell spell) {
+        Map<String, Double> shares = WEAPON_SHARES.get(uuid);
+        return shares == null ? spell.getEffect() : shares.getOrDefault(spell.getId(), spell.getEffect());
+    }
+
     public static void onLeave(UUID uuid) {
         DrainAura.onLeave(uuid);
+        WEAPON_SHARES.remove(uuid);
         COOLDOWNS.remove(uuid);
         LIT.remove(uuid);
         REFILL.remove(uuid);
@@ -242,12 +274,15 @@ public final class SpellEngine {
             }
             state = state.copy();
             SpellFactors factors = stats.factors();
+            JewelryDefinition definition = stats.definition();
             boolean changed = false;
             for (String spellId : state.getSpells()) {
                 Spell spell = Spell.get(spellId);
                 if (spell == null || spell.getKind() == null || spell.getKind().getTrigger() != trigger) {
                     continue;
                 }
+                // a named piece's own numbers (Nov 13)
+                spell = spell.withOverrides(definition.getSpellOverrides());
                 if (trigger == SpellKind.Trigger.HURT && !wards(spell, cause)) {
                     continue;
                 }
@@ -255,7 +290,7 @@ public final class SpellEngine {
                 if (cooldowns.getOrDefault(key, 0L) > now) {
                     continue;
                 }
-                double cost = spell.getCost() * factors.getCost();
+                double cost = definition.isUnlimited() ? 0 : spell.getCost() * factors.getCost();
                 if (state.getMana() < cost) {
                     continue;
                 }
@@ -263,7 +298,9 @@ public final class SpellEngine {
                     continue;
                 }
                 state.setMana(Math.max(0, state.getMana() - cost));
-                state.setUses(state.getUses() - 1);
+                if (!definition.isUnbreakable()) {
+                    state.setUses(state.getUses() - 1);
+                }
                 cooldowns.put(key, now + Math.round(spell.getCooldown() * factors.getCooldown() * 1000));
                 changed = true;
                 LOGGER.atFine().log("%s cast %s from %s: mana %.1f, uses %d", uuid, spellId, piece.getItemId(),
@@ -318,7 +355,15 @@ public final class SpellEngine {
             case VAMPIRIC -> heal(ref, store, Math.min(spell.getEffect() * factors.getEffect(), damage));
             case STRIKE -> strike(spell, factors, ref, victim);
             case DRAIN -> DrainAura.start(uuid, spell, factors, ref, store);
-            case SPEED, STRENGTH, WARD, WEAPON -> buff(spell, factors, ref, store) != null;
+            case WEAPON -> {
+                if (buff(spell, factors, ref, store) == null) {
+                    yield false;
+                }
+                WEAPON_SHARES.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>())
+                        .put(spell.getId(), spell.getEffect() * factors.getEffect());
+                yield true;
+            }
+            case SPEED, STRENGTH, WARD -> buff(spell, factors, ref, store) != null;
             case CAT_SIGHT -> {
                 EntityEffect effect = buff(spell, factors, ref, store);
                 if (effect == null) {

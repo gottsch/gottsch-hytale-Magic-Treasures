@@ -37,6 +37,12 @@
         "MT_Gem_(Ruby|Topaz|Sapphire|Emerald|Diamond|Zephyr|Voidstone)_(Perfect)"
       ],
       "Weight": 15
+    },
+    {
+      "Items": [
+        "MT_Ring_Vampire_Lich"
+      ],
+      "Weight": 1
     }
   ]
 }

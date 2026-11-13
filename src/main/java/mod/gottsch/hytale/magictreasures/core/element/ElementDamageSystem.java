@@ -220,13 +220,15 @@ public class ElementDamageSystem extends DamageEventSystem {
 
     /**
      * @return element id to the share of this hit to add as that element's damage: worn element
-     * damage plus active weapon spells' {@code Effect}
+     * damage plus active weapon spells' {@code Effect}, times the casting piece's effect factor
      */
     private static Map<String, Double> bonusShares(PlayerRef player, List<Spell> weaponSpells) {
         Map<String, Double> out = ElementWear.damageShares(player.getUuid());
         for (Spell spell : weaponSpells) {
             if (spell.getElement() != null && spell.getEffect() > 0) {
-                out.merge(spell.getElement(), spell.getEffect(), Double::sum);
+                // scaled by the casting piece's effect factor (Nov 13)
+                out.merge(spell.getElement(),
+                        SpellEngine.weaponShare(player.getUuid(), spell), Double::sum);
             }
         }
         return out;

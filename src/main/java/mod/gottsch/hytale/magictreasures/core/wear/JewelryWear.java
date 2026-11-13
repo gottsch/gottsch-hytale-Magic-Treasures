@@ -82,6 +82,11 @@ public final class JewelryWear {
     public static final String ITEM_TEXTURES = "Items/MagicTreasures/Rings/Ring_";
     /** The metals with ring textures. */
     public static final Set<String> ART_MATERIALS = Set.of("Copper", "Silver", "Gold");
+    /**
+     * Metals with worn-ring art only (Nov 13: Bone, for the Vampire Lich's Ring; no Bone
+     * necklace or bracelet art yet).
+     */
+    public static final Set<String> RING_ONLY_MATERIALS = Set.of("Bone");
     /** What each online player wears, and the visible pieces last sent (null: the look was never changed). */
     private static final Map<UUID, Worn> WORN = new ConcurrentHashMap<>();
 
@@ -186,8 +191,9 @@ public final class JewelryWear {
         JewelryDefinition definition = stats.definition();
         String type = definition.getType();
         String metal = definition.getMaterial();
-        if (!ART_MATERIALS.contains(metal)) {
-            // no art for this metal yet (iron, bone): not shown
+        boolean ring = "Ring".equalsIgnoreCase(type);
+        if (!ART_MATERIALS.contains(metal) && !(ring && RING_ONLY_MATERIALS.contains(metal))) {
+            // no art for this metal yet (iron; bone but for rings): not shown
             return List.of();
         }
         boolean necklace = "Necklace".equalsIgnoreCase(type);

@@ -33,6 +33,14 @@ quality, with the same rule as JewelryStats.quality.
 Both generated folders are emptied first, so remove a
 combination by leaving it out here and running again.
 
+Named pieces (artifacts, Nov 13) come from tools/named_pieces.json:
+each copies a generated piece's item and definition ("Base") and
+adds its own name, lore, quality and named fields (Cut, Spells,
+SpellOverrides, Unlimited, Unbreakable, Curses; see
+JewelryDefinition). It may also replace the base's Material, Style
+or Gem, and its Model, Texture or Icon. The lore is server.lang items.<id>.lore, which
+the piece's tooltip shows at the top.
+
 Usage (from the repo root):
     python tools/generate_jewelry.py          # the starter set
     python tools/generate_jewelry.py --all    # every combination
@@ -50,6 +58,14 @@ DEFS_OUT = DATA / "Jewelry"
 SCROLLS_OUT = SERVER / "Item" / "Items" / "MagicTreasures" / "Scrolls"
 GEMS_OUT = SERVER / "Item" / "Items" / "MagicTreasures" / "Gems"
 LANG = SERVER / "Languages" / "en-US" / "server.lang"
+NAMED = Path(__file__).resolve().parent / "named_pieces.json"
+# a named piece's fields copied into its jewelry definition as they are
+# (Material, Style and Gem replace the base's: the Vampire Lich's Ring is
+# Bone, with no full Bone set, Nov 13)
+NAMED_FIELDS = ["Material", "Style", "Gem", "Name", "Cut", "Spells",
+                "SpellOverrides", "Unlimited", "Unbreakable", "Curses"]
+# a named piece's own art, replacing the base item's
+NAMED_ITEM_FIELDS = ["Model", "Texture", "Icon"]
 
 BEGIN = "# === BEGIN generated jewelry (tools/generate_jewelry.py) ==="
 END = "# === END generated jewelry ==="
@@ -310,11 +326,49 @@ def main():
                                               material_id, gem_id))
                     count += 1
 
+    named = write_named(lang)
     scrolls = write_scrolls(load("Spells"), types, lang)
     gems = write_gems(load("Gems"), lang)
     write_lang(lang)
-    print(f"Generated {count} jewelry items, {scrolls} scrolls and "
-          f"{gems} cut gems and kits.")
+    print(f"Generated {count} jewelry items, {named} named pieces, "
+          f"{scrolls} scrolls and {gems} cut gems and kits.")
+
+
+def write_named(lang):
+    """Writes the named pieces in named_pieces.json: a copy of each
+    one's Base item and definition (already generated), with its own
+    name, lore, quality and named fields. No recipe: they are found,
+    not made."""
+    if not NAMED.exists():
+        return 0
+    pieces = json.loads(NAMED.read_text(encoding="utf-8"))
+    for piece in pieces:
+        nid, base = piece["Id"], piece["Base"]
+        base_item, base_def = ITEMS_OUT / f"{base}.json", DEFS_OUT / f"{base}.json"
+        if not base_item.exists():
+            raise SystemExit(f"{nid}: base {base} isn't generated")
+        item = json.loads(base_item.read_text(encoding="utf-8"))
+        item["TranslationProperties"] = {
+            "Name": f"server.items.{nid}.name",
+            "Description": f"server.items.{nid}.description",
+        }
+        if piece.get("Quality"):
+            item["Quality"] = piece["Quality"]
+        for field in NAMED_ITEM_FIELDS:
+            if field in piece:
+                item[field] = piece[field]
+        item.pop("Recipe", None)
+        write_json(ITEMS_OUT / f"{nid}.json", item)
+        definition = json.loads(base_def.read_text(encoding="utf-8"))
+        for field in NAMED_FIELDS:
+            if field in piece:
+                definition[field] = piece[field]
+        write_json(DEFS_OUT / f"{nid}.json", definition)
+        lore = piece.get("Lore", "")
+        lang.append(f"items.{nid}.name={piece['Name']}")
+        lang.append(f"items.{nid}.description={lore}")
+        lang.append(f"items.{nid}.lore={lore}")
+    return len(pieces)
 
 
 def write_scrolls(spells, types, lang):

@@ -155,8 +155,10 @@ public class JewelryHud extends CustomUIHud {
             double mana = state == null ? 0 : state.getMana();
             // the item's own name (named jewelry shows its name), translated by the client
             String name = piece.getItemId();
-            String charge = String.format("Charge %.0f/%.0f", mana, stats.maxMana());
-            float share = stats.maxMana() <= 0 ? 0f : (float) Math.clamp(mana / stats.maxMana(), 0.0, 1.0);
+            boolean unlimited = stats.definition() != null && stats.definition().isUnlimited();
+            String charge = unlimited ? "Charge unlimited" : String.format("Charge %.0f/%.0f", mana, stats.maxMana());
+            float share = unlimited ? 1f
+                    : stats.maxMana() <= 0 ? 0f : (float) Math.clamp(mana / stats.maxMana(), 0.0, 1.0);
             String spells = spells(playerRef, slot, state);
             builder.set("#JewelName" + i + ".TextSpans", Jewelry.name(piece));
             builder.set("#JewelCharge" + i + ".Text", charge);

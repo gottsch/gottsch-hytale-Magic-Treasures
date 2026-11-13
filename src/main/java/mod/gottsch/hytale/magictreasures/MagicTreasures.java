@@ -38,6 +38,7 @@ import mod.gottsch.hytale.magictreasures.core.loot.MobLootSystem;
 import mod.gottsch.hytale.magictreasures.core.imbue.ImbuePageSupplier;
 import mod.gottsch.hytale.magictreasures.core.wear.JewelryCasePageSupplier;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryAssets;
+import mod.gottsch.hytale.magictreasures.core.curse.VanishingCurseSystem;
 import mod.gottsch.hytale.magictreasures.core.spell.HitSpellDamageSystem;
 import mod.gottsch.hytale.magictreasures.core.spell.HitMeter;
 import mod.gottsch.hytale.magictreasures.core.spell.RuneBoostSystem;
@@ -72,6 +73,8 @@ public class MagicTreasures extends JavaPlugin {
         // passive spells: tick spells once a second, hit spells (Vampiric) on damage dealt
         this.getEntityStoreRegistry().registerSystem(new SpellTickSystem());
         this.getEntityStoreRegistry().registerSystem(new HitSpellDamageSystem());
+        // curses (Nov 13): Curse of Vanishing destroys cursed pieces when their holder dies
+        this.getEntityStoreRegistry().registerSystem(new VanishingCurseSystem());
         // elements (Nov 11): worn resistances, damage bonuses, crits and on-hit statuses.
         // Registered before HitMeter.After, which orders itself after it.
         this.getEntityStoreRegistry().registerSystem(new ElementDamageSystem());

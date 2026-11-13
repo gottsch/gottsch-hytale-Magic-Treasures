@@ -6,18 +6,11 @@
   "Elements": [
     {
       "Element": "Lightning",
-      "Kind": "Resistance",
-      "Min": 0.12,
-      "Max": 0.15
-    },
-    {
-      "Element": "Lightning",
       "Kind": "Damage",
       "Min": 0.12,
       "Max": 0.15
     }
   ],
-  "Weakness": "Water",
   "Bonus": [
     {
       "Element": "Elemental",

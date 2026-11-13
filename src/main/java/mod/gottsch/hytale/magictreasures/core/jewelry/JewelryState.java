@@ -71,7 +71,8 @@ public class JewelryState {
     }
 
     /**
-     * @return a new piece's state: everything full, no spells or runes
+     * @return a new piece's state: everything full, no runes, and no spells but those a named
+     * piece comes with
      */
     public static JewelryState fresh(JewelryStats stats) {
         JewelryState state = new JewelryState();
@@ -79,6 +80,9 @@ public class JewelryState {
         state.uses = stats.maxUses();
         state.repairs = stats.maxRepairs();
         state.recharges = stats.maxRecharges();
+        if (stats.definition() != null && stats.definition().getSpells().length > 0) {
+            state.spells = stats.definition().getSpells().clone();
+        }
         return state;
     }
 

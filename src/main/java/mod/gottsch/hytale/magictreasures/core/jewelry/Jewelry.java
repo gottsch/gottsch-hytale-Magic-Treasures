@@ -47,6 +47,8 @@ public final class Jewelry {
     private static final String MANA = "#5aa9ff";
     private static final String GOOD = "#7ddc7d";
     private static final String BAD = "#ff7070";
+    /** A named piece's lore line: a muted gold. */
+    private static final String LORE = "#d8b46a";
 
     private Jewelry() {
     }
@@ -122,7 +124,9 @@ public final class Jewelry {
         if (definition == null) {
             return null;
         }
-        GemCut gemCut = definition.getGem() == null ? null : GemCut.byName(cut);
+        // a named piece's own cut, unless the loot entry picked one
+        GemCut gemCut = definition.getGem() == null ? null
+                : GemCut.byName(cut != null ? cut : definition.getCut());
         JewelryStats stats = JewelryStats.of(definition, gemCut);
         JewelryState state = JewelryState.fresh(stats);
         if (gemCut != null) {
@@ -155,16 +159,34 @@ public final class Jewelry {
             return Message.raw("This jewelry's material or style is missing. It can't cast.").color(LABEL);
         }
         List<Message> parts = new ArrayList<>();
+        JewelryDefinition definition = stats.definition();
+        if (definition.isNamed()) {
+            // a named piece's lore, from server.lang (items.<id>.lore), Nov 13
+            parts.add(Message.translation("server.items." + definition.getId() + ".lore").color(LORE));
+            parts.add(Message.raw("\n"));
+        }
         // "Charge", not "Mana": the piece's own well, apart from the player's mana bar
         if (stats.gem() != null) {
             GemCut cut = GemCut.byName(state.getCut());
             line(parts, "Gem", (cut == null ? GemCut.FINE : cut).getName() + " " + stats.gem().getId().toLowerCase(),
                     VALUE);
         }
-        line(parts, "Charge", String.format("%.0f / %.0f", state.getMana(), stats.maxMana()), MANA);
-        line(parts, "Uses", state.getUses() + " / " + stats.maxUses(), VALUE);
-        line(parts, "Recharges", state.getRecharges() + " / " + stats.maxRecharges(), VALUE);
-        line(parts, "Repairs", state.getRepairs() + " / " + stats.maxRepairs(), VALUE);
+        if (definition.isUnlimited()) {
+            line(parts, "Charge", "unlimited", MANA);
+        } else {
+            line(parts, "Charge", String.format("%.0f / %.0f", state.getMana(), stats.maxMana()), MANA);
+        }
+        if (definition.isUnbreakable()) {
+            line(parts, "Uses", "unbreakable", VALUE);
+        } else {
+            line(parts, "Uses", state.getUses() + " / " + stats.maxUses(), VALUE);
+        }
+        if (!definition.isUnlimited()) {
+            line(parts, "Recharges", state.getRecharges() + " / " + stats.maxRecharges(), VALUE);
+        }
+        if (!definition.isUnbreakable()) {
+            line(parts, "Repairs", state.getRepairs() + " / " + stats.maxRepairs(), VALUE);
+        }
         line(parts, "Spell level", "up to " + stats.maxLevel(), VALUE);
         line(parts, "Rune sockets", state.getRunes().length + " / " + stats.sockets(), VALUE);
         line(parts, "Spells", state.getSpells().length == 0 ? "none" : spellNames(state.getSpells()), VALUE);
@@ -175,9 +197,23 @@ public final class Jewelry {
             parts.add(Message.raw(property.describe()).color(property.good() ? GOOD : BAD));
             parts.add(Message.raw("\n"));
         }
+        for (String curse : definition.getCurses()) {
+            parts.add(Message.raw(curseText(curse)).color(BAD));
+            parts.add(Message.raw("\n"));
+        }
         // drop the trailing newline
         parts.removeLast();
         return Message.empty().insertAll(parts);
+    }
+
+    /**
+     * @return a curse's tooltip line, for example "Curse of Vanishing: destroyed when you die"
+     */
+    public static String curseText(String curse) {
+        if (JewelryDefinition.CURSE_VANISHING.equalsIgnoreCase(curse)) {
+            return "Curse of Vanishing: destroyed when you die";
+        }
+        return "Curse of " + curse;
     }
 
     private static String spellNames(String[] ids) {
@@ -212,6 +248,9 @@ public final class Jewelry {
         JewelryDefinition definition = definition(stack);
         if (definition == null) {
             return stack == null ? "" : stack.getItemId();
+        }
+        if (definition.getName() != null) {
+            return definition.getName();
         }
         JewelryStyle style = JewelryStyle.get(definition.getStyle());
         StringBuilder name = new StringBuilder();

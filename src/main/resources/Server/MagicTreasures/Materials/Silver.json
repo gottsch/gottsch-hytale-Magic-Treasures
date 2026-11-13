@@ -1,6 +1,7 @@
 {
   "Mana": 40,
   "Uses": 150,
+  "RefillSeconds": 540,
   "Repairs": 2,
   "MaxLevel": 5,
   "Quality": "Uncommon",

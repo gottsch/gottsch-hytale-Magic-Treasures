@@ -1,6 +1,7 @@
 {
   "Mana": 25,
   "Uses": 200,
+  "RefillSeconds": 720,
   "Repairs": 3,
   "MaxLevel": 3,
   "Quality": "Common",
@@ -9,21 +10,5 @@
   "Gradient": "Iron_Black",
   "Factors": {
     "Duration": 1.25
-  },
-  "Elements": [
-    {
-      "Element": "Earth",
-      "Kind": "Resistance",
-      "Chance": 0.5,
-      "Min": 0.05,
-      "Max": 0.1
-    },
-    {
-      "Element": "Lightning",
-      "Kind": "Resistance",
-      "Chance": 0.4,
-      "Min": -0.1,
-      "Max": -0.05
-    }
-  ]
+  }
 }

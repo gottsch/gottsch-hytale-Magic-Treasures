@@ -17,12 +17,6 @@
       "Max": 0.15
     },
     {
-      "Element": "Water",
-      "Kind": "Resistance",
-      "Min": 0.12,
-      "Max": 0.15
-    },
-    {
       "Element": "Ice",
       "Kind": "OnHit",
       "Min": 0.08,
