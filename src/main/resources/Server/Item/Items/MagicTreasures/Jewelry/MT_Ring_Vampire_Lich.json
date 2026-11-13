@@ -1,0 +1,35 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Ring_Vampire_Lich.name",
+    "Description": "server.items.MT_Ring_Vampire_Lich.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/MT_Ring_Vampire_Lich.png",
+  "Quality": "Legendary",
+  "ItemLevel": 7,
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Tags": {
+    "Family": [
+      "MT_Jewelry"
+    ]
+  },
+  "Model": "Items/MagicTreasures/Rings/Ring_Lich.blockymodel",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Lich.png",
+  "PlayerAnimationsId": "Item",
+  "MaxStack": 1,
+  "Scale": 1.0,
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  }
+}

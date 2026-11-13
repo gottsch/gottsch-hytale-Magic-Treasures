@@ -1,0 +1,25 @@
+[
+  {
+    "Id": "MT_Ring_Vampire_Lich",
+    "Base": "MT_Ring_Gold_Ruby_Great",
+    "Material": "Bone",
+    "Model": "Items/MagicTreasures/Rings/Ring_Lich.blockymodel",
+    "Texture": "Items/MagicTreasures/Rings/Ring_Lich.png",
+    "Icon": "Icons/Items/MagicTreasures/MT_Ring_Vampire_Lich.png",
+    "Name": "Vampire Lich's Ring",
+    "Lore": "Taken from the hand of a lich who would not stay dead. It feeds on what you strike and asks nothing in return, until you fall.",
+    "Quality": "Legendary",
+    "Cut": "Perfect",
+    "Spells": [
+      "Vampiric_Embrace"
+    ],
+    "SpellOverrides": {
+      "Cost": 0
+    },
+    "Unlimited": true,
+    "Unbreakable": true,
+    "Curses": [
+      "Vanishing"
+    ]
+  }
+]

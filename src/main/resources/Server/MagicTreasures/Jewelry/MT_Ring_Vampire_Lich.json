@@ -1,0 +1,19 @@
+{
+  "Type": "Ring",
+  "Material": "Bone",
+  "Style": "Great",
+  "Gem": "Ruby",
+  "Name": "Vampire Lich's Ring",
+  "Cut": "Perfect",
+  "Spells": [
+    "Vampiric_Embrace"
+  ],
+  "SpellOverrides": {
+    "Cost": 0
+  },
+  "Unlimited": true,
+  "Unbreakable": true,
+  "Curses": [
+    "Vanishing"
+  ]
+}
