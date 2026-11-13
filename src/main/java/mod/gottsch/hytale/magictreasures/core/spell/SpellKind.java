@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
  *     and Cat Sight start a buff when it isn't already running; a Drain aura starts when a
  *     hostile mob is in range.</li>
  *     <li>{@link Trigger#HIT}: when the wearer hits something directly (not with a status
- *     tick). Vampiric heals the wearer by part of the damage; a Strike deals flat element
+ *     tick). Vampiric drains its amount from the target and heals by it; a Strike deals flat element
  *     damage to what was hit; Strength and the Weapon spells start
  *     their buff, so it runs during the fight (Nov 12: as tick spells they cast whenever ready,
  *     in a fight or not, and emptied the piece's mana).</li>
@@ -48,8 +48,9 @@ public enum SpellKind {
     /** A buff of elemental damage that also gives a status on every hit (Flame Weapon, ...). */
     WEAPON(Trigger.HIT),
     /**
-     * Heals the wearer by part of each hit, at most the damage dealt (Vampiric Kiss, Bite,
-     * Embrace). Was DRAIN until Nov 13; that name now belongs to the aura.
+     * Drains the spell's amount from what the wearer hits, as its own hit, and heals them by
+     * what it drained (Vampiric Kiss, Bite, Embrace; Nov 13). Was DRAIN until Nov 13; that
+     * name now belongs to the aura.
      */
     VAMPIRIC(Trigger.HIT),
     /**

@@ -42,7 +42,7 @@ import java.util.Arrays;
  *     <li>{@code Level}: the spell level. A piece can hold spells up to its max level.</li>
  *     <li>{@code Cost}: jewelry mana spent per cast.</li>
  *     <li>{@code Cooldown}: seconds before the same piece can cast it again.</li>
- *     <li>{@code Effect}: health healed (by a Vampiric spell, at most the damage dealt); for
+ *     <li>{@code Effect}: health healed (a Vampiric spell drains it from the target first); for
  *     a Weapon spell, the share of each
  *     weapon hit added as {@code Element} damage (0.25: 25% of the hit, Nov 12).</li>
  *     <li>{@code Element}: a Weapon spell's element (a damage cause id such as {@code Fire}),

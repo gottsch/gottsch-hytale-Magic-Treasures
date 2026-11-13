@@ -351,8 +351,7 @@ public final class SpellEngine {
                                Store<EntityStore> store, float damage, @Nullable Ref<EntityStore> victim) {
         return switch (spell.getKind()) {
             case HEALING -> heal(ref, store, spell.getEffect() * factors.getEffect());
-            // vampiric heals by part of the hit: at most the spell's amount, at most the damage dealt
-            case VAMPIRIC -> heal(ref, store, Math.min(spell.getEffect() * factors.getEffect(), damage));
+            case VAMPIRIC -> vampiric(spell, factors, ref, store, victim);
             case STRIKE -> strike(spell, factors, ref, victim);
             case DRAIN -> DrainAura.start(uuid, spell, factors, ref, store);
             case WEAPON -> {
@@ -374,6 +373,58 @@ public final class SpellEngine {
                 yield true;
             }
         };
+    }
+
+    /**
+     * A Vampiric spell: drains the spell's {@code Effect} (scaled by the piece) from what was
+     * hit, as its own hit, and heals the wearer by what it drained. The drain is an absolute
+     * amount, whatever the weapon dealt, held only to the health the target has left after
+     * the hit (Mark, Nov 13: capped at the damage dealt, Bite and Embrace healed no more than
+     * Kiss with an ordinary weapon; uncapped, the health came from nowhere).
+     * <ul>
+     *     <li>It drains only while the wearer is hurt, so it keeps its cooldown for when it
+     *     heals.</li>
+     *     <li>The drain is {@code MT_Drain} damage from a {@link DrainSource}, as the Drain aura
+     *     deals: it bypasses resistances, the wearer gets kill credit, and it doesn't crit or
+     *     start hit spells.</li>
+     *     <li>A target the hit killed, or one vanilla won't damage, has nothing to give: the
+     *     spell isn't charged and tries again on the next hit, as a Strike does.</li>
+     * </ul>
+     *
+     * @return true if it drained and healed
+     */
+    private static boolean vampiric(Spell spell, SpellFactors factors, Ref<EntityStore> ref, Store<EntityStore> store,
+                                    @Nullable Ref<EntityStore> victim) {
+        if (victim == null || !victim.isValid() || !hurt(ref, store)) {
+            return false;
+        }
+        Store<EntityStore> victimStore = victim.getStore();
+        EntityStatMap stats = victimStore.getComponent(victim, EntityStatMap.getComponentType());
+        EntityStatValue health = stats == null ? null : stats.get(DefaultEntityStatTypes.getHealth());
+        if (health == null || health.get() <= health.getMin()) {
+            return false;
+        }
+        DamageCause cause = DamageCause.getAssetMap().getAsset(DrainAura.CAUSE);
+        float drained = (float) Math.min(spell.getEffect() * factors.getEffect(), health.get() - health.getMin());
+        if (cause == null || drained <= 0) {
+            return false;
+        }
+        Damage hit = new Damage(new DrainSource(ref), cause, drained);
+        DamageSystems.executeDamage(victim, victimStore, hit);
+        if (hit.isCancelled()) {
+            return false;
+        }
+        heal(ref, store, drained);
+        return true;
+    }
+
+    /**
+     * @return true if the player is alive and below full health
+     */
+    private static boolean hurt(Ref<EntityStore> ref, Store<EntityStore> store) {
+        EntityStatMap stats = store.getComponent(ref, EntityStatMap.getComponentType());
+        EntityStatValue value = stats == null ? null : stats.get(DefaultEntityStatTypes.getHealth());
+        return value != null && value.get() > value.getMin() && value.get() < value.getMax();
     }
 
     /**

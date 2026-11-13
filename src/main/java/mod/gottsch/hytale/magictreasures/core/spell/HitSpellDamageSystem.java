@@ -115,7 +115,8 @@ public class HitSpellDamageSystem extends DamageEventSystem {
         }
         DamageCause cause = DamageCause.getAssetMap().getAsset(damage.getDamageCauseIndex());
         if (damage.getSource() instanceof DrainSource) {
-            player.sendMessage(Message.raw(String.format("  ~ Drain aura, %.1f", damage.getAmount()))
+            // a Drain aura's pulse or a Vampiric spell's drain (Nov 13)
+            player.sendMessage(Message.raw(String.format("  ~ Drained %.1f", damage.getAmount()))
                     .color("#c89cff"));
             return;
         }

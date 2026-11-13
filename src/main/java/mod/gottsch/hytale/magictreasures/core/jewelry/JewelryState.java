@@ -83,6 +83,10 @@ public class JewelryState {
         if (stats.definition() != null && stats.definition().getSpells().length > 0) {
             state.spells = stats.definition().getSpells().clone();
         }
+        // a named piece's own cut (Nov 13: a Lich's Ring from vanilla /give showed a Fine ruby)
+        if (stats.definition() != null && stats.definition().getGem() != null) {
+            state.cut = stats.definition().getCut();
+        }
         return state;
     }
 

@@ -74,7 +74,8 @@ public final class Jewelry {
             return JewelryStats.NONE;
         }
         JewelryState state = stack.getFromMetadataOrNull(JewelryState.KEYED_CODEC);
-        return JewelryStats.of(definition, state == null ? null : GemCut.byName(state.getCut()));
+        return JewelryStats.of(definition, GemCut.byName(state == null || state.getCut() == null
+                ? definition.getCut() : state.getCut()));
     }
 
     /**
@@ -89,7 +90,11 @@ public final class Jewelry {
         }
         JewelryState state = stack.getFromMetadataOrNull(JewelryState.KEYED_CODEC);
         if (state == null) {
-            return JewelryState.fresh(JewelryStats.of(definition));
+            return JewelryState.fresh(JewelryStats.of(definition, GemCut.byName(definition.getCut())));
+        }
+        if (state.getCut() == null && definition.getGem() != null && definition.getCut() != null) {
+            // a named piece saved before its cut was recorded (Nov 13)
+            state = state.copy().setCut(definition.getCut());
         }
         // a piece made before its stats were lowered (Nov 10) keeps no more than its maximums
         JewelryStats stats = JewelryStats.of(definition, GemCut.byName(state.getCut()));

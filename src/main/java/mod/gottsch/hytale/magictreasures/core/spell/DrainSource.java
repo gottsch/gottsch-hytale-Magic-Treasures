@@ -22,7 +22,8 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import mod.gottsch.hytale.magictreasures.core.element.ElementBonusSource;
 
 /**
- * The source of a Drain aura's damage ({@link DrainAura}). It is the player's, so kill credit
+ * The source of drained health: a Drain aura's pulse ({@link DrainAura}) and, since Nov 13, a
+ * Vampiric spell's drain on a hit ({@code SpellEngine}). It is the player's, so kill credit
  * works, but it isn't a weapon hit: like an element bonus hit (which it extends for that
  * reason) it never crits, gives statuses, adds element bonuses or starts hit spells.
  *
