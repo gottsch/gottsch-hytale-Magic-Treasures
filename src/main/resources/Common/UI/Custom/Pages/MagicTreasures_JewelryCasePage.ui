@@ -330,4 +330,12 @@ $C.@DecoratedContainer {
       Style: @Hint;
     }
   }
+
+  // The one accent (Nov 12): an iron hasp and brass lock hanging over
+  // the bottom edge, like the case model's clasp. Drawn flat in
+  // vanilla's slate tones (tools/make_case_hasp_art.py, 40 x 44).
+  Group #CaseHasp {
+    Anchor: (Width: 40, Height: 44, Bottom: -30);
+    Background: "MagicTreasures/CaseHasp.png";
+  }
 }

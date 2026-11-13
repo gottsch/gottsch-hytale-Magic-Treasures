@@ -128,6 +128,13 @@ def facet_light(im, dist, pal, cut):
     # pale); the rim toward the lightest tone halfway to white
     bright = pal[3]
     light = tuple((v + 255) // 2 for v in pal[4])
+    if colorsys.rgb_to_hsv(*(c / 255 for c in pal[4]))[2] < 0.7:
+        # a dark gem (only the voidstone; the others are 0.71 or more)
+        # gets no rim: on its dark body, with the game's reflective
+        # shading, the light rims where two facets meet read as a gold
+        # line or a gap (Mark, Nov 12). Its facets' alternating tones
+        # still show the cut.
+        return im
     px = im.load()
     for (x, y), d in dist.items():
         c = px[x, y]
@@ -183,7 +190,8 @@ def main():
                 view = {"pitch": 18, "yaw": 22.5}
             tex = TEX_OUT / f"{gem}_{shape}_{cut}.png"
             dist = facet_distance(im)
-            facet_light(sparkle(im, pal, cut), dist, pal, cut).save(tex)
+            im = facet_light(sparkle(im, pal, cut), dist, pal, cut)
+            im.save(tex)
             icons[(gem, cut)] = blocky_render.render(
                 str(model), str(tex), str(ICON_OUT / f"MT_Gem_{gem}_{cut}.png"),
                 margin=5, **view)

@@ -1,0 +1,35 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Necklace_Gold_Zephyr_Great.name",
+    "Description": "server.items.MT_Necklace_Gold_Zephyr_Great.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/MT_Necklace_Gold_Zephyr_Great.png",
+  "Quality": "Epic",
+  "ItemLevel": 7,
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Tags": {
+    "Family": [
+      "MT_Jewelry"
+    ]
+  },
+  "Model": "Items/MagicTreasures/Necklaces/Necklace_Great_Set.blockymodel",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Gold_Zephyr.png",
+  "PlayerAnimationsId": "Item",
+  "MaxStack": 1,
+  "Scale": 1.0,
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  }
+}

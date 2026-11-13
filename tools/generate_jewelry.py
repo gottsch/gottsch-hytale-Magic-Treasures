@@ -57,12 +57,13 @@ END = "# === END generated jewelry ==="
 TYPES = ["Ring", "Necklace", "Bracelet"]
 QUALITIES = ["Junk", "Common", "Uncommon", "Rare", "Epic", "Legendary"]
 
-# The starter set (Nov 9): 3 x 3 x 4 x 2 = 72 pieces (bracelets added
-# Nov 10, with their art). Grow it by adding to these lists. Iron,
-# bone, the other gems and Lord's come later.
+# The starter set (Nov 9), grown since: 3 types x 3 metals x 8 gem
+# choices x 2 styles = 144 pieces (bracelets Nov 10; Emerald, Zephyr
+# and Voidstone Nov 12). Grow it by adding to these lists. Iron, bone
+# and Lord's come later.
 STARTER_TYPES = ["Ring", "Necklace", "Bracelet"]
 STARTER_MATERIALS = ["Copper", "Silver", "Gold"]
-STARTER_GEMS = [None, "Topaz", "Ruby", "Sapphire", "Diamond"]
+STARTER_GEMS = [None, "Topaz", "Ruby", "Sapphire", "Diamond", "Emerald", "Zephyr", "Voidstone"]
 STARTER_STYLES = ["Regular", "Great"]
 
 # Placeholder art until real jewelry models exist.
@@ -133,7 +134,7 @@ def fits(style, jewelry_type):
 # styles and metals. Anything else keeps the placeholder.
 RING_STYLES = ["Regular", "Great"]
 RING_MATERIALS = ["Copper", "Silver", "Gold"]
-RING_GEMS = [None, "Topaz", "Ruby", "Sapphire", "Diamond"]
+RING_GEMS = [None, "Topaz", "Ruby", "Sapphire", "Diamond", "Emerald", "Zephyr", "Voidstone"]
 
 
 def ring_art(jewelry_type, material_id, gem_id, style_id, iid):
@@ -421,6 +422,59 @@ def glow(gem_id):
     }
 
 
+def element_name(element):
+    return "all-element" if element == "Elemental" else element
+
+
+def describe_rolls(rolls):
+    """A gem's element rolls in a few words, for example "Wind
+    resistance and damage" or "Fire resistance, and Burn on hit"."""
+    groups, extras, penalty = {}, [], ""
+    for r in rolls:
+        kind, element = r["Kind"], r.get("Element")
+        if kind == "Crit":
+            extras.append("crit chance")
+        elif kind == "OnHit":
+            extras.append(f"{r.get('Effect', element)} on hit")
+        elif kind == "Resistance" and r["Max"] < 0:
+            penalty = ", but less resistance to every element"
+        else:
+            groups.setdefault(element, []).append(kind.lower())
+    parts = [f"{element_name(e)} {' and '.join(k)}"
+             for e, k in groups.items()] + extras
+    if len(parts) > 2:
+        text = ", ".join(parts[:-1]) + ", and " + parts[-1]
+    else:
+        text = " and ".join(parts)
+    return text + penalty
+
+
+def sentence(text):
+    return text[0].upper() + text[1:]
+
+
+def cut_powers(gem, cut):
+    """What a cut of this gem gives set in jewelry (ElementRolling in
+    Java)."""
+    rolls = gem.get("Elements", [])
+    if cut == "Flawed":
+        weak = gem.get("Weakness")
+        if not weak:
+            return "No element powers."
+        weak = "every element" if weak == "Elemental" else weak
+        return f"No element powers, and it may carry a weakness to {weak}."
+    if cut == "Fine":
+        kept = [r for r in rolls if r["Kind"] not in ("OnHit", "Crit")]
+        if not kept:
+            return ""
+        return sentence(describe_rolls(kept)) + "; at half strength."
+    text = sentence(describe_rolls(rolls))
+    if cut == "Perfect" and gem.get("Bonus"):
+        return (f"{text}; at full strength, with a chance of "
+                f"{describe_rolls(gem['Bonus'])}.")
+    return f"{text}."
+
+
 def write_gems(gems, lang):
     """Writes the cut gems (MT_Gem_<Gem>_<Cut>) and the gem cutter's
     kit, which opens the cutting page."""
@@ -458,7 +512,8 @@ def write_gems(gems, lang):
             })
             lang.append(f"items.{gid}.name={cut} {gem_id}")
             lang.append(f"items.{gid}.description=A {gem_id.lower()} "
-                        f"given {look}. Set in jewelry, it adds {share} of "
+                        f"given {look}. {cut_powers(gem, cut)} "
+                        f"Set in jewelry, it adds {share} of "
                         "the gem's charge, recharges and rune boosts. "
                         "Right-click to choose the jewelry to set it in.")
             count += 1

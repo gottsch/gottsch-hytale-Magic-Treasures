@@ -1,0 +1,35 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Ring_Copper_Emerald_Great.name",
+    "Description": "server.items.MT_Ring_Copper_Emerald_Great.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/MT_Ring_Copper_Emerald_Great.png",
+  "Quality": "Rare",
+  "ItemLevel": 5,
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Tags": {
+    "Family": [
+      "MT_Jewelry"
+    ]
+  },
+  "Model": "Items/MagicTreasures/Rings/Ring_Great_Set.blockymodel",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Copper_Emerald.png",
+  "PlayerAnimationsId": "Item",
+  "MaxStack": 1,
+  "Scale": 1.0,
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  }
+}

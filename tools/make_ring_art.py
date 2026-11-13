@@ -56,7 +56,7 @@ ICON_OUT = COMMON / "Icons" / "Items" / "MagicTreasures"
 WORN_OUT = COMMON / "Cosmetics" / "MagicTreasures"
 
 MATERIALS = ["Copper", "Silver", "Gold"]
-GEMS = [None, "Topaz", "Ruby", "Sapphire", "Diamond"]
+GEMS = [None, "Topaz", "Ruby", "Sapphire", "Diamond", "Emerald", "Zephyr", "Voidstone"]
 TEX = 64
 METAL_Y = 32
 # --segments: band segments for every style, instead of the style's own
@@ -244,26 +244,53 @@ def paint_metal(im, pal, oy=0):
             put(x0 + u, y0 + v, high if edge == 0 else mid)
 
 
-# The worn necklace's chain decal, in a free corner of every ring
+# The worn necklace's chain decals, in a free corner of every ring
 # texture: the worn jewelry must use a texture the client has loaded,
 # and it loads only textures that assets reference (the jewelry items
-# reference these). The decal quads read 23 x 37 texels from here; the
-# chain itself is the vanilla necklace's chain path, rows 21-27 of its
-# texture.
-DECAL = (40, 21)
+# reference these). One texel per model unit. (x, y, w, h)
+# Nov 12: our own two decals replaced vanilla's necklace quads, whose
+# shoulder quad lies 10 units inside the bare torso (it is made for
+# the Overtops shirt layer), so no chain showed on the shoulders.
+# - CHAIN_FRONT: upright on the chest's front face, a V from where the
+#   chain comes over the shoulders down to the bail;
+# - CHAIN_TOP: flat on top of the chest, a U round the base of the
+#   neck; row 0 is the front edge, where it meets CHAIN_FRONT.
+CHAIN_FRONT = (26, 44, 16, 7)
+CHAIN_TOP = (43, 40, 20, 18)
+
+
+def chain_line(points, a, b):
+    """Texels on a line from a to b (both (u, v)), in order."""
+    (u0, v0), (u1, v1) = a, b
+    n = max(abs(u1 - u0), abs(v1 - v0), 1)
+    for k in range(n + 1):
+        p = (round(u0 + (u1 - u0) * k / n), round(v0 + (v1 - v0) * k / n))
+        if p not in points:
+            points.append(p)
+
+
+def chain_paths():
+    """{region: [(u, v), ...]} for the chain decals, left half drawn and
+    mirrored."""
+    front, top = [], []
+    w, _ = CHAIN_FRONT[2:]
+    chain_line(front, (1, 0), (7, 5))   # down to the bail
+    tw = CHAIN_TOP[2]
+    # front edge at x = -7, out round the neck's side, across its back
+    chain_line(top, (3, 0), (1, 4))
+    chain_line(top, (1, 4), (1, 14))
+    chain_line(top, (1, 14), (3, 16))
+    chain_line(top, (3, 16), (9, 16))
+    return {CHAIN_FRONT: front + [(w - 1 - u, v) for u, v in front],
+            CHAIN_TOP: top + [(tw - 1 - u, v) for u, v in top]}
 
 
 def paint_chain_decal(im, assets, pal):
-    with zipfile.ZipFile(assets) as z:
-        vanilla = Image.open(io.BytesIO(z.read(
-            "Common/Cosmetics/Overtops/Overtops_Necklace_Textures/"
-            "Necklace_1_Greyscale.png"))).convert("RGBA")
     dark, low, mid, high, shine = pal
-    for y in range(21, 28):
-        for x in range(23):
-            if vanilla.getpixel((x, y))[3] > 0:
-                col = shine if (x + y) % 3 == 0 else high
-                im.putpixel((DECAL[0] + x, DECAL[1] + (y - 21)), col + (255,))
+    for (x0, y0, _, _), points in chain_paths().items():
+        for k, (u, v) in enumerate(points):
+            col = shine if k % 3 == 0 else high
+            im.putpixel((x0 + u, y0 + v), col + (255,))
 
 
 def item_texture(assets, material, gem):
@@ -332,7 +359,7 @@ def worn_model(side, assets):
     hx, hy, hz = HAND
     g, h = WORN_GAP, WORN_HEIGHT
     # the metal of the ring item textures (a coloured texture the
-    # client has loaded; see DECAL)
+    # client has loaded; see CHAIN_FRONT)
     faces = {f: layout(METAL["outer"]) for f in ("front", "back", "left",
                                                  "right", "top", "bottom")}
     y = 5 + WORN_Y

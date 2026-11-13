@@ -50,7 +50,7 @@ ICON_OUT = COMMON / "Icons" / "Items" / "MagicTreasures"
 WORN_OUT = COMMON / "Cosmetics" / "MagicTreasures"
 
 MATERIALS = ["Copper", "Silver", "Gold"]
-GEMS = [None, "Topaz", "Ruby", "Sapphire", "Diamond"]
+GEMS = [None, "Topaz", "Ruby", "Sapphire", "Diamond", "Emerald", "Zephyr", "Voidstone"]
 
 # the item cuff, in make_ring_art.band_nodes' terms (inner radius,
 # thickness, height along its axis, segments); the gem scale (item,

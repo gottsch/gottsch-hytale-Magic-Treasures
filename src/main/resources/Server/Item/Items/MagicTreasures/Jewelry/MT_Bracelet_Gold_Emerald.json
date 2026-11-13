@@ -1,0 +1,35 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Bracelet_Gold_Emerald.name",
+    "Description": "server.items.MT_Bracelet_Gold_Emerald.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/MT_Bracelet_Gold_Emerald.png",
+  "Quality": "Rare",
+  "ItemLevel": 6,
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Tags": {
+    "Family": [
+      "MT_Jewelry"
+    ]
+  },
+  "Model": "Items/MagicTreasures/Bracelets/Bracelet_Regular_Set.blockymodel",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Gold_Emerald.png",
+  "PlayerAnimationsId": "Item",
+  "MaxStack": 1,
+  "Scale": 1.0,
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  }
+}

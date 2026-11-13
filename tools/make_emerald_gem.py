@@ -50,6 +50,11 @@ PAVILION = [(1.8, 1.8), (3.6, 3.7), (HALF_W, 5.5)]
 Q = 16
 TEX_W, TEX_H = 128, 64
 SLOTS = TEX_W // Q          # regions per row
+# transparent texels around each region (0: packed flush). The game
+# blends a region's edge texels with its neighbour's, and a trapezoid's
+# see-through corners then picked up the next region's colour: thin
+# spikes past the princess cut's corners (Mark, Nov 12)
+GUTTER = 0
 
 
 def ring(inset):
@@ -109,14 +114,20 @@ class Regions:
     def get(self, key, top_frac, tone):
         if key not in self.shapes:
             n = len(self.shapes)
-            self.shapes[key] = ((n % SLOTS) * Q, (n // SLOTS) * Q,
+            step = Q + 2 * GUTTER
+            self.shapes[key] = ((n % SLOTS) * step + GUTTER,
+                                (n // SLOTS) * step + GUTTER,
                                 top_frac, tone)
         return self.shapes[key][:2]
 
 
-def facet(nid, name, outer, inner, regions, key, tone):
+def facet(nid, name, outer, inner, regions, key, tone, pad=None,
+          widen=True):
     """A trapezoid quad between a long outer edge and a parallel inner
-    edge (3D points); the texture's narrow top is the inner edge."""
+    edge (3D points); the texture's narrow top is the inner edge. pad,
+    if given, is how much wider and taller than exact the quad is, in
+    model units (else 1% more). widen False keeps the width exact, so
+    the corners don't poke past the gem's outline (the princess cut)."""
     # key goes into make_brilliant_gem.REGIONS, which the brilliant's
     # own texture() reads too: never reuse one of its names ("girdle",
     # "table", ...), or the brilliant paints that region in the wrong
@@ -146,8 +157,10 @@ def facet(nid, name, outer, inner, regions, key, tone):
     brilliant.REGIONS[key] = region
     # a little wider and taller than exact, so neighbours overlap and
     # no seam shows between the narrow corner facets
-    return brilliant.quad_node(nid, name, centre, rot, lo * 1.01, h * 1.01,
-                               key)
+    w, hh = (lo * 1.01, h * 1.01) if pad is None else (lo + pad, h + pad)
+    if not widen:
+        w = lo
+    return brilliant.quad_node(nid, name, centre, rot, w, hh, key)
 
 
 def gem_nodes():

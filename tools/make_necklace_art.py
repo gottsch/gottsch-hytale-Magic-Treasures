@@ -12,14 +12,14 @@ They use the ring textures (Ring_<Material>[_<Gem>].png): the same
 metal and gem regions, so no texture per necklace.
 
 Worn models, Common/Cosmetics/MagicTreasures/:
-- Necklace_Worn_<Style>[_Set].blockymodel: the chain is a decal on the
-  chest, on the same two quads as the vanilla necklace
-  (Cosmetics/Overtops/Overtops_Necklace), so it lies on the body and on
-  armor. Our own chain texture follows the vanilla chain's path. Under
+- Necklace_Worn_<Style>[_Set].blockymodel: the chain is two decals,
+  one upright on the front of the chest and one flat on top of it,
+  round the base of the neck (Nov 12; it used the vanilla necklace's
+  two quads, whose shoulder quad is buried in the bare torso). Under
   the bail hangs a 3D pendant: the medallion, or the collar for a gem.
   The gem is part of the same model. It is worn with the ring item
   texture of its metal and gem (Ring_<Material>[_<Gem>].png, which has
-  the chain decal at make_ring_art.DECAL): the client refuses an
+  the chain decals at make_ring_art.CHAIN_FRONT and CHAIN_TOP): the client refuses an
   attachment texture that no asset references, so a worn-only
   greyscale texture never showed.
 
@@ -39,14 +39,15 @@ from PIL import Image
 import blocky_render
 import make_brilliant_gem as brilliant
 from make_gem_art import COMMON
-from make_ring_art import DECAL, METAL, RINGS_OUT, as_pieces, box, layout
+from make_ring_art import (CHAIN_FRONT, CHAIN_TOP, METAL, RINGS_OUT,
+                           as_pieces, box, layout)
 
 NECK_OUT = COMMON / "Items" / "MagicTreasures" / "Necklaces"
 ICON_OUT = COMMON / "Icons" / "Items" / "MagicTreasures"
 WORN_OUT = COMMON / "Cosmetics" / "MagicTreasures"
 
 MATERIALS = ["Copper", "Silver", "Gold"]
-GEMS = [None, "Topaz", "Ruby", "Sapphire", "Diamond"]
+GEMS = [None, "Topaz", "Ruby", "Sapphire", "Diamond", "Emerald", "Zephyr", "Voidstone"]
 
 STYLES = {
     # chain loop radii, link count and thickness; medallion size;
@@ -79,7 +80,7 @@ UP_Y = 0.8
 BAIL = (0.0, 4.0 + UP_Y, 11.3 + OUT_Z)
 TILT = math.radians(9)
 # the pendant's regions in the ring textures (the worn necklace uses the
-# ring item texture of its metal and gem; see make_ring_art.DECAL)
+# ring item texture of its metal and gem; see make_ring_art.CHAIN_TOP)
 WORN_REGIONS = {
     "coin_face": METAL["collar_top"], "coin_side": METAL["collar_side"],
     "boss": METAL["prong"], "collar_face": METAL["collar_top"],
@@ -90,6 +91,46 @@ WORN_REGIONS = {
 
 def quat_x(angle):
     return brilliant.quat_axis((1, 0, 0), angle)
+
+
+# The player's chest box, in the frame the Chest node's children are
+# placed in: the bone's pivot plus its box offset (0, 11, 3), so the
+# box centre (Player.blockymodel: 28 x 22 x 20, stretch 0.98 / 0.95).
+# Its top is at y 10.8 and its front at z 9.5; the neck (15 x 11)
+# rises from it, centred, and the head starts at y 14. BAIL is in this
+# frame too. (Nov 12: the chain was first placed from the bare pivot
+# and came out 11 units up, across the mouth.)
+CHEST_TOP = 10.8
+CHEST_FRONT = 9.5
+# the chain lies just off the body: on the shoulders, and from the top
+# of the chest leaning out to the bail
+CHAIN_TOP_Y = CHEST_TOP + 0.3
+CHAIN_TOP_Z = CHEST_FRONT + 0.8
+CHAIN_LEAN = math.atan2(BAIL[2] - 0.2 - CHAIN_TOP_Z, 5.5)
+
+
+def chain_quad(nid, name, region, pos, rot):
+    """A chain decal: one double-sided quad reading region (x, y, w, h)
+    of the ring texture, one texel per unit; its texture's top row is
+    the quad's +y edge (the front edge once laid flat)."""
+    x, y, w, h = region
+    return {
+        "id": str(nid), "name": name, "children": [],
+        "position": {"x": pos[0], "y": pos[1], "z": pos[2]},
+        "orientation": {"x": rot[0], "y": rot[1], "z": rot[2],
+                        "w": rot[3]},
+        "shape": {
+            "type": "quad", "offset": {"x": 0, "y": 0, "z": 0},
+            "stretch": {"x": 1, "y": 1, "z": 1},
+            "settings": {"isPiece": False, "size": {"x": w, "y": h},
+                         "normal": "+Z"},
+            "textureLayout": {"front": {
+                "offset": {"x": x, "y": y},
+                "mirror": {"x": False, "y": False}, "angle": 0}},
+            "unwrapMode": "custom", "visible": True,
+            "doubleSided": True, "shadingMode": "flat",
+        },
+    }
 
 
 def faces(region_map, regions):
@@ -273,24 +314,28 @@ def vanilla_necklace(assets):
 
 def worn_model(vanilla_model, style, gem):
     """The worn necklace, one attachment: the chain decal on the vanilla
-    necklace's chest quads (pointed at DECAL in the ring texture), the
+    chain decals (CHAIN_FRONT and CHAIN_TOP in the ring texture), the
     bail, and the pendant with its gem."""
     st = STYLES[style]
     regions = WORN_REGIONS
     belly = json.loads(json.dumps(vanilla_model["nodes"][0]))
     chest = belly["children"][0]
-
-    def retexture(node):
-        for f in ((node.get("shape") or {}).get("textureLayout") or {}).values():
-            f["offset"]["x"] = DECAL[0]
-            f["offset"]["y"] = DECAL[1]
-        for c in node.get("children") or []:
-            retexture(c)
-
-    for decal in chest["children"]:   # the vanilla chain quads
-        decal["position"]["y"] += UP_Y
-        decal["position"]["z"] += OUT_Z
-        retexture(decal)
+    # our own chain decals (Nov 12) in place of vanilla's two quads,
+    # whose shoulder quad is buried in the bare torso
+    chain = [
+        # from the top front edge of the chest, leaning out to the bail
+        chain_quad(4100, "Chain_Front", CHAIN_FRONT,
+                   (0.0,
+                    CHEST_TOP + 0.1
+                    - CHAIN_FRONT[3] / 2 * math.cos(CHAIN_LEAN),
+                    CHAIN_TOP_Z
+                    + CHAIN_FRONT[3] / 2 * math.sin(CHAIN_LEAN)),
+                   quat_x(-CHAIN_LEAN)),
+        # flat on the shoulders, its top row at the front edge
+        chain_quad(4101, "Chain_Top", CHAIN_TOP,
+                   (0.0, CHAIN_TOP_Y, CHAIN_TOP_Z - CHAIN_TOP[3] / 2),
+                   quat_x(math.pi / 2)),
+    ]
     bail = box(4000, "Bail", BAIL, quat_x(-TILT), (2, 2, 2), (0.9, 1.2, 0.9),
                all_faces("bail", regions))
     collar = collar_for(st["worn_gem"])
@@ -300,7 +345,7 @@ def worn_model(vanilla_model, style, gem):
     pendant = pendant_nodes(st, gem, center, quat_x(-TILT), regions,
                             st["worn_coin"], collar, st["worn_gem"],
                             with_gem=True)
-    chest["children"] = chest["children"] + [bail, pendant]
+    chest["children"] = chain + [bail, pendant]
     return as_pieces({"nodes": [belly], "lod": "auto"})
 
 
