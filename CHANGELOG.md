@@ -25,7 +25,7 @@ First version: magic jewelry, gems and spells. Targets Hytale server 0.7.7.
   - Lesser Drain, Drain and Greater Drain (an aura draining nearby hostile mobs).
 - Spells cast themselves when they are useful: when you're hurt, when you hit, when you take elemental damage, or whenever ready. The metal and gem scale each spell's cost, cooldown, strength, duration and range.
 - Tooltips show each spell's real numbers on that piece: the total, its base and what the metal and gem add, then cost, cooldown and duration.
-- Worn pieces refill their charge over 8 to 12 minutes, depending on the metal.
+- Worn pieces refill their charge over 8 to 10 minutes, depending on the metal.
 - **Gem cutting:** a Gem Cutter's Kit (Workbench, Tools: 2 Iron Bar, 1 Light Leather, 1 Topaz) cuts raw gems into Flawed, Fine, Flawless or Perfect. A gem cutting skill (levels 1 to 10) grows with each cut; harder gems need a higher level, and a cut at the edge of your skill can shatter the gem.
 - **Seven gems** (Topaz, Emerald, Ruby, Zephyr, Sapphire, Diamond, Voidstone), each with its own element powers: resistances, statuses on hit, elemental damage added to hits, critical hit chance. A better cut adds more charge and recharges and unlocks more of its powers; a Flawed one may carry a weakness.
 - **Working on jewelry:** right-click a spell scroll, cut gem, core rune, crystal or another piece of jewelry and choose a piece to imbue, set, socket, recharge or repair.

@@ -28,6 +28,9 @@
     ]
   },
   "PlayerAnimationsId": "Item",
+  "Utility": {
+    "Compatible": true
+  },
   "MaxStack": 1,
   "MaxDurability": 10,
   "ItemSoundSetId": "ISS_Weapons_Wood",

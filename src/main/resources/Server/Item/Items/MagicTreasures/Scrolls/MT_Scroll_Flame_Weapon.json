@@ -29,6 +29,9 @@
   "Model": "Items/Consumables/Scrolls/Scroll.blockymodel",
   "Texture": "Items/MagicTreasures/Scrolls/Spell_Scroll_Texture.png",
   "PlayerAnimationsId": "Item",
+  "Utility": {
+    "Compatible": true
+  },
   "MaxStack": 10,
   "Interactions": {
     "Primary": {

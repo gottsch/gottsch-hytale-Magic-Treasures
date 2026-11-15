@@ -1,13 +1,11 @@
-<!-- TITLE IMAGE: upload to the wiki's images folder, then:
-<p align="center"><img src="https://raw.githubusercontent.com/wiki/gottsch/gottsch-hytale-MagicTreasures/images/magictreasures-title.png" alt="Magic Treasures" width="500"></p>
--->
+<p align="center"><img src="https://raw.githubusercontent.com/wiki/gottsch/gottsch-hytale-Magic-Treasures/images/magictreasures-title.png" alt="Magic Treasures" width="700"></p>
 
 # Magic Treasures (Hytale)
 
 Magic jewelry, gems and spells for Hytale. Find or craft rings, necklaces and bracers, cut gems and set them, imbue spells from scrolls, and wear up to four pieces at once. Worn jewelry casts its spells for you when they're useful, from its own charge.
 
 This is the Hytale version of the [Minecraft mod](https://www.curseforge.com/minecraft/mc-mods/magic-treasures) of the same name.
-Download it from [CurseForge](https://www.curseforge.com/hytale/mods/magic-treasures). The [wiki](https://github.com/gottsch/gottsch-hytale-MagicTreasures/wiki) lists every spell, metal and gem with its numbers.
+Download it from [CurseForge](https://www.curseforge.com/hytale/mods/magic-treasures). The [wiki](https://github.com/gottsch/gottsch-hytale-Magic-Treasures/wiki) lists every spell, metal and gem with its numbers.
 
 ## Features
 
@@ -83,8 +81,8 @@ Built from the [HytaleModding plugin template](https://github.com/HytaleModding/
 ## Links
 
 - [CurseForge](https://www.curseforge.com/hytale/mods/magic-treasures)
-- [Wiki](https://github.com/gottsch/gottsch-hytale-MagicTreasures/wiki)
-- [Issues and suggestions](https://github.com/gottsch/gottsch-hytale-MagicTreasures/issues)
+- [Wiki](https://github.com/gottsch/gottsch-hytale-Magic-Treasures/wiki)
+- [Issues and suggestions](https://github.com/gottsch/gottsch-hytale-Magic-Treasures/issues)
 - [Discord](https://discord.gg/CpWXamx)
 - Support the mod: [Ko-fi](https://ko-fi.com/gottsch) or [PayPal](https://www.paypal.com/paypalme/gottschsmods)
 

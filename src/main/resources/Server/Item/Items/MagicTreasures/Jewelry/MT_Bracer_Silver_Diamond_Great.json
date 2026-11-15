@@ -17,6 +17,9 @@
   "Model": "Items/MagicTreasures/Bracers/Bracer_Great_Set.blockymodel",
   "Texture": "Items/MagicTreasures/Rings/Ring_Silver_Diamond.png",
   "PlayerAnimationsId": "Item",
+  "Utility": {
+    "Compatible": true
+  },
   "MaxStack": 1,
   "Scale": 1.0,
   "ItemSoundSetId": "ISS_Items_Gems",

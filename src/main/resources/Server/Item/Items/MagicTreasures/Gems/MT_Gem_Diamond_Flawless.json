@@ -16,6 +16,9 @@
   "Model": "Items/MagicTreasures/Gems/Brilliant_Gem.blockymodel",
   "Texture": "Items/MagicTreasures/Gems/Diamond_Brilliant_Flawless.png",
   "PlayerAnimationsId": "Item",
+  "Utility": {
+    "Compatible": true
+  },
   "Scale": 1.0,
   "MaxStack": 64,
   "ItemSoundSetId": "ISS_Items_Gems",

@@ -16,5 +16,8 @@
   "Model": "Items/Consumables/Recipes/Recipe.blockymodel",
   "Texture": "Items/Consumables/Recipes/Recipe_Texture.png",
   "PlayerAnimationsId": "Item",
+  "Utility": {
+    "Compatible": true
+  },
   "MaxStack": 10
 }

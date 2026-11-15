@@ -16,6 +16,9 @@
   "Model": "Items/MagicTreasures/Gems/Princess_Gem.blockymodel",
   "Texture": "Items/MagicTreasures/Gems/Voidstone_Princess_Flawed.png",
   "PlayerAnimationsId": "Item",
+  "Utility": {
+    "Compatible": true
+  },
   "Scale": 1.0,
   "MaxStack": 64,
   "ItemSoundSetId": "ISS_Items_Gems",

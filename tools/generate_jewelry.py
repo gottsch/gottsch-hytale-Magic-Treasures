@@ -284,6 +284,9 @@ def main():
                         "Model": PLACEHOLDER_MODEL,
                         "Texture": PLACEHOLDER_TEXTURE,
                         "PlayerAnimationsId": "Item",
+                        # lets a torch or shield stay in the off hand while this is
+                        # held, as vanilla food and tools do (Nov 15)
+                        "Utility": {"Compatible": True},
                         "MaxStack": 1,
                         "Scale": 0.6,
                         "ItemSoundSetId": "ISS_Items_Gems",
@@ -391,6 +394,9 @@ def write_scrolls(spells, types, lang):
             "Model": SCROLL_MODEL,
             "Texture": SCROLL_TEXTURE,
             "PlayerAnimationsId": "Item",
+            # lets a torch or shield stay in the off hand while this is
+            # held, as vanilla food and tools do (Nov 15)
+            "Utility": {"Compatible": True},
             "MaxStack": 10,
             "Interactions": {
                 "Primary": {"Interactions": [IMBUE]},
@@ -418,6 +424,9 @@ def write_scrolls(spells, types, lang):
             "Model": RECIPE_MODEL,
             "Texture": RECIPE_TEXTURE,
             "PlayerAnimationsId": "Item",
+            # lets a torch or shield stay in the off hand while this is
+            # held, as vanilla food and tools do (Nov 15)
+            "Utility": {"Compatible": True},
             "MaxStack": 10,
         })
         lang.append(f"items.{rid}.name={jewelry_type} Recipe")
@@ -558,6 +567,9 @@ def write_gems(gems, lang):
                 "Texture": f"Items/MagicTreasures/Gems/{gem_id}_{shape}"
                            f"_{cut}.png",
                 "PlayerAnimationsId": "Item",
+                # lets a torch or shield stay in the off hand while this is
+                # held, as vanilla food and tools do (Nov 15)
+                "Utility": {"Compatible": True},
                 "Scale": 1.0,
                 "MaxStack": 64,
                 "ItemSoundSetId": "ISS_Items_Gems",
@@ -590,6 +602,9 @@ def write_gems(gems, lang):
         "IconProperties": {"Scale": 0.58823, "Rotation": [341, 141, 8],
                            "Translation": [1, -13.5]},
         "PlayerAnimationsId": "Item",
+        # lets a torch or shield stay in the off hand while this is
+        # held, as vanilla food and tools do (Nov 15)
+        "Utility": {"Compatible": True},
         "MaxStack": 1,
         "MaxDurability": KIT_USES,
         "ItemSoundSetId": "ISS_Weapons_Wood",
