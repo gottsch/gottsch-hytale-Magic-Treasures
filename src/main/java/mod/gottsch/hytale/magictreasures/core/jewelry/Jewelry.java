@@ -26,6 +26,7 @@ import com.hypixel.hytale.server.core.asset.type.item.config.metadata.ItemDispla
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryDefinition;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryStyle;
+import mod.gottsch.hytale.magictreasures.core.spell.SpellTooltip;
 import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
 
 import javax.annotation.Nullable;
@@ -194,7 +195,11 @@ public final class Jewelry {
         }
         line(parts, "Spell level", "up to " + stats.maxLevel(), VALUE);
         line(parts, "Rune sockets", state.getRunes().length + " / " + stats.sockets(), VALUE);
-        line(parts, "Spells", state.getSpells().length == 0 ? "none" : spellNames(state.getSpells()), VALUE);
+        if (state.getSpells().length == 0) {
+            line(parts, "Spells", "none", VALUE);
+        } else {
+            spells(parts, stats, state);
+        }
         if (state.getRunes().length > 0) {
             line(parts, "Runes", String.join(", ", state.getRunes()), VALUE);
         }
@@ -221,13 +226,41 @@ public final class Jewelry {
         return "Curse of " + curse;
     }
 
-    private static String spellNames(String[] ids) {
-        List<String> names = new ArrayList<>();
-        for (String id : ids) {
-            Spell spell = Spell.get(id);
-            names.add(spell == null ? id : spell.getName() + " (" + spell.getLevel() + ")");
+    /**
+     * One line per spell with what it does on this piece, a line of where the amount comes
+     * from, then a line of its cost, cooldown and the like (Nov 14), for example:
+     * <pre>
+     * Vampiric Embrace (6): drains 25 on hit
+     *    (20, +25% Bone)
+     *    cooldown 7.5 s
+     * </pre>
+     */
+    private static void spells(List<Message> parts, JewelryStats stats, JewelryState state) {
+        parts.add(Message.raw("Spells:").color(LABEL));
+        parts.add(Message.raw("\n"));
+        GemCut cut = GemCut.byName(state.getCut());
+        for (String id : state.getSpells()) {
+            SpellTooltip spell = SpellTooltip.of(id, stats, cut);
+            if (spell == null) {
+                parts.add(Message.raw(" " + id).color(VALUE));
+                parts.add(Message.raw("\n"));
+                continue;
+            }
+            parts.add(Message.raw(" " + spell.name() + (spell.summary().isEmpty() ? "" : ": ")).color(VALUE));
+            if (!spell.summary().isEmpty()) {
+                parts.add(Message.raw(spell.summary()).color(GOOD));
+            }
+            parts.add(Message.raw("\n"));
+            // on its own line, so it doesn't wrap mid-way (Nov 15)
+            if (!spell.breakdown().isEmpty()) {
+                parts.add(Message.raw("    (" + spell.breakdown() + ")").color(LABEL));
+                parts.add(Message.raw("\n"));
+            }
+            for (String detail : spell.details()) {
+                parts.add(Message.raw("    " + detail).color(LABEL));
+                parts.add(Message.raw("\n"));
+            }
         }
-        return String.join(", ", names);
     }
 
     /**
