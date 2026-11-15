@@ -26,17 +26,23 @@ import com.hypixel.hytale.server.core.command.system.basecommands.AbstractComman
  * @author Mark Gottschling on 11/08/2026
  */
 public class MagicTreasuresCommand extends AbstractCommandCollection {
+    /**
+     * The permission group every player is in, for the subcommands open to everyone (what the
+     * deprecated {@code setPermissionGroup(GameMode.Adventure)} sets).
+     */
+    public static final String PERMISSION_EVERYONE = "hytale:Adventurer";
 
     public MagicTreasuresCommand() {
         super("magictreasures", "Magic Treasures root command.");
         this.addAliases("mt");
+        // open, so players reach worn and cutting; other subcommands keep their own node
+        this.setPermissionGroups(PERMISSION_EVERYONE);
         this.addSubCommand(new GiveCommand());
         this.addSubCommand(new InfoCommand());
-        this.addSubCommand(new CastTestCommand());
         this.addSubCommand(new WornCommand());
         this.addSubCommand(new HitsCommand());
-        this.addSubCommand(new SlotsCommand());
         this.addSubCommand(new CuttingCommand());
+        this.addSubCommand(new SetCuttingCommand());
         this.addSubCommand(new LootCommand());
     }
 }

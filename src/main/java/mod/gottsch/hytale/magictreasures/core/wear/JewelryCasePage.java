@@ -52,7 +52,7 @@ import java.util.List;
  * container window, so each slot can show what goes in it.
  * <ul>
  *     <li>The top row is the case: slots 0 and 1 take rings, slot 2 a necklace and slot 3 a
- *     bracelet, each with a picture of its type. Clicking a piece takes it off, into the
+ *     bracer, each with a picture of its type. Clicking a piece takes it off, into the
  *     player's storage or hotbar.</li>
  *     <li>Below are the pieces the player carries (hotbar, storage, backpack). Clicking one puts
  *     it on: into the first free slot of its type, or swapped with the piece in that type's
@@ -72,7 +72,7 @@ import java.util.List;
 public class JewelryCasePage extends InteractiveCustomUIPage<JewelryCasePage.Click> {
     public static final String LAYOUT = "Pages/MagicTreasures_JewelryCasePage.ui";
     /** The case's slots by jewelry type. */
-    public static final String[] SLOT_TYPES = {"Ring", "Ring", "Necklace", "Bracelet"};
+    public static final String[] SLOT_TYPES = {"Ring", "Ring", "Necklace", "Bracer"};
     /** How many carried pieces the page shows (two rows of nine, in the layout). */
     public static final int CARRIED_SLOTS = 18;
     /** Where taken-off pieces go, in order. */

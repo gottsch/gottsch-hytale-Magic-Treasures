@@ -47,6 +47,8 @@ public class WornCommand extends AbstractPlayerCommand {
 
     public WornCommand() {
         super("worn", "Show the jewelry you are wearing.");
+        // open to every player (Nov 15, release)
+        this.setPermissionGroups(MagicTreasuresCommand.PERMISSION_EVERYONE);
         this.refreshArg = withDefaultArg("refresh", "Send your look again", ArgTypes.BOOLEAN, false, "false");
     }
 

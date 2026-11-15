@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * One weighted choice in a {@link LootTable}:
  * <pre>
  * {"Items": ["MT_Scroll_.*"], "MinItemLevel": 1, "MaxItemLevel": 2, "Weight": 30}
- * {"Items": ["MT_(Ring|Necklace|Bracelet)_Gold_(Ruby|Topaz|Sapphire)_Great"],
+ * {"Items": ["MT_(Ring|Necklace|Bracer)_Gold_(Ruby|Topaz|Sapphire)_Great"],
  *  "Cuts": ["Flawless", "Perfect"], "Weight": 5}
  * </pre>
  * {@code Items} are regular expressions matched against whole item ids; one matching item is

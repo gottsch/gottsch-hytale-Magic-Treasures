@@ -2,7 +2,7 @@ $C = "../Common.ui";
 
 // The Treasures Case page (Nov 11), opened by right-clicking the case
 // (JewelryCasePage.java). The top row is what the case holds: two
-// rings, a necklace and a bracelet, each slot with a picture of what
+// rings, a necklace and a bracer, each slot with a picture of what
 // goes in it. Below are the pieces the player carries. Moving is by
 // click: each slot is a one-slot ItemGrid with an invisible Button
 // over it, because page item grids don't send clicks or take drags.
@@ -85,7 +85,7 @@ $C.@DecoratedContainer {
         ItemGrid #WornGrid3 {
           Anchor: (Width: @Slot + 2, Height: @Slot + 2, Horizontal: 0, Vertical: 0);
           SlotsPerRow: 1;
-          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Bracelet.png");
+          Style: (...@Grid, SlotBackground: "MagicTreasures/CaseSlot_Bracer.png");
         }
         Button #WornButton3 {
           Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);

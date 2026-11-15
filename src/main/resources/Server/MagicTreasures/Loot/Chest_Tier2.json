@@ -26,19 +26,19 @@
     },
     {
       "Items": [
-        "MT_(Ring|Necklace|Bracelet)_(Copper|Silver|Gold)"
+        "MT_(Ring|Necklace|Bracer)_(Copper|Silver|Gold)"
       ],
       "Weight": 20
     },
     {
       "Items": [
-        "MT_(Ring|Necklace|Bracelet)_(Copper|Silver)_Great"
+        "MT_(Ring|Necklace|Bracer)_(Copper|Silver)_Great"
       ],
       "Weight": 10
     },
     {
       "Items": [
-        "MT_(Ring|Necklace|Bracelet)_(Copper|Silver)_(Ruby|Topaz|Sapphire|Emerald|Diamond|Zephyr|Voidstone)"
+        "MT_(Ring|Necklace|Bracer)_(Copper|Silver)_(Ruby|Topaz|Sapphire|Emerald|Diamond|Zephyr|Voidstone)"
       ],
       "Weight": 10,
       "Cuts": [

@@ -1,7 +1,7 @@
 """Treasures Case slot art: a slot background per jewelry type.
 
 Each image is an empty inventory slot with a faint silhouette of what
-goes in it (ring, necklace or bracelet), drawn in the style of vanilla's
+goes in it (ring, necklace or bracer), drawn in the style of vanilla's
 armor slot icons: a dark navy fill with a lighter outline. They are for
 the Treasures Case page (MagicTreasures_JewelryCasePage.ui).
 
@@ -27,7 +27,7 @@ SLOT_FILL = (30, 41, 57, 255)
 SLOT_EDGE = (47, 61, 80, 255)
 FILL = (40, 52, 71, 255)
 LINE = (82, 98, 122, 255)
-TYPES = ["Ring", "Necklace", "Bracelet"]
+TYPES = ["Ring", "Necklace", "Bracer"]
 
 
 def draw_ring(d, s):
@@ -74,7 +74,7 @@ def draw_necklace(d, s):
                (c - pw, py + ph * 0.45)], fill=FILL, outline=LINE, width=w)
 
 
-def draw_bracelet(d, s):
+def draw_bracer(d, s):
     c = s / 2
     w = 6 * SS
     # a wide band in perspective: a short cylinder
@@ -101,7 +101,7 @@ def draw_bracelet(d, s):
 
 
 DRAW = {"Ring": draw_ring, "Necklace": draw_necklace,
-        "Bracelet": draw_bracelet}
+        "Bracer": draw_bracer}
 
 
 def icon(kind):

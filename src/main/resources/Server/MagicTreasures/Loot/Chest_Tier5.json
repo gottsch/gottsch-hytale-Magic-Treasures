@@ -18,13 +18,13 @@
     },
     {
       "Items": [
-        "MT_(Ring|Necklace|Bracelet)_(Gold)_Great"
+        "MT_(Ring|Necklace|Bracer)_(Gold)_Great"
       ],
       "Weight": 10
     },
     {
       "Items": [
-        "MT_(Ring|Necklace|Bracelet)_(Gold)_(Ruby|Topaz|Sapphire|Emerald|Diamond|Zephyr|Voidstone)_Great"
+        "MT_(Ring|Necklace|Bracer)_(Gold)_(Ruby|Topaz|Sapphire|Emerald|Diamond|Zephyr|Voidstone)_Great"
       ],
       "Weight": 25,
       "Cuts": [

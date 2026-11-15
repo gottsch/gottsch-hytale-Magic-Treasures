@@ -70,14 +70,14 @@ NAMED_ITEM_FIELDS = ["Model", "Texture", "Icon"]
 BEGIN = "# === BEGIN generated jewelry (tools/generate_jewelry.py) ==="
 END = "# === END generated jewelry ==="
 
-TYPES = ["Ring", "Necklace", "Bracelet"]
+TYPES = ["Ring", "Necklace", "Bracer"]
 QUALITIES = ["Junk", "Common", "Uncommon", "Rare", "Epic", "Legendary"]
 
 # The starter set (Nov 9), grown since: 3 types x 3 metals x 8 gem
-# choices x 2 styles = 144 pieces (bracelets Nov 10; Emerald, Zephyr
+# choices x 2 styles = 144 pieces (bracers Nov 10; Emerald, Zephyr
 # and Voidstone Nov 12). Grow it by adding to these lists. Iron, bone
 # and Lord's come later.
-STARTER_TYPES = ["Ring", "Necklace", "Bracelet"]
+STARTER_TYPES = ["Ring", "Necklace", "Bracer"]
 STARTER_MATERIALS = ["Copper", "Silver", "Gold"]
 STARTER_GEMS = [None, "Topaz", "Ruby", "Sapphire", "Diamond", "Emerald", "Zephyr", "Voidstone"]
 STARTER_STYLES = ["Regular", "Great"]
@@ -174,13 +174,13 @@ def necklace_art(jewelry_type, material_id, gem_id, style_id, iid):
     return model, texture, f"Icons/Items/MagicTreasures/{iid}.png"
 
 
-def bracelet_art(jewelry_type, material_id, gem_id, style_id, iid):
-    """(model, texture, icon) for a bracelet with real art, else None.
-    Bracelets use the ring textures (tools/make_bracelet_art.py)."""
-    if (jewelry_type != "Bracelet" or style_id not in RING_STYLES
+def bracer_art(jewelry_type, material_id, gem_id, style_id, iid):
+    """(model, texture, icon) for a bracer with real art, else None.
+    Bracers use the ring textures (tools/make_bracer_art.py)."""
+    if (jewelry_type != "Bracer" or style_id not in RING_STYLES
             or material_id not in RING_MATERIALS or gem_id not in RING_GEMS):
         return None
-    model = f"Items/MagicTreasures/Bracelets/Bracelet_{style_id}" +         ("_Set" if gem_id else "") + ".blockymodel"
+    model = f"Items/MagicTreasures/Bracers/Bracer_{style_id}" +         ("_Set" if gem_id else "") + ".blockymodel"
     texture = f"Items/MagicTreasures/Rings/Ring_{material_id}" +         (f"_{gem_id}" if gem_id else "") + ".png"
     return model, texture, f"Icons/Items/MagicTreasures/{iid}.png"
 
@@ -292,7 +292,7 @@ def main():
                                     style_id, iid)
                            or necklace_art(jewelry_type, material_id,
                                            gem_id, style_id, iid)
-                           or bracelet_art(jewelry_type, material_id,
+                           or bracer_art(jewelry_type, material_id,
                                            gem_id, style_id, iid))
                     if art:
                         item["Model"], item["Texture"], item["Icon"] = art

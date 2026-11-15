@@ -21,45 +21,40 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
-import com.hypixel.hytale.server.core.command.system.arguments.system.DefaultArg;
-import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import mod.gottsch.hytale.magictreasures.core.cutting.GemCutPage;
 import mod.gottsch.hytale.magictreasures.core.cutting.GemCutting;
-import mod.gottsch.hytale.magictreasures.core.cutting.GemCuttingSkill;
 
 import javax.annotation.Nonnull;
 
 /**
- * {@code /mt cutting [level]}: shows your gem cutting level and XP, or, for testing, sets
- * your level (to the start of it).
+ * {@code /mt cutting}: shows your gem cutting level and XP. Open to every player (Nov 15,
+ * release); setting the level moved to {@link SetCuttingCommand}, for operators.
  *
  * @author Mark Gottschling on 11/10/2026
  */
 public class CuttingCommand extends AbstractPlayerCommand {
-    private final DefaultArg<Integer> levelArg;
 
     public CuttingCommand() {
-        super("cutting", "Show your gem cutting level, or set it for testing.");
-        this.levelArg = withDefaultArg("level", "Set your gem cutting level (1-" + GemCutting.MAX_LEVEL
-                + "); 0 just shows it", ArgTypes.INTEGER, 0, "0");
+        super("cutting", "Show your gem cutting level.");
+        this.setPermissionGroups(MagicTreasuresCommand.PERMISSION_EVERYONE);
     }
 
     @Override
     protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
                            @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
-        int level = levelArg.get(context);
-        if (level > 0) {
-            level = Math.min(level, GemCutting.MAX_LEVEL);
-            store.putComponent(ref, GemCuttingSkill.getComponentType(),
-                    new GemCuttingSkill(GemCutting.xpFor(level)));
-        }
-        int xp = GemCutPage.skill(store, ref);
+        context.sendMessage(Message.raw(describe(GemCutPage.skill(store, ref))));
+    }
+
+    /**
+     * @return for example "Gem cutting level 3 (50 XP, 40 XP to the next)."
+     */
+    static String describe(int xp) {
         int now = GemCutting.level(xp);
         String next = now >= GemCutting.MAX_LEVEL ? "max level" : (GemCutting.xpFor(now + 1) - xp) + " XP to the next";
-        context.sendMessage(Message.raw("Gem cutting level " + now + " (" + xp + " XP, " + next + ")."));
+        return "Gem cutting level " + now + " (" + xp + " XP, " + next + ").";
     }
 }

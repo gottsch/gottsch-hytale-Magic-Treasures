@@ -44,7 +44,7 @@ import java.util.Map;
  *     <li>The case counts from anywhere in the inventory: utility, hotbar, storage, then
  *     backpack (changed Nov 10; it was utility and hotbar only). If the player has more than
  *     one, only the first found counts.</li>
- *     <li>The case holds 4 pieces, but at most 2 rings, 1 necklace and 1 bracelet are worn,
+ *     <li>The case holds 4 pieces, but at most 2 rings, 1 necklace and 1 bracer are worn,
  *     in slot order. Any other piece in the case is carried, not worn.</li>
  * </ul>
  * The case's contents live in its stack's metadata ({@code Container.Items}), where the
@@ -64,7 +64,7 @@ public record WornJewelry(@Nullable String caseLocation, List<ItemStack> pieces,
     public static final WornJewelry NONE = new WornJewelry(null, List.of(), null, (short) -1, List.of());
 
     /** How many pieces of each type can be worn at once. */
-    public static final Map<String, Integer> LIMITS = Map.of("Ring", 2, "Necklace", 1, "Bracelet", 1);
+    public static final Map<String, Integer> LIMITS = Map.of("Ring", 2, "Necklace", 1, "Bracer", 1);
 
     /**
      * Reads what the player is wearing: the first Treasures Case found in the utility section,

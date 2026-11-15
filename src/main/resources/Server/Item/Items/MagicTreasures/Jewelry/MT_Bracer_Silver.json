@@ -1,0 +1,57 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Bracer_Silver.name",
+    "Description": "server.items.MT_Bracer_Silver.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/MT_Bracer_Silver.png",
+  "Quality": "Uncommon",
+  "ItemLevel": 5,
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Tags": {
+    "Family": [
+      "MT_Jewelry"
+    ]
+  },
+  "Model": "Items/MagicTreasures/Bracers/Bracer_Regular.blockymodel",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Silver.png",
+  "PlayerAnimationsId": "Item",
+  "MaxStack": 1,
+  "Scale": 1.0,
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  },
+  "Recipe": {
+    "TimeSeconds": 2,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Silver",
+        "Quantity": 4
+      },
+      {
+        "ItemId": "MT_Recipe_Bracer",
+        "Quantity": 1
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "Workbench_Tinkering"
+        ]
+      }
+    ]
+  }
+}

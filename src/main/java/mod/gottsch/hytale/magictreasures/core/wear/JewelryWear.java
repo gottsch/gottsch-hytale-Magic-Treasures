@@ -53,9 +53,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * ready after joining. The look has to be sent again at join because the server rebuilds the
  * player's model then. Armor changes and respawning keep it (tested Nov 9, 2026).
  * <p>
- * Rings, necklaces and bracelets are visible (art Nov 10), in the colours of their item
+ * Rings, necklaces and bracers are visible (art Nov 10), in the colours of their item
  * textures. Rings sit on a finger (the first worn ring right, the second left), mostly inside
- * gloves; a bracelet sits on the left wrist.
+ * gloves; a bracer sits on the left wrist.
  *
  * @author Mark Gottschling on 11/09/2026
  */
@@ -77,14 +77,14 @@ public final class JewelryWear {
     public static final String RING_MODEL_RIGHT = "Cosmetics/MagicTreasures/Ring_Worn_R.blockymodel";
     public static final String RING_MODEL_LEFT = "Cosmetics/MagicTreasures/Ring_Worn_L.blockymodel";
     public static final String NECKLACE_WORN = "Cosmetics/MagicTreasures/Necklace_Worn_";
-    /** A worn bracelet, on the left wrist (tools/make_bracelet_art.py): {@code + style [+ "_Set"]}. */
-    public static final String BRACELET_WORN = "Cosmetics/MagicTreasures/Bracelet_Worn_";
+    /** A worn bracer, on the left wrist (tools/make_bracer_art.py): {@code + style [+ "_Set"]}. */
+    public static final String BRACER_WORN = "Cosmetics/MagicTreasures/Bracer_Worn_";
     public static final String ITEM_TEXTURES = "Items/MagicTreasures/Rings/Ring_";
     /** The metals with ring textures. */
     public static final Set<String> ART_MATERIALS = Set.of("Copper", "Silver", "Gold");
     /**
      * Metals with worn-ring art only (Nov 13: Bone, for the Vampire Lich's Ring; no Bone
-     * necklace or bracelet art yet).
+     * necklace or bracer art yet).
      */
     public static final Set<String> RING_ONLY_MATERIALS = Set.of("Bone");
     /** What each online player wears, and the visible pieces last sent (null: the look was never changed). */
@@ -197,12 +197,12 @@ public final class JewelryWear {
             return List.of();
         }
         boolean necklace = "Necklace".equalsIgnoreCase(type);
-        if (necklace || "Bracelet".equalsIgnoreCase(type)) {
+        if (necklace || "Bracer".equalsIgnoreCase(type)) {
             // the starter art has Regular and Great; other styles use Great's for now
             String style = "Regular".equalsIgnoreCase(definition.getStyle()) ? "Regular" : "Great";
             String gem = definition.getGem();
             String texture = ITEM_TEXTURES + metal + (gem == null ? "" : "_" + gem) + ".png";
-            String model = (necklace ? NECKLACE_WORN : BRACELET_WORN) + style + (gem == null ? "" : "_Set")
+            String model = (necklace ? NECKLACE_WORN : BRACER_WORN) + style + (gem == null ? "" : "_Set")
                     + ".blockymodel";
             return List.of(new ModelAttachment(model, texture, null, null, 1.0));
         }

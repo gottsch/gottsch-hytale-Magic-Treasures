@@ -1,0 +1,20 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Recipe_Bracer.name",
+    "Description": "server.items.MT_Recipe_Bracer.description"
+  },
+  "Icon": "Icons/ItemsGenerated/Recipe_Page.png",
+  "Quality": "MT_Recipe_Uncommon",
+  "Categories": [
+    "Items.Recipes"
+  ],
+  "Tags": {
+    "Type": [
+      "Recipe"
+    ]
+  },
+  "Model": "Items/Consumables/Recipes/Recipe.blockymodel",
+  "Texture": "Items/Consumables/Recipes/Recipe_Texture.png",
+  "PlayerAnimationsId": "Item",
+  "MaxStack": 10
+}
