@@ -200,7 +200,10 @@ public class ImbuePage extends ChoiceBasePage {
         if (id.startsWith(Imbuing.SCROLL_PREFIX)) {
             id = id.substring(Imbuing.SCROLL_PREFIX.length());
         }
-        return id.replace("Rune_", "").replace("Rock_Gem_", "").replace("Ingredient_Crystal_", "Crystal ")
+        if (id.startsWith("Rune_")) {
+            return Jewelry.runeName(id);
+        }
+        return id.replace("Rock_Gem_", "").replace("Ingredient_Crystal_", "Crystal ")
                 .replace('_', ' ');
     }
 }

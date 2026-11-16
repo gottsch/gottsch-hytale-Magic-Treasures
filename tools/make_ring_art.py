@@ -85,6 +85,15 @@ METAL = {
     "rim_outer": (16, METAL_Y + 8, 4, 2),
 }
 
+# The necklace's leather cord (v1.1, Mark, Nov 16: an all-metal chain
+# ran together with the pendant, so the cord is leather and only the
+# bail and pendant are metal). A twisted look: diagonal stripes.
+CORD = (20, METAL_Y + 8, 4, 4)
+# tanned leather, dark to bright (the vanilla hide icons are lighter
+# and would run together with copper and gold)
+LEATHER = [(40, 24, 15), (66, 41, 25), (92, 59, 36), (120, 80, 50),
+           (146, 101, 66)]
+
 # the worn band (in the hand's frame: the hand box is 10 x 12 x 14)
 HAND = (10.0, 12.0, 14.0)
 WORN_GAP = 0.4       # how far the band stands off the skin
@@ -244,6 +253,15 @@ def paint_metal(im, pal, oy=0):
             put(x0 + u, y0 + v, high if edge == 0 else mid)
 
 
+def paint_cord(im):
+    _, low, mid, high, _ = LEATHER
+    x0, y0, w, h = CORD
+    for v in range(h):
+        for u in range(w):
+            col = (mid, high, mid, low)[(u + v) % 4]
+            im.putpixel((x0 + u, y0 + v), col + (255,))
+
+
 # The worn necklace's chain decals, in a free corner of every ring
 # texture: the worn jewelry must use a texture the client has loaded,
 # and it loads only textures that assets reference (the jewelry items
@@ -285,11 +303,12 @@ def chain_paths():
             CHAIN_TOP: top + [(tw - 1 - u, v) for u, v in top]}
 
 
-def paint_chain_decal(im, assets, pal):
-    dark, low, mid, high, shine = pal
+def paint_chain_decal(im):
+    """The worn cord, in leather (v1.1; it was the metal's own shades)."""
+    _, low, mid, high, _ = LEATHER
     for (x0, y0, _, _), points in chain_paths().items():
         for k, (u, v) in enumerate(points):
-            col = shine if k % 3 == 0 else high
+            col = (high, mid, low)[k % 3]
             im.putpixel((x0 + u, y0 + v), col + (255,))
 
 
@@ -300,7 +319,8 @@ def item_texture(assets, material, gem):
         im.paste(gem_tex.crop((0, 0, TEX, METAL_Y)), (0, 0))
     pal = metal_palette(assets, material)
     paint_metal(im, pal)
-    paint_chain_decal(im, assets, pal)
+    paint_cord(im)
+    paint_chain_decal(im)
     return im
 
 

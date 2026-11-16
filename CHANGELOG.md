@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-11-16
+
+### Changed
+
+- Necklaces hang on a leather cord instead of a metal chain, so the metal pendant stands out. This covers the held necklace, its icon and the worn necklace.
+- A piece's element powers show where they come from, and powers of the same kind add into one line, as they do in play: "Poison resistance +21% (silver 14%, emerald 7%)", "Burn on hit 10% (ruby)". Pieces made before this update show their totals without the source.
+
+### Fixed
+
+- Tooltips showed a socketed rune's item id ("Rune_Enrage") instead of its name ("Enrage").
+- Rune names with two words ran together ("GroundSlam") in `/mt worn`, the worn-jewelry panel, the imbue page and the rune boost message.
+- A resistance from both the metal and the gem showed as two separate lines.
+
 ## [1.0.0] - 2026-11-15
 
 First version: magic jewelry, gems and spells. Targets Hytale server 0.7.7.

@@ -201,11 +201,30 @@ public final class Jewelry {
             spells(parts, stats, state);
         }
         if (state.getRunes().length > 0) {
-            line(parts, "Runes", String.join(", ", state.getRunes()), VALUE);
-        }
-        for (ElementProperty property : ElementRolling.decode(state)) {
-            parts.add(Message.raw(property.describe()).color(property.good() ? GOOD : BAD));
+            // the runes' own names (server.items.Rune_Enrage.name is "Enrage"), not their ids
+            // (Mark, Nov 16: the tooltip read "Rune_Enrage")
+            parts.add(Message.raw("Runes: ").color(LABEL));
+            for (int i = 0; i < state.getRunes().length; i++) {
+                if (i > 0) {
+                    parts.add(Message.raw(", ").color(VALUE));
+                }
+                parts.add(Message.translation("server.items." + state.getRunes()[i] + ".name").color(VALUE));
+            }
             parts.add(Message.raw("\n"));
+        }
+        for (List<ElementProperty> group : forTooltip(ElementRolling.decode(state))) {
+            ElementProperty total = total(group);
+            boolean several = group.size() > 1;
+            parts.add(Message.raw(total.describe() + (several ? "" : source(group.getFirst())))
+                    .color(total.good() ? GOOD : BAD));
+            parts.add(Message.raw("\n"));
+            String breakdown = several ? breakdown(group) : null;
+            if (breakdown != null) {
+                // on its own line, like a spell's breakdown: on one line with the total it
+                // wrapped the tooltip (Mark, Nov 16)
+                parts.add(Message.raw("    (" + breakdown + ")").color(LABEL));
+                parts.add(Message.raw("\n"));
+            }
         }
         for (String curse : definition.getCurses()) {
             parts.add(Message.raw(curseText(curse)).color(BAD));
@@ -264,6 +283,17 @@ public final class Jewelry {
     }
 
     /**
+     * A rune's name for plain text (chat, the panel), from its id: "Rune_GroundSlam" becomes
+     * "Ground Slam". Where a {@link Message} can be used, prefer the rune's own translated name
+     * ({@code server.items.<id>.name}), as the tooltip does; a few vanilla names differ from
+     * their ids (Rune_PoisonImbue is "Imbue Poison").
+     */
+    public static String runeName(String runeId) {
+        String bare = runeId.startsWith("Rune_") ? runeId.substring("Rune_".length()) : runeId;
+        return bare.replace('_', ' ').replaceAll("(?<=[a-z])(?=[A-Z])", " ");
+    }
+
+    /**
      * The piece's name as players see it: a name the stack was given, if any, or else its
      * item's own (translated) name. Named jewelry gets its name either way, so use this for
      * anything shown on screen (the client translates it).
@@ -300,6 +330,76 @@ public final class Jewelry {
             name.append(definition.getGem()).append(' ');
         }
         return name.append(definition.getType()).toString();
+    }
+
+    /**
+     * The piece's element properties as the tooltip shows them, in groups: resistances and crit
+     * chances of the same element are one group, shown as one line with their total, as they add
+     * up in play ({@code ElementWear} sums them). Element damage and statuses on hit are a group
+     * each. (Mark, Nov 16: a silver emerald piece showed "Poison resistance +14%" and "+7%" as two
+     * lines; it now reads "Poison resistance +21% (silver 14%, emerald 7%)".) Display only: the
+     * saved properties are unchanged.
+     */
+    private static List<List<ElementProperty>> forTooltip(List<ElementProperty> properties) {
+        List<List<ElementProperty>> out = new ArrayList<>();
+        for (ElementProperty property : properties) {
+            boolean adds = property.kind() == ElementProperty.Kind.RESISTANCE
+                    || property.kind() == ElementProperty.Kind.CRIT;
+            List<ElementProperty> same = null;
+            for (int i = 0; adds && i < out.size(); i++) {
+                ElementProperty seen = out.get(i).getFirst();
+                if (seen.kind() == property.kind() && seen.element().equals(property.element())) {
+                    same = out.get(i);
+                }
+            }
+            if (same == null) {
+                same = new ArrayList<>();
+                out.add(same);
+            }
+            same.add(property);
+        }
+        return out;
+    }
+
+    /**
+     * @return the group as one property: its value the sum of the parts as the tooltip rounds
+     *         them, so the total always matches the breakdown (14% + 7% reads 21%)
+     */
+    private static ElementProperty total(List<ElementProperty> group) {
+        ElementProperty first = group.getFirst();
+        if (group.size() == 1) {
+            return first;
+        }
+        long percent = 0;
+        for (ElementProperty part : group) {
+            percent += Math.round(part.value() * 100);
+        }
+        return new ElementProperty(first.kind(), first.element(), percent / 100.0, first.effect());
+    }
+
+    /**
+     * @return a lone power's source after its line, " (ruby)"; empty for a piece rolled before
+     *         v1.1, which didn't save its sources
+     */
+    private static String source(ElementProperty property) {
+        return property.source() == null ? "" : " (" + property.source().toLowerCase() + ")";
+    }
+
+    /**
+     * @return what makes up a group's total, "silver 14%, emerald 7%", shown on the line under
+     *         it; null for a piece rolled before v1.1, which didn't save its sources
+     */
+    @Nullable
+    private static String breakdown(List<ElementProperty> group) {
+        if (group.stream().allMatch(part -> part.source() == null)) {
+            return null;
+        }
+        List<String> bits = new ArrayList<>();
+        for (ElementProperty part : group) {
+            String percent = Math.round(part.value() * 100) + "%";
+            bits.add(part.source() == null ? percent : part.source().toLowerCase() + " " + percent);
+        }
+        return String.join(", ", bits);
     }
 
     private static void line(List<Message> parts, String label, String value, String color) {

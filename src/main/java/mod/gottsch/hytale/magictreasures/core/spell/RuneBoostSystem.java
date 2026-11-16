@@ -182,7 +182,7 @@ public class RuneBoostSystem extends EntityEventSystem<EntityStore, InteractionC
     private static void report(PlayerRef playerRef, Ref<EntityStore> ref, Store<EntityStore> store,
                                CoreItemAbility ability, String runeId, Map<String, Float> before,
                                Map<String, Float> after, @Nullable String boostedBy) {
-        String name = runeId.replace("Rune_", "");
+        String name = Jewelry.runeName(runeId);
         float costBefore = ability.getCost() * before.getOrDefault("Cost", 1f);
         float costAfter = ability.getCost() * after.getOrDefault("Cost", 1f);
         float cooldownBefore = ability.getCooldownS() * before.getOrDefault("Cooldown", 1f);

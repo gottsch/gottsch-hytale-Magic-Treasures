@@ -3,9 +3,10 @@
 
 Item models (held, dropped, icons), in
 Common/Items/MagicTreasures/Necklaces/:
-- Necklace_<Style>.blockymodel: a loop of chain links (alternate
-  links turned 90 degrees, like a real chain) with a medallion at the
-  bottom: an octagonal coin with a raised boss;
+- Necklace_<Style>.blockymodel: a leather cord with a medallion at
+  the bottom: an octagonal coin with a raised boss. (Until v1.1 the
+  cord was a metal chain of links, alternate links turned 90 degrees,
+  and it ran together with the pendant; Mark, Nov 16.);
 - Necklace_<Style>_Set.blockymodel: the same with a collar holding a
   brilliant gem facing out. Great adds four prongs.
 They use the ring textures (Ring_<Material>[_<Gem>].png): the same
@@ -39,7 +40,7 @@ from PIL import Image
 import blocky_render
 import make_brilliant_gem as brilliant
 from make_gem_art import COMMON
-from make_ring_art import (CHAIN_FRONT, CHAIN_TOP, METAL, RINGS_OUT,
+from make_ring_art import (CHAIN_FRONT, CHAIN_TOP, CORD, METAL, RINGS_OUT,
                            as_pieces, box, layout)
 
 NECK_OUT = COMMON / "Items" / "MagicTreasures" / "Necklaces"
@@ -133,6 +134,18 @@ def chain_quad(nid, name, region, pos, rot):
     }
 
 
+# the cord's region in the ring textures (make_ring_art.CORD)
+CORD_REGIONS = {"cord": CORD}
+
+
+def cord_link(nid, k, pos, rot, length, t):
+    """One straight piece of the cord: square in section, a little
+    longer than its stretch of path, so the pieces overlap."""
+    return box(nid + k, f"Link_{k}", pos, rot, (2, 1, 2),
+               (length * 1.1, t * 0.9, t * 0.9),
+               all_faces("cord", CORD_REGIONS))
+
+
 def faces(region_map, regions):
     return {face: layout(regions[name]) for face, name in region_map.items()}
 
@@ -149,16 +162,11 @@ def chain_nodes(st, nid=2000):
            for k in range(n)]
     for k in range(n):
         (x0, y0), (x1, y1) = pts[k], pts[(k + 1) % n]
-        length = math.hypot(x1 - x0, y1 - y0) * 1.15
+        length = math.hypot(x1 - x0, y1 - y0)
         ang = math.atan2(y1 - y0, x1 - x0)
         rot = brilliant.quat_axis((0, 0, 1), ang)
-        if k % 2:
-            # turn every other link on its long axis, like a chain
-            rot = blocky_render.quat_mul(rot, quat_x(math.pi / 2))
-        region = "prong" if k % 2 == 0 else "edge"
-        nodes.append(box(nid + k, f"Link_{k}", ((x0 + x1) / 2, (y0 + y1) / 2, 0),
-                         rot, (2, 1, 2), (length, t * 0.6, t * 1.4),
-                         all_faces(region, METAL)))
+        nodes.append(cord_link(nid, k, ((x0 + x1) / 2, (y0 + y1) / 2, 0),
+                               rot, length, t))
     return nodes
 
 
@@ -262,7 +270,7 @@ def coil_points(st, bail_y):
 
 
 def path_nodes(pts, st, nid=2000):
-    """Chain links along a 3D path, every other link turned."""
+    """The cord along a 3D path."""
     nodes = []
     t = st["link"]
     for k in range(len(pts) - 1):
@@ -280,13 +288,9 @@ def path_nodes(pts, st, nid=2000):
         else:
             rot = brilliant.quat_axis((0, axis[1] / n, axis[2] / n),
                                       math.acos(max(-1.0, min(1.0, u[0]))))
-        if k % 2:
-            rot = blocky_render.quat_mul(rot, quat_x(math.pi / 2))
-        region = "prong" if k % 2 == 0 else "edge"
-        nodes.append(box(nid + k, f"Link_{k}",
-                         ((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2), rot,
-                         (2, 1, 2), (length * 1.15, t * 0.6, t * 1.4),
-                         all_faces(region, METAL)))
+        nodes.append(cord_link(nid, k,
+                               ((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2),
+                               rot, length, t))
     return nodes
 
 
