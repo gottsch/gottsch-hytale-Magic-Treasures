@@ -279,6 +279,10 @@ public class JewelryCasePage extends InteractiveCustomUIPage<JewelryCasePage.Cli
     private static void tooltip(UICommandBuilder commands, String button, @Nullable ItemStack stack,
                                 @Nullable String empty) {
         String selector = button + ".TooltipTextSpans";
+        // an empty carried slot has nothing to say or click: hide its button, since even an
+        // empty tooltip draws an empty box on hover (Mark, Nov 15). Set every time, as the
+        // page is refilled in place.
+        commands.set(button + ".Visible", Jewelry.isJewelry(stack) || empty != null);
         if (Jewelry.isJewelry(stack)) {
             Message text = Message.empty().insertAll(
                     Message.raw(Jewelry.displayName(stack)).bold(true).color(NAME),

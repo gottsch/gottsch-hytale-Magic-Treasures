@@ -6,8 +6,8 @@ straps, iron corner guards and a riveted iron plinth, an overhanging lid
 with a raised top, and an iron hasp with a brass lock across the seam.
 The node chain above the box (L-Attachment > Origin_Projectile >
 Origin_Item) is kept from the old bag model, so the case is held the
-same way. The item id stays MT_Jewelry_Case, so cases already in worlds
-keep working.
+same way. The item id is MT_Treasures_Case (MT_Jewelry_Case until Nov 15,
+before release).
 
 Every face gets its own rectangle of the texture, packed in rows, and is
 painted by its part's material, so the texture never has to be drawn by
@@ -27,9 +27,9 @@ import blocky_render  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 COMMON = ROOT / "src" / "main" / "resources" / "Common"
-MODEL_OUT = COMMON / "Items" / "MagicTreasures" / "Jewelry_Case.blockymodel"
-TEX_OUT = COMMON / "Items" / "MagicTreasures" / "Jewelry_Case.png"
-ICON_OUT = COMMON / "Icons" / "Items" / "MagicTreasures" / "MT_Jewelry_Case.png"
+MODEL_OUT = COMMON / "Items" / "MagicTreasures" / "Treasures_Case.blockymodel"
+TEX_OUT = COMMON / "Items" / "MagicTreasures" / "Treasures_Case.png"
+ICON_OUT = COMMON / "Icons" / "Items" / "MagicTreasures" / "MT_Treasures_Case.png"
 
 TEX_W, TEX_H = 128, 64
 

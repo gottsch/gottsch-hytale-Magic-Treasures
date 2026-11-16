@@ -1,9 +1,9 @@
 {
   "TranslationProperties": {
-    "Name": "server.items.MT_Jewelry_Case.name",
-    "Description": "server.items.MT_Jewelry_Case.description"
+    "Name": "server.items.MT_Treasures_Case.name",
+    "Description": "server.items.MT_Treasures_Case.description"
   },
-  "Icon": "Icons/Items/MagicTreasures/MT_Jewelry_Case.png",
+  "Icon": "Icons/Items/MagicTreasures/MT_Treasures_Case.png",
   "IconProperties": {
     "Scale": 0.5,
     "Rotation": [
@@ -21,8 +21,8 @@
   "Categories": [
     "Items.Armors"
   ],
-  "Model": "Items/MagicTreasures/Jewelry_Case.blockymodel",
-  "Texture": "Items/MagicTreasures/Jewelry_Case.png",
+  "Model": "Items/MagicTreasures/Treasures_Case.blockymodel",
+  "Texture": "Items/MagicTreasures/Treasures_Case.png",
   "PlayerAnimationsId": "Shield",
   "Scale": 1.0,
   "MaxStack": 1,

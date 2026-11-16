@@ -1,5 +1,5 @@
-items.MT_Jewelry_Case.name=Treasures Case
-items.MT_Jewelry_Case.description=Holds the jewelry you wear: 2 rings, a necklace and a bracer. It works from anywhere in your inventory. To change jewelry, hold it and right-click.
+items.MT_Treasures_Case.name=Treasures Case
+items.MT_Treasures_Case.description=Holds the jewelry you wear: 2 rings, a necklace and a bracer. It works from anywhere in your inventory. To change jewelry, hold it and right-click.
 general.deathCause.MT_Drain=You were drained of life!
 customUI.mtImbuePage.title=Imbue Jewelry
 customUI.mtImbuePage.item=Item

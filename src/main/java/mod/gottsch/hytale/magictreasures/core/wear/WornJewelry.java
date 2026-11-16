@@ -60,7 +60,7 @@ import java.util.Map;
  */
 public record WornJewelry(@Nullable String caseLocation, List<ItemStack> pieces, @Nullable ItemContainer section,
                           short caseSlot, List<Short> pieceSlots) {
-    public static final String CASE_ITEM_ID = "MT_Jewelry_Case";
+    public static final String CASE_ITEM_ID = "MT_Treasures_Case";
     public static final WornJewelry NONE = new WornJewelry(null, List.of(), null, (short) -1, List.of());
 
     /** How many pieces of each type can be worn at once. */
