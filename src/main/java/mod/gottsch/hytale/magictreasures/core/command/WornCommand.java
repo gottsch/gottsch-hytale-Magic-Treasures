@@ -142,7 +142,7 @@ public class WornCommand extends AbstractPlayerCommand {
             parts.add(name + (left > 0 ? " in " + (int) Math.ceil(left) + " s" : " ready"));
         }
         for (String rune : state.getRunes()) {
-            parts.add(rune.replace("Rune_", "").replace('_', ' ') + " rune");
+            parts.add(Jewelry.runeName(rune) + " rune");
         }
         return String.join(", ", parts);
     }

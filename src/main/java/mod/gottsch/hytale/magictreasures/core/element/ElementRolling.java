@@ -74,11 +74,12 @@ public final class ElementRolling {
             return state;
         }
         Random random = ThreadLocalRandom.current();
-        List<ElementProperty> rolled = new ArrayList<>(rollMetal(definition, random));
+        List<ElementProperty> rolled = new ArrayList<>(sourced(rollMetal(definition, random),
+                definition.getMaterial()));
         Gemstone gem = Gemstone.get(definition.getGem());
         if (gem != null) {
             GemCut cut = GemCut.byName(state.getCut());
-            rolled.addAll(rollGem(gem, cut == null ? GemCut.FINE : cut, random));
+            rolled.addAll(sourced(rollGem(gem, cut == null ? GemCut.FINE : cut, random), gem.getId()));
         }
         return state.copy().setElements(encode(rolled)).setRolled(true);
     }
@@ -88,7 +89,7 @@ public final class ElementRolling {
      */
     public static JewelryState addGem(JewelryState state, Gemstone gem, GemCut cut) {
         List<String> all = new ArrayList<>(Arrays.asList(state.getElements()));
-        all.addAll(Arrays.asList(encode(rollGem(gem, cut, ThreadLocalRandom.current()))));
+        all.addAll(Arrays.asList(encode(sourced(rollGem(gem, cut, ThreadLocalRandom.current()), gem.getId()))));
         return state.copy().setElements(all.toArray(new String[0]));
     }
 
@@ -162,6 +163,18 @@ public final class ElementRolling {
                     }
                 }
             }
+        }
+        return out;
+    }
+
+    /**
+     * @return the properties, each marked as coming from the given metal or gem (v1.1, Nov 16:
+     *         the tooltip shows where each power comes from)
+     */
+    private static List<ElementProperty> sourced(List<ElementProperty> properties, @Nullable String source) {
+        List<ElementProperty> out = new ArrayList<>(properties.size());
+        for (ElementProperty property : properties) {
+            out.add(property.withSource(source));
         }
         return out;
     }

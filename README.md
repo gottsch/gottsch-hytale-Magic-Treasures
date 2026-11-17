@@ -21,7 +21,7 @@ Download it from [CurseForge](https://www.curseforge.com/hytale/mods/magic-treas
 
 ## Installing
 
-1. Put `MagicTreasures-1.0.0.jar` in your Hytale `UserData\Mods` folder (or your server's `mods` folder).
+1. Put `MagicTreasures-1.1.0.jar` in your Hytale `UserData\Mods` folder (or your server's `mods` folder).
 2. For a local world, enable it in the world's `config.json` (`UserData\Saves\<your world>`):
    ```json
    "Mods": {

@@ -32,9 +32,24 @@ import java.util.Locale;
  *                {@link Kind#ON_HIT} the chance per hit
  * @param effect  the status effect given on hit (vanilla {@code Burn}, {@code Poison},
  *                {@code Slow}, ...), or null
+ * @param source  where the property came from, the metal or gem asset id ({@code Silver},
+ *                {@code Emerald}), for the tooltip's breakdown; null on pieces rolled before
+ *                v1.1 (Nov 16), which didn't save it
  * @author Mark Gottschling on 11/11/2026
  */
-public record ElementProperty(Kind kind, String element, double value, @Nullable String effect) {
+public record ElementProperty(Kind kind, String element, double value, @Nullable String effect,
+                              @Nullable String source) {
+
+    public ElementProperty(Kind kind, String element, double value, @Nullable String effect) {
+        this(kind, element, value, effect, null);
+    }
+
+    /**
+     * @return this property, from the given metal or gem
+     */
+    public ElementProperty withSource(@Nullable String source) {
+        return new ElementProperty(kind, element, value, effect, source);
+    }
 
     public enum Kind {
         /** Less damage taken of the element (negative: more). */
@@ -63,6 +78,11 @@ public record ElementProperty(Kind kind, String element, double value, @Nullable
 
     public String encode() {
         String text = kind.name() + ":" + element + ":" + String.format(Locale.ROOT, "%.3f", value);
+        // KIND:Element:value[:effect[:source]]; the source (v1.1) comes after an effect field,
+        // left empty when there's no effect, so the first four fields keep their places
+        if (source != null) {
+            return text + ":" + (effect == null ? "" : effect) + ":" + source;
+        }
         return effect == null ? text : text + ":" + effect;
     }
 
@@ -83,7 +103,9 @@ public record ElementProperty(Kind kind, String element, double value, @Nullable
             return null;
         }
         try {
-            return new ElementProperty(kind, bits[1], Double.parseDouble(bits[2]), bits.length > 3 ? bits[3] : null);
+            String effect = bits.length > 3 && !bits[3].isEmpty() ? bits[3] : null;
+            String source = bits.length > 4 && !bits[4].isEmpty() ? bits[4] : null;
+            return new ElementProperty(kind, bits[1], Double.parseDouble(bits[2]), effect, source);
         } catch (NumberFormatException e) {
             return null;
         }

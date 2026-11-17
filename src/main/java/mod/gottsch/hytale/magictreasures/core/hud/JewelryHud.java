@@ -184,7 +184,7 @@ public class JewelryHud extends CustomUIHud {
         List<String> parts = new ArrayList<>();
         // socketed runes first: they boost the same rune in the ability slots
         for (String rune : state.getRunes()) {
-            parts.add("+" + rune.replace("Rune_", ""));
+            parts.add("+" + Jewelry.runeName(rune));
         }
         for (String id : state.getSpells()) {
             Spell spell = Spell.get(id);

@@ -162,7 +162,7 @@ public final class Imbuing {
     }
 
     private static Outcome rune(ItemStack piece, JewelryStats stats, JewelryState state, String name, String runeId) {
-        String runeName = runeId.replace("Rune_", "");
+        String runeName = Jewelry.runeName(runeId);
         if (Arrays.asList(state.getRunes()).contains(runeId)) {
             return refused(Kind.RUNE, "Already holds " + runeName);
         }
