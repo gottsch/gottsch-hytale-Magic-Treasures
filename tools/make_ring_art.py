@@ -52,6 +52,7 @@ import io
 import json
 import math
 import zipfile
+from contextlib import contextmanager
 
 from PIL import Image
 
@@ -110,9 +111,30 @@ def regions(style):
             for name, (x, y, w, h) in METAL.items()}
 
 
+# how far a box stands out of a face it would otherwise share a plane
+# with: coplanar overlapping faces z-fight, worst on a held item in
+# first person (Mark, Nov 18, on Starfall's octagons)
+PROUD = 0.04
+
+
 def texels(style, size):
     """A box's texture size in texels on this style."""
     return tuple(v * FINE.get(style, 1) for v in size)
+
+
+@contextmanager
+def plain_density():
+    """Every style at 1x while inside: for a ring built on the Great
+    band whose texture is 64 square at the old layout (the Vampire
+    Lich's Ring, make_bone_ring_art; Nov 18: after FINE, its band
+    would have read the empty 2x regions)."""
+    saved = dict(FINE)
+    FINE.update({style: 1 for style in FINE})
+    try:
+        yield
+    finally:
+        FINE.clear()
+        FINE.update(saved)
 
 
 # The necklace's leather cord (v1.1, Mark, Nov 16: an all-metal chain
@@ -206,7 +228,8 @@ def item_model(style, gem):
             rim = band_nodes(style, 1100 + (0 if z > 0 else 50), 0.25,
                              0.7, f"Rim_{side}", "rim_outer")
             for node in rim:
-                node["position"]["z"] = z * (st["w"] / 2 - 0.35)
+                # PROUD: the rim's outer face clear of the band's edge
+                node["position"]["z"] = z * (st["w"] / 2 - 0.35 + PROUD)
             nodes += rim
     if gem:
         top = st["r"] + st["t"]
@@ -517,8 +540,11 @@ def worn_model(side, assets):
     parts = [
         ("Band_Front", (out * (hx / 2 - f / 2 + g / 2), y, hz / 2 + g / 2),
          (f + g, h, g)),
-        ("Band_Out", (out * (hx / 2 + g / 2), y, hz / 2 - f / 2 + g / 2),
-         (g, h, f + g)),
+        # PROUD short at the front, so the two don't share the front
+        # corner's face
+        ("Band_Out", (out * (hx / 2 + g / 2), y,
+                      hz / 2 - f / 2 + g / 2 - PROUD / 2),
+         (g, h, f + g - PROUD)),
     ]
     children = []
     for i, (name, pos, size) in enumerate(parts):

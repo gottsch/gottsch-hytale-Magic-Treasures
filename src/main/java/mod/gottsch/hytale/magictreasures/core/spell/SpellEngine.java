@@ -35,6 +35,13 @@ import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.server.core.modules.time.WorldTimeResource;
+import com.hypixel.hytale.server.core.universe.world.World;
+import com.hypixel.hytale.server.core.universe.world.chunk.section.BlockSection;
+import com.hypixel.hytale.server.core.universe.world.chunk.section.ChunkLightData;
+import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
+import org.joml.Vector3d;
 import mod.gottsch.hytale.magictreasures.core.config.MagicTreasuresConfig;
 import mod.gottsch.hytale.magictreasures.core.element.ElementBonusSource;
 import mod.gottsch.hytale.magictreasures.core.element.ElementWear;
@@ -82,6 +89,11 @@ public final class SpellEngine {
 
     /** Cat Sight's light: a soft white, reach about 12 blocks, small radius to keep the tint. */
     private static final ColorLight CAT_SIGHT_LIGHT = new ColorLight((byte) 1, (byte) 12, (byte) 12, (byte) 13);
+    /**
+     * Cat Sight casts only where the light is at most this, of 15 (v1.2: it kept casting in
+     * daylight). Dusk passes it; a torch-lit room doesn't.
+     */
+    public static final int DARK_LIGHT = 7;
 
     /** Per player: when each piece's spell is ready again, keyed {@code slot:spellId}, in epoch ms. */
     private static final Map<UUID, Map<String, Long>> COOLDOWNS = new ConcurrentHashMap<>();
@@ -399,6 +411,10 @@ public final class SpellEngine {
             case THORNS -> thorns(spell, factors, ref, damage, victim);
             case BARRIER -> barrier(spell, factors, ref, store);
             case CAT_SIGHT -> {
+                // only in the dark: at night or underground, not in daylight (v1.2)
+                if (!dark(ref, store)) {
+                    yield false;
+                }
                 EntityEffect effect = buff(spell, factors, ref, store);
                 if (effect == null) {
                     yield false;
@@ -534,6 +550,37 @@ public final class SpellEngine {
         Damage hit = new Damage(new ElementBonusSource(wearer), cause, amount);
         DamageSystems.executeDamage(attacker, attackerStore, hit);
         return !hit.isCancelled();
+    }
+
+    /**
+     * @return true if the light where the player's head is is at most {@link #DARK_LIGHT}: the
+     * brighter of the block light and the sky light scaled by the time of day, as the game's
+     * spawning reads it (LightRangePredicate.calculateLightValue, 0 to 15). Sky light is 15 in
+     * the open by day and falls toward 0 at night; underground it is 0, so torches decide.
+     * The player's own dynamic lights (Cat Sight, a held torch) aren't in the chunk's light.
+     */
+    static boolean dark(Ref<EntityStore> ref, Store<EntityStore> store) {
+        TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());
+        if (transform == null) {
+            return false;
+        }
+        World world = store.getExternalData().getWorld();
+        WorldTimeResource time = store.getResource(WorldTimeResource.getResourceType());
+        Vector3d position = transform.getPosition();
+        int x = (int) Math.floor(position.x());
+        int y = (int) Math.floor(position.y() + 1.5);
+        int z = (int) Math.floor(position.z());
+        Ref<ChunkStore> section = world.getChunkStore().getChunkSectionReferenceAtBlock(x, y, z);
+        if (section == null || !section.isValid() || time == null) {
+            return false;
+        }
+        BlockSection blocks = world.getChunkStore().getStore().getComponent(section, BlockSection.getComponentType());
+        if (blocks == null) {
+            return false;
+        }
+        ChunkLightData light = blocks.getGlobalLight();
+        int sky = (int) (light.getSkyLight(x, y, z) * time.getSunlightFactor());
+        return Math.max(sky, light.getBlockLightIntensity(x, y, z)) <= DARK_LIGHT;
     }
 
     /**

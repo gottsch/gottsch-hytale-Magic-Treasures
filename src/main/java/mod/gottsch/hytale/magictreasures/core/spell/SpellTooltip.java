@@ -109,6 +109,10 @@ public record SpellTooltip(Message name, @Nullable Message summary, @Nullable Me
                 extras.add(Lang.of("spell.barrierWhen")
                         .param("percent", Math.round(SpellEngine.BARRIER_HEALTH * 100)));
             }
+            case CAT_SIGHT -> {
+                summary = null;
+                extras.add(Lang.of("spell.catSightWhen"));
+            }
             default -> summary = null;
         }
 

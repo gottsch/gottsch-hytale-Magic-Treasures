@@ -55,6 +55,12 @@
         "MT_Necklace_Last_Stand"
       ],
       "Weight": 1
+    },
+    {
+      "Items": [
+        "MT_Ring_Starfall"
+      ],
+      "Weight": 2
     }
   ]
 }

@@ -1,0 +1,38 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Ring_Starfall.name",
+    "Description": "server.items.MT_Ring_Starfall.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/MT_Ring_Starfall.png",
+  "Quality": "Epic",
+  "ItemLevel": 7,
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Tags": {
+    "Family": [
+      "MT_Jewelry"
+    ]
+  },
+  "Model": "Items/MagicTreasures/Rings/Ring_Starfall.blockymodel",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Starfall.png",
+  "PlayerAnimationsId": "Item",
+  "Utility": {
+    "Compatible": true
+  },
+  "MaxStack": 1,
+  "Scale": 1.0,
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  }
+}

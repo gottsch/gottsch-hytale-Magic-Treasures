@@ -113,6 +113,10 @@ NAMED = {
         "Amuleto da Última Resistência",
         "Forjado para um capitão que jurou nunca abandonar a muralha. "
         "Quando a muralha cai, ele cumpre esse juramento por você."),
+    "MT_Ring_Starfall": (
+        "Estrela Cadente",
+        "Esmaltado com um pedaço do céu noturno. Quem o usa enxerga como "
+        "as estrelas, e golpeia como uma estrela cadente."),
 }
 
 KIT_NAME = "Kit de Lapidação"

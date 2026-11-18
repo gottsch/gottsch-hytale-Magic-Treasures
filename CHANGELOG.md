@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Their spell scrolls are in chests and on monsters with the others.
 - **Thornguard:** a named Legendary iron bracer set with a perfect ruby, ringed with thorns. Its Thorns returns 60% of melee hits, as often as once a second, never runs out and never breaks. Worn, it keeps shorter thorns on the outer side of the wrist. Found on bosses and in the deepest chests.
 - **Amulet of the Last Stand:** a named Legendary gold necklace, a diamond set on a shield. Its Barrier, when a hit leaves you under 35% health, heals you 30 and takes 50% off all physical, projectile and elemental damage for 8 seconds, every 2 minutes. It never runs out or breaks, under a Curse of Vanishing. Worn, its shield hangs on your chest. Found on bosses and in the deepest chests.
+- **Starfall:** a named Epic gold ring, a blue enamel band dotted with gold stars and a sapphire bearing a gold star. It holds two spells, Cat Sight and Storm Strike, sharing its charge. Found on bosses and in the deeper chests.
 - **Curse of Weariness:** each cast of the cursed piece takes 2 stamina, never below empty. Thornguard carries it.
 - Worn iron pieces show on your character (iron, and iron with a ruby, for now).
 - **Server settings**, in `mods/gottsch_MagicTreasures/MagicTreasures.json`, written on the first start: how often chests, monsters and bosses get Magic Treasures loot, how fast worn pieces refill their charge, and spell cooldowns. Each is a multiplier, 1.0 being the mod as shipped.
@@ -30,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Emerald descriptions read "A emerald".
+- Cat Sight cast itself in broad daylight. It now casts only in the dark, at night or underground (light 7 of 15 or less where your head is); its tooltip says so.
+- Gem settings, necklace pendants and the rims of Great rings and bracers flickered where two parts' faces met, most visibly on a held piece in first person.
 
 ## [1.1.0] - 2026-11-16
 

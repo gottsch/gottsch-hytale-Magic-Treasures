@@ -69,5 +69,20 @@
     "Curses": [
       "Vanishing"
     ]
+  },
+  {
+    "Id": "MT_Ring_Starfall",
+    "Base": "MT_Ring_Gold_Sapphire_Great",
+    "Model": "Items/MagicTreasures/Rings/Ring_Starfall.blockymodel",
+    "Texture": "Items/MagicTreasures/Rings/Ring_Starfall.png",
+    "Icon": "Icons/Items/MagicTreasures/MT_Ring_Starfall.png",
+    "Name": "Starfall",
+    "Lore": "Enamelled with a piece of the night sky. Whoever wears it sees as the stars do, and strikes like a falling one.",
+    "Quality": "Epic",
+    "Cut": "Flawless",
+    "Spells": [
+      "Cat_Sight",
+      "Storm_Strike"
+    ]
   }
 ]

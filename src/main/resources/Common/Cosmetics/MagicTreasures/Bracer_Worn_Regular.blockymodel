@@ -458,7 +458,7 @@
                           "children": [],
                           "position": {
                             "x": 4.875,
-                            "y": -2.4,
+                            "y": -2.36,
                             "z": 0
                           },
                           "orientation": {
@@ -566,7 +566,7 @@
                           "children": [],
                           "position": {
                             "x": -4.875,
-                            "y": -2.4,
+                            "y": -2.36,
                             "z": 0
                           },
                           "orientation": {
@@ -674,7 +674,7 @@
                           "children": [],
                           "position": {
                             "x": 0,
-                            "y": -2.4,
+                            "y": -2.36,
                             "z": 6.875
                           },
                           "orientation": {
@@ -782,7 +782,7 @@
                           "children": [],
                           "position": {
                             "x": 0,
-                            "y": -2.4,
+                            "y": -2.36,
                             "z": -6.875
                           },
                           "orientation": {
@@ -890,7 +890,7 @@
                           "children": [],
                           "position": {
                             "x": 4.875,
-                            "y": -6.6,
+                            "y": -6.64,
                             "z": 0
                           },
                           "orientation": {
@@ -998,7 +998,7 @@
                           "children": [],
                           "position": {
                             "x": -4.875,
-                            "y": -6.6,
+                            "y": -6.64,
                             "z": 0
                           },
                           "orientation": {
@@ -1106,7 +1106,7 @@
                           "children": [],
                           "position": {
                             "x": 0,
-                            "y": -6.6,
+                            "y": -6.64,
                             "z": 6.875
                           },
                           "orientation": {
@@ -1214,7 +1214,7 @@
                           "children": [],
                           "position": {
                             "x": 0,
-                            "y": -6.6,
+                            "y": -6.64,
                             "z": -6.875
                           },
                           "orientation": {

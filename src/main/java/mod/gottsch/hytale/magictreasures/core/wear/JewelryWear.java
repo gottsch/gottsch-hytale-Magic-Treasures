@@ -100,6 +100,13 @@ public final class JewelryWear {
     public static final Map<String, String> NAMED_WORN = Map.of(
             "MT_Bracer_Thornguard", "Cosmetics/MagicTreasures/Bracer_Worn_Thornguard.blockymodel",
             "MT_Necklace_Last_Stand", "Cosmetics/MagicTreasures/Necklace_Worn_Last_Stand.blockymodel");
+    /**
+     * Named pieces worn with a texture of their own, by item id (v1.2): Starfall's ring texture
+     * holds its blue enamel band at the worn ring's texels (tools/make_starfall_art.py). The
+     * client accepts it because the item uses the same texture.
+     */
+    public static final Map<String, String> NAMED_WORN_TEXTURE = Map.of(
+            "MT_Ring_Starfall", "Items/MagicTreasures/Rings/Ring_Starfall.png");
     /** What each online player wears, and the visible pieces last sent (null: the look was never changed). */
     private static final Map<UUID, Worn> WORN = new ConcurrentHashMap<>();
 
@@ -224,7 +231,8 @@ public final class JewelryWear {
         }
         if ("Ring".equalsIgnoreCase(type)) {
             return List.of(new ModelAttachment(ringIndex == 0 ? RING_MODEL_RIGHT : RING_MODEL_LEFT,
-                    ITEM_TEXTURES + metal + ".png", null, null, 1.0));
+                    NAMED_WORN_TEXTURE.getOrDefault(piece.getItemId(), ITEM_TEXTURES + metal + ".png"),
+                    null, null, 1.0));
         }
         return List.of();
     }

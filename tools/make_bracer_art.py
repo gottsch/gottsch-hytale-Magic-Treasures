@@ -101,7 +101,9 @@ def item_model(style, gem):
     st = STYLES[style]
     w = st["w"]
     nodes = band_nodes(style)
-    rims = [("Top", w / 2 - 0.5), ("Bottom", -(w / 2 - 0.5))]
+    # PROUD: the rims' outer faces clear of the band's edges
+    rims = [("Top", w / 2 - 0.5 + ring.PROUD),
+            ("Bottom", -(w / 2 - 0.5 + ring.PROUD))]
     if st["ridge"]:
         rims.append(("Ridge", 0.0))
     for k, (name, z) in enumerate(rims):
@@ -158,7 +160,9 @@ def worn_model(assets, style, gem, side=WORN_SIDE, extra=None):
     children = [box(10 + i, name, pos, (0, 0, 0, 1), (4, 8, 4), size, faces)
                 for i, (name, pos, size) in
                 enumerate(ring_parts("Cuff", y, hx, hz, t, h))]
-    rims = [("Rim_Top", y + h / 2 - 0.4), ("Rim_Bottom", y - h / 2 + 0.4)]
+    # PROUD: the rims' top and bottom clear of the cuff's
+    rims = [("Rim_Top", y + h / 2 - 0.4 + ring.PROUD),
+            ("Rim_Bottom", y - h / 2 + 0.4 - ring.PROUD)]
     if st["ridge"]:
         rims.append(("Ridge", y))
     for k, (name, ry) in enumerate(rims):
