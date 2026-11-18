@@ -103,7 +103,7 @@ FINE_Y = 64
 
 def regions(style):
     """The metal regions a style's models use."""
-    k = FINE[style]
+    k = FINE.get(style, 1)
     if k == 1:
         return METAL
     return {name: (x * k, FINE_Y + (y - METAL_Y) * k, w * k, h * k)
@@ -112,7 +112,7 @@ def regions(style):
 
 def texels(style, size):
     """A box's texture size in texels on this style."""
-    return tuple(v * FINE[style] for v in size)
+    return tuple(v * FINE.get(style, 1) for v in size)
 
 
 # The necklace's leather cord (v1.1, Mark, Nov 16: an all-metal chain
@@ -442,7 +442,7 @@ def great_texture(assets, material, gem):
 
 def texture_name(style, material, gem):
     """The item texture's file name, without the folder."""
-    return ("Ring_" + ("Great_" if FINE[style] > 1 else "") + material
+    return ("Ring_" + ("Great_" if FINE.get(style, 1) > 1 else "") + material
             + (f"_{gem}" if gem else "") + ".png")
 
 

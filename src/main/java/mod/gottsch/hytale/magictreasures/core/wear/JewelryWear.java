@@ -87,6 +87,19 @@ public final class JewelryWear {
      * necklace or bracer art yet).
      */
     public static final Set<String> RING_ONLY_MATERIALS = Set.of("Bone");
+    /**
+     * Metals with textures for a few gems only (v1.2): iron has Ring_Iron.png and
+     * Ring_Iron_Ruby.png, for Thornguard (tools/make_thornguard_art.py). "" is no gem.
+     */
+    public static final Map<String, Set<String>> PARTIAL_MATERIALS = Map.of("Iron", Set.of("", "Ruby"));
+    /**
+     * Named pieces with a worn model of their own, by item id (v1.2): Thornguard's cuff has short
+     * thorns (tools/make_thornguard_art.py), the Amulet of the Last Stand's pendant its shield
+     * (tools/make_last_stand_art.py). The texture is the piece's metal and gem as usual.
+     */
+    public static final Map<String, String> NAMED_WORN = Map.of(
+            "MT_Bracer_Thornguard", "Cosmetics/MagicTreasures/Bracer_Worn_Thornguard.blockymodel",
+            "MT_Necklace_Last_Stand", "Cosmetics/MagicTreasures/Necklace_Worn_Last_Stand.blockymodel");
     /** What each online player wears, and the visible pieces last sent (null: the look was never changed). */
     private static final Map<UUID, Worn> WORN = new ConcurrentHashMap<>();
 
@@ -192,7 +205,10 @@ public final class JewelryWear {
         String type = definition.getType();
         String metal = definition.getMaterial();
         boolean ring = "Ring".equalsIgnoreCase(type);
-        if (!ART_MATERIALS.contains(metal) && !(ring && RING_ONLY_MATERIALS.contains(metal))) {
+        Set<String> partial = PARTIAL_MATERIALS.get(metal);
+        boolean partialArt = partial != null
+                && partial.contains(ring || definition.getGem() == null ? "" : definition.getGem());
+        if (!ART_MATERIALS.contains(metal) && !(ring && RING_ONLY_MATERIALS.contains(metal)) && !partialArt) {
             // no art for this metal yet (iron; bone but for rings): not shown
             return List.of();
         }
@@ -202,8 +218,8 @@ public final class JewelryWear {
             String style = "Regular".equalsIgnoreCase(definition.getStyle()) ? "Regular" : "Great";
             String gem = definition.getGem();
             String texture = ITEM_TEXTURES + metal + (gem == null ? "" : "_" + gem) + ".png";
-            String model = (necklace ? NECKLACE_WORN : BRACER_WORN) + style + (gem == null ? "" : "_Set")
-                    + ".blockymodel";
+            String model = NAMED_WORN.getOrDefault(piece.getItemId(),
+                    (necklace ? NECKLACE_WORN : BRACER_WORN) + style + (gem == null ? "" : "_Set") + ".blockymodel");
             return List.of(new ModelAttachment(model, texture, null, null, 1.0));
         }
         if ("Ring".equalsIgnoreCase(type)) {

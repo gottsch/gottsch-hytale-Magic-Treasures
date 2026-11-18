@@ -43,6 +43,18 @@
         "MT_Ring_Vampire_Lich"
       ],
       "Weight": 1
+    },
+    {
+      "Items": [
+        "MT_Bracer_Thornguard"
+      ],
+      "Weight": 1
+    },
+    {
+      "Items": [
+        "MT_Necklace_Last_Stand"
+      ],
+      "Weight": 1
     }
   ]
 }

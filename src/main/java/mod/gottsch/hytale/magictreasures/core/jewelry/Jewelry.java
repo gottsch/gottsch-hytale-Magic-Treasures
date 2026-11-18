@@ -27,6 +27,7 @@ import com.hypixel.hytale.server.core.inventory.ItemStack;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryDefinition;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryStyle;
 import mod.gottsch.hytale.magictreasures.core.lang.Lang;
+import mod.gottsch.hytale.magictreasures.core.spell.SpellEngine;
 import mod.gottsch.hytale.magictreasures.core.spell.SpellTooltip;
 import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
 
@@ -244,6 +245,9 @@ public final class Jewelry {
     public static Message curseText(String curse) {
         if (JewelryDefinition.CURSE_VANISHING.equalsIgnoreCase(curse)) {
             return Lang.of("tooltip.curseVanishing");
+        }
+        if (JewelryDefinition.CURSE_WEARINESS.equalsIgnoreCase(curse)) {
+            return Lang.of("tooltip.curseWeariness").param("stamina", SpellTooltip.number(SpellEngine.WEARINESS_STAMINA));
         }
         return Lang.of("tooltip.curse").param("curse", curse);
     }

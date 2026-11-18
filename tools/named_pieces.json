@@ -21,5 +21,53 @@
     "Curses": [
       "Vanishing"
     ]
+  },
+  {
+    "Id": "MT_Bracer_Thornguard",
+    "Base": "MT_Bracer_Gold_Ruby_Great",
+    "Material": "Iron",
+    "Model": "Items/MagicTreasures/Bracers/Bracer_Thornguard.blockymodel",
+    "Texture": "Items/MagicTreasures/Rings/Ring_Iron_Ruby.png",
+    "Icon": "Icons/Items/MagicTreasures/MT_Bracer_Thornguard.png",
+    "Name": "Thornguard",
+    "Lore": "Its iron barbs were grown, not forged. They bite whoever strikes you, and they bite you a little too.",
+    "Quality": "Legendary",
+    "Cut": "Perfect",
+    "Spells": [
+      "Thorns"
+    ],
+    "SpellOverrides": {
+      "Cost": 0,
+      "Cooldown": 1,
+      "Effect": 0.6
+    },
+    "Unlimited": true,
+    "Unbreakable": true,
+    "Curses": [
+      "Weariness"
+    ]
+  },
+  {
+    "Id": "MT_Necklace_Last_Stand",
+    "Base": "MT_Necklace_Gold_Diamond_Great",
+    "Model": "Items/MagicTreasures/Necklaces/Necklace_Last_Stand.blockymodel",
+    "Icon": "Icons/Items/MagicTreasures/MT_Necklace_Last_Stand.png",
+    "Name": "Amulet of the Last Stand",
+    "Lore": "Forged for a captain who swore never to leave the wall. When the wall falls, it keeps that oath for you.",
+    "Quality": "Legendary",
+    "Cut": "Perfect",
+    "Spells": [
+      "Barrier"
+    ],
+    "SpellOverrides": {
+      "Cost": 0,
+      "Cooldown": 120,
+      "Effect": 30
+    },
+    "Unlimited": true,
+    "Unbreakable": true,
+    "Curses": [
+      "Vanishing"
+    ]
   }
 ]

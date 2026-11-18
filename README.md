@@ -17,7 +17,7 @@ Download it from [CurseForge](https://www.curseforge.com/hytale/mods/magic-treas
 - **Element powers:** gems and metals roll resistances, statuses on hit, elemental damage added to hits, and critical hit chance.
 - **Runes:** socket a core rune in a piece and the piece boosts that rune when you cast it.
 - **Worn-jewelry panel:** each worn piece's charge and spell cooldowns.
-- **Loot:** chests, monsters and bosses, added alongside the game's own loot without replacing its tables. One named ring, the Vampire Lich's Ring, drops from bosses and the deepest chests.
+- **Loot:** chests, monsters and bosses, added alongside the game's own loot without replacing its tables. Named Legendary pieces, the Vampire Lich's Ring, the Amulet of the Last Stand and Thornguard, drop from bosses and the deepest chests.
 
 ## Installing
 

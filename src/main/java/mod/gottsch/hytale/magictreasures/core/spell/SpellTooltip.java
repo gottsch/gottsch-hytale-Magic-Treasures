@@ -101,7 +101,11 @@ public record SpellTooltip(Message name, @Nullable Message summary, @Nullable Me
                 baseText = Math.round(spell.getEffect() * 100) + "%";
             }
             case BARRIER -> {
-                summary = Lang.of("spell.wards").param("elements", elements(spell));
+                // a Barrier with an Effect heals too (v1.2: 10 plain, 30 on the Amulet of the Last Stand)
+                summary = spell.getEffect() > 0
+                        ? Lang.join(List.of(Lang.of("spell.heals").param("amount", number(effect)),
+                                Lang.of("spell.wards").param("elements", elements(spell))), ", ")
+                        : Lang.of("spell.wards").param("elements", elements(spell));
                 extras.add(Lang.of("spell.barrierWhen")
                         .param("percent", Math.round(SpellEngine.BARRIER_HEALTH * 100)));
             }
@@ -110,7 +114,7 @@ public record SpellTooltip(Message name, @Nullable Message summary, @Nullable Me
 
         // only spells with an amount get a breakdown
         Message breakdown = null;
-        if (usesEffect(spell.getKind())) {
+        if (usesEffect(spell.getKind()) || (spell.getKind() == SpellKind.BARRIER && spell.getEffect() > 0)) {
             List<Message> parts = new ArrayList<>();
             parts.add(Message.raw(baseText));
             if (stats.material() != null) {
@@ -183,7 +187,7 @@ public record SpellTooltip(Message name, @Nullable Message summary, @Nullable Me
     /**
      * @return a whole number without decimals, otherwise one decimal (12.5, 31.3)
      */
-    static String number(double value) {
+    public static String number(double value) {
         if (Math.abs(value - Math.round(value)) < 0.05) {
             return Long.toString(Math.round(value));
         }

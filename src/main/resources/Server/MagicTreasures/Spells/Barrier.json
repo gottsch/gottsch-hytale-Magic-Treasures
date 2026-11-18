@@ -5,6 +5,7 @@
   "Cost": 6,
   "Cooldown": 180,
   "Duration": 8,
+  "Effect": 10,
   "Element": "Physical, Projectile, Elemental",
   "EntityEffect": "MT_Spell_Barrier"
 }

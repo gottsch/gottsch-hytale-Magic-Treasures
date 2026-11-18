@@ -12,8 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Defensive spells**, cast when you're hurt:
   - Stoneskin (level 2): takes 25% off physical and projectile damage for 30 seconds.
   - Thorns (level 3): hands 30% of a melee hit back to the attacker.
-  - Barrier (level 5): when a hit leaves you under 35% health, takes 50% off all physical, projectile and elemental damage for 8 seconds.
+  - Barrier (level 5): when a hit leaves you under 35% health, heals you 10 and takes 50% off all physical, projectile and elemental damage for 8 seconds.
 - Their spell scrolls are in chests and on monsters with the others.
+- **Thornguard:** a named Legendary iron bracer set with a perfect ruby, ringed with thorns. Its Thorns returns 60% of melee hits, as often as once a second, never runs out and never breaks. Worn, it keeps shorter thorns on the outer side of the wrist. Found on bosses and in the deepest chests.
+- **Amulet of the Last Stand:** a named Legendary gold necklace, a diamond set on a shield. Its Barrier, when a hit leaves you under 35% health, heals you 30 and takes 50% off all physical, projectile and elemental damage for 8 seconds, every 2 minutes. It never runs out or breaks, under a Curse of Vanishing. Worn, its shield hangs on your chest. Found on bosses and in the deepest chests.
+- **Curse of Weariness:** each cast of the cursed piece takes 2 stamina, never below empty. Thornguard carries it.
+- Worn iron pieces show on your character (iron, and iron with a ruby, for now).
 - **Server settings**, in `mods/gottsch_MagicTreasures/MagicTreasures.json`, written on the first start: how often chests, monsters and bosses get Magic Treasures loot, how fast worn pieces refill their charge, and spell cooldowns. Each is a multiplier, 1.0 being the mod as shipped.
 - **Brazilian Portuguese (pt-BR) translation**: item names and descriptions, tooltips, the imbue, gem cutting and Treasures Case pages, the worn-jewelry panel, messages and command descriptions. The output of the operator commands (`info`, `hits`, `loot`, `give`, `setcutting`) stays in English.
 

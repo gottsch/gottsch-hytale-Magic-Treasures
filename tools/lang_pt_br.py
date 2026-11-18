@@ -105,6 +105,14 @@ NAMED = {
         "Arrancado da mão de um lich que se recusava a continuar morto. "
         "Ele se alimenta do que você golpeia e não pede nada em troca, "
         "até que você caia."),
+    "MT_Bracer_Thornguard": (
+        "Guarda-Espinhos",
+        "Suas farpas de ferro foram cultivadas, não forjadas. Elas mordem "
+        "quem golpeia você, e mordem você também, só um pouco."),
+    "MT_Necklace_Last_Stand": (
+        "Amuleto da Última Resistência",
+        "Forjado para um capitão que jurou nunca abandonar a muralha. "
+        "Quando a muralha cai, ele cumpre esse juramento por você."),
 }
 
 KIT_NAME = "Kit de Lapidação"

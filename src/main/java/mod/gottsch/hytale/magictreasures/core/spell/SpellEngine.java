@@ -102,6 +102,13 @@ public final class SpellEngine {
     private static final String THORNS_CAUSE = "Physical";
 
     /**
+     * Stamina each cast of a piece under the Curse of Weariness takes (v1.2). The bar holds 10
+     * and refills 3 a second at rest, so it bites in a fight; it never takes the bar below 0,
+     * so the curse weakens but never leaves the wearer overdrawn (Mark, Nov 18).
+     */
+    public static final double WEARINESS_STAMINA = 2;
+
+    /**
      * Per player: the share of each hit that the last cast of each Weapon spell adds as its
      * element, keyed by spell id: its {@code Effect} (or the named piece's) times the piece's
      * effect factor (Nov 13: the 25% ignored the piece's factors, which scaled only the
@@ -320,6 +327,9 @@ public final class SpellEngine {
                     continue;
                 }
                 state.setMana(Math.max(0, state.getMana() - cost));
+                if (definition.hasCurse(JewelryDefinition.CURSE_WEARINESS)) {
+                    weary(ref, store);
+                }
                 if (!definition.isUnbreakable()) {
                     state.setUses(state.getUses() - 1);
                 }
@@ -387,7 +397,7 @@ public final class SpellEngine {
             }
             case SPEED, STRENGTH, WARD -> buff(spell, factors, ref, store) != null;
             case THORNS -> thorns(spell, factors, ref, damage, victim);
-            case BARRIER -> lowHealth(ref, store) && buff(spell, factors, ref, store) != null;
+            case BARRIER -> barrier(spell, factors, ref, store);
             case CAT_SIGHT -> {
                 EntityEffect effect = buff(spell, factors, ref, store);
                 if (effect == null) {
@@ -553,6 +563,42 @@ public final class SpellEngine {
         }
         stats.addStatValue(health, (float) Math.min(amount, value.getMax() - value.get()));
         return true;
+    }
+
+    /**
+     * A Barrier: when a hit leaves the wearer below {@link #BARRIER_HEALTH}, starts its ward
+     * and, if the spell has an {@code Effect}, heals that much (scaled by the piece). The base
+     * Barrier has none; the Amulet of the Last Stand heals 30 (v1.2, Mark Nov 18: a ward alone
+     * at low health only put off the next hit or two).
+     *
+     * @return true if the ward started
+     */
+    private static boolean barrier(Spell spell, SpellFactors factors, Ref<EntityStore> ref,
+                                   Store<EntityStore> store) {
+        if (!lowHealth(ref, store) || buff(spell, factors, ref, store) == null) {
+            return false;
+        }
+        if (spell.getEffect() > 0) {
+            heal(ref, store, spell.getEffect() * factors.getEffect());
+        }
+        return true;
+    }
+
+    /**
+     * The Curse of Weariness: takes {@link #WEARINESS_STAMINA} from the wearer's stamina, down
+     * to 0 at most (vanilla lets stamina go below 0, an overdrawn state; the curse doesn't).
+     */
+    private static void weary(Ref<EntityStore> ref, Store<EntityStore> store) {
+        EntityStatMap stats = store.getComponent(ref, EntityStatMap.getComponentType());
+        if (stats == null) {
+            return;
+        }
+        int stamina = DefaultEntityStatTypes.getStamina();
+        EntityStatValue value = stats.get(stamina);
+        if (value == null || value.get() <= 0) {
+            return;
+        }
+        stats.addStatValue(stamina, (float) -Math.min(WEARINESS_STAMINA, value.get()));
     }
 
     /**

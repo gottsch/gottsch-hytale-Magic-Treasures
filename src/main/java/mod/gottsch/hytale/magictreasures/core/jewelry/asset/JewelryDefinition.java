@@ -89,6 +89,12 @@ public class JewelryDefinition implements JsonAssetWithMap<String, DefaultAssetM
 
     /** The curse that destroys a piece when its holder dies. */
     public static final String CURSE_VANISHING = "Vanishing";
+    /**
+     * The curse that makes each cast take stamina from the wearer (v1.2, Mark Nov 18: the
+     * price of a named piece's free spell, felt in a fight and not at rest; see
+     * {@code SpellEngine#WEARINESS_STAMINA}).
+     */
+    public static final String CURSE_WEARINESS = "Weariness";
     private static final String[] NONE = new String[0];
 
     protected JewelryDefinition() {

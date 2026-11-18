@@ -1,0 +1,21 @@
+{
+  "Type": "Necklace",
+  "Material": "Gold",
+  "Style": "Great",
+  "Gem": "Diamond",
+  "Name": "Amulet of the Last Stand",
+  "Cut": "Perfect",
+  "Spells": [
+    "Barrier"
+  ],
+  "SpellOverrides": {
+    "Cost": 0,
+    "Cooldown": 120,
+    "Effect": 30
+  },
+  "Unlimited": true,
+  "Unbreakable": true,
+  "Curses": [
+    "Vanishing"
+  ]
+}

@@ -139,7 +139,10 @@ def ring_parts(prefix, y, hx, hz, t, h):
     ]
 
 
-def worn_model(assets, style, gem, side=WORN_SIDE):
+def worn_model(assets, style, gem, side=WORN_SIDE, extra=None):
+    """The worn cuff. extra(st, y, hx, hz, t), if given, returns more
+    nodes for the cuff, in the forearm's frame (v1.2: Thornguard's
+    thorns, make_thornguard_art.py)."""
     st = STYLES[style]
     fx, fy, fz = FOREARM
     g, h, t = WORN_GAP, st["worn_h"], st["worn_t"]
@@ -172,6 +175,8 @@ def worn_model(assets, style, gem, side=WORN_SIDE):
         surface = hx + t + (0.35 if st["ridge"] else 0)
         girdle = surface + brilliant.GIRDLE_H * st["worn_gem"]
         children.append(set_gem(st["worn_gem"], (out * girdle, y, 0), turn))
+    if extra:
+        children += extra(st, y, hx, hz, t)
     node_id = 1
     for bone in reversed(ring.skeleton_chain(assets, side)[:-1]):
         shape = dict(brilliant.ROOT_SHAPE)
