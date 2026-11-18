@@ -45,7 +45,7 @@ public class HitsCommand extends AbstractPlayerCommand {
     private final OptionalArg<Boolean> critArg;
 
     public HitsCommand() {
-        super("hits", "Show the damage of each hit you deal (toggle).");
+        super("hits", "server.magictreasures.commands.hits.desc");
         this.critArg = withOptionalArg("crit", "Test: true makes every weapon hit crit, false stops it",
                 ArgTypes.BOOLEAN);
     }

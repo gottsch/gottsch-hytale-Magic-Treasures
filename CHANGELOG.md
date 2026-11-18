@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - Unreleased
+
+### Added
+
+- **Defensive spells**, cast when you're hurt:
+  - Stoneskin (level 2): takes 25% off physical and projectile damage for 30 seconds.
+  - Thorns (level 3): hands 30% of a melee hit back to the attacker.
+  - Barrier (level 5): when a hit leaves you under 35% health, takes 50% off all physical, projectile and elemental damage for 8 seconds.
+- Their spell scrolls are in chests and on monsters with the others.
+- **Server settings**, in `mods/gottsch_MagicTreasures/MagicTreasures.json`, written on the first start: how often chests, monsters and bosses get Magic Treasures loot, how fast worn pieces refill their charge, and spell cooldowns. Each is a multiplier, 1.0 being the mod as shipped.
+- **Brazilian Portuguese (pt-BR) translation**: item names and descriptions, tooltips, the imbue, gem cutting and Treasures Case pages, the worn-jewelry panel, messages and command descriptions. The output of the operator commands (`info`, `hits`, `loot`, `give`, `setcutting`) stays in English.
+
+### Changed
+
+- Great rings are engraved: a bevelled band with a vine running around it, and beads along the rims and the gem's setting, at twice the detail of plain rings. Their icons show the new look.
+- Tooltips and messages show in each player's own language. A piece made before this update keeps its English tooltip until its charge or state next changes.
+- The worn-jewelry panel no longer shortens spell names ("Gr. Healing" is "Greater Healing").
+
+### Fixed
+
+- Emerald descriptions read "A emerald".
+
 ## [1.1.0] - 2026-11-16
 
 ### Changed

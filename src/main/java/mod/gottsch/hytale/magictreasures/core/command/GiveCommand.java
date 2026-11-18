@@ -49,7 +49,7 @@ public class GiveCommand extends AbstractPlayerCommand {
     private final DefaultArg<String> itemArg;
 
     public GiveCommand() {
-        super("give", "Give yourself a piece of Magic Treasures jewelry.");
+        super("give", "server.magictreasures.commands.give.desc");
         this.itemArg = withDefaultArg("item", "Jewelry item id, e.g. MT_Ring_Gold_Ruby_Great; part of one lists matches",
                 ArgTypes.STRING, "", "");
     }

@@ -15,7 +15,7 @@
     ]
   },
   "Model": "Items/MagicTreasures/Rings/Ring_Great.blockymodel",
-  "Texture": "Items/MagicTreasures/Rings/Ring_Silver.png",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Great_Silver.png",
   "PlayerAnimationsId": "Item",
   "Utility": {
     "Compatible": true

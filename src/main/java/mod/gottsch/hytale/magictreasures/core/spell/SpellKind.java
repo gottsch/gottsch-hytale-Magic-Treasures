@@ -31,8 +31,10 @@ import javax.annotation.Nullable;
  *     damage to what was hit; Strength and the Weapon spells start
  *     their buff, so it runs during the fight (Nov 12: as tick spells they cast whenever ready,
  *     in a fight or not, and emptied the piece's mana).</li>
- *     <li>{@link Trigger#HURT}: when the wearer takes damage. A Ward starts if the damage is
- *     one of its {@code Element}s; the first hit isn't warded.</li>
+ *     <li>{@link Trigger#HURT}: when the wearer takes damage of one of the spell's
+ *     {@code Element}s. A Ward (Stoneskin is a Ward of Physical and Projectile) starts its
+ *     resistance, so the first hit isn't warded; Thorns hands part of a melee hit back to the
+ *     attacker; a Barrier starts when the hit leaves the wearer low on health.</li>
  * </ul>
  * A spell asset names its kind in {@code Kind}, for example {@code "Cat_Sight"}.
  *
@@ -64,7 +66,18 @@ public enum SpellKind {
      * while it lasts, and heals the wearer by the total ({@link DrainAura}, Nov 13). Cast only
      * when a hostile mob is in range; it damages even at full health.
      */
-    DRAIN(Trigger.TICK);
+    DRAIN(Trigger.TICK),
+    /**
+     * Hands the spell's {@code Effect} share of a direct hit taken back to the attacker, as the
+     * wearer's own hit (Nov 17, 1.2.0). Only hits from an entity, not statuses or bonus hits,
+     * so two wearers can't bounce it between them.
+     */
+    THORNS(Trigger.HURT),
+    /**
+     * A Ward that starts only when a hit leaves the wearer below
+     * {@link SpellEngine#BARRIER_HEALTH} of their health (Nov 17, 1.2.0).
+     */
+    BARRIER(Trigger.HURT);
 
     public enum Trigger {
         TICK, HIT, HURT

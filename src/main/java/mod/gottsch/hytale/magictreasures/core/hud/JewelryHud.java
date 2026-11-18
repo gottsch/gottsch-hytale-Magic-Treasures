@@ -35,6 +35,8 @@ import mod.gottsch.hytale.magictreasures.core.wear.WornJewelry;
 
 import java.util.ArrayList;
 import java.util.List;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
+import com.hypixel.hytale.server.core.Message;
 
 /**
  * The worn-jewelry HUD: one row per worn piece with its name, its charge (the jewelry's own
@@ -156,15 +158,17 @@ public class JewelryHud extends CustomUIHud {
             // the item's own name (named jewelry shows its name), translated by the client
             String name = piece.getItemId();
             boolean unlimited = stats.definition() != null && stats.definition().isUnlimited();
-            String charge = unlimited ? "Charge unlimited" : String.format("Charge %.0f/%.0f", mana, stats.maxMana());
+            String chargeText = unlimited ? "unlimited" : String.format("%.0f/%.0f", mana, stats.maxMana());
+            Message charge = unlimited ? Lang.of("hud.chargeUnlimited") : Lang.of("hud.charge").param("charge", chargeText);
             float share = unlimited ? 1f
                     : stats.maxMana() <= 0 ? 0f : (float) Math.clamp(mana / stats.maxMana(), 0.0, 1.0);
-            String spells = spells(playerRef, slot, state);
+            StringBuilder spellSignature = new StringBuilder();
+            Message spells = spells(playerRef, slot, state, spellSignature);
             builder.set("#JewelName" + i + ".TextSpans", Jewelry.name(piece));
-            builder.set("#JewelCharge" + i + ".Text", charge);
+            builder.set("#JewelCharge" + i + ".TextSpans", charge);
             builder.set("#JewelBar" + i + ".Value", share);
-            builder.set("#JewelSpells" + i + ".Text", spells);
-            signature.append(i).append(name).append(charge).append(spells).append('|');
+            builder.set("#JewelSpells" + i + ".TextSpans", spells);
+            signature.append(i).append(name).append(chargeText).append(spellSignature).append('|');
         }
         if (signature.toString().equals(lastSignature)) {
             return;
@@ -177,22 +181,25 @@ public class JewelryHud extends CustomUIHud {
      * @return the piece's spells with the seconds until each is ready, for example
      * {@code Healing ready, Speed 42s}
      */
-    private static String spells(PlayerRef playerRef, short slot, JewelryState state) {
+    private static Message spells(PlayerRef playerRef, short slot, JewelryState state, StringBuilder signature) {
         if (state == null || (state.getSpells().length == 0 && state.getRunes().length == 0)) {
-            return "No spells";
+            return Lang.of("hud.noSpells");
         }
-        List<String> parts = new ArrayList<>();
+        List<Message> parts = new ArrayList<>();
         // socketed runes first: they boost the same rune in the ability slots
         for (String rune : state.getRunes()) {
-            parts.add("+" + Jewelry.runeName(rune));
+            parts.add(Message.join(Message.raw("+"), Lang.item(rune)));
+            signature.append(rune).append(',');
         }
+        // translated (v1.2), so no longer shortened ("Gr. Healing"): a piece holds one spell,
+        // which fits the row's 50 or so characters with a rune or two
         for (String id : state.getSpells()) {
-            Spell spell = Spell.get(id);
-            String name = spell == null ? id + " (unknown)" : spell.getName();
-            double left = SpellEngine.cooldownLeft(playerRef.getUuid(), slot, id);
-            parts.add(name + (left > 0 ? " " + (int) Math.ceil(left) + "s" : " ready"));
+            Message name = Spell.get(id) == null ? Message.raw(id) : Lang.spell(id);
+            int left = (int) Math.ceil(SpellEngine.cooldownLeft(playerRef.getUuid(), slot, id));
+            parts.add(left > 0 ? Lang.of("hud.spellIn").param("spell", name).param("seconds", left)
+                    : Lang.of("hud.spellReady").param("spell", name));
+            signature.append(id).append(':').append(Math.max(0, left)).append(',');
         }
-        // a row fits about 50 characters; past that the label cuts off with "..."
-        return String.join(", ", parts).replace("Quick ", "Q. ").replace("Greater ", "Gr. ").replace("Lesser ", "L. ");
+        return Lang.join(parts, ", ");
     }
 }

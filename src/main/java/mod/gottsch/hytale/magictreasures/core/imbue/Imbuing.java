@@ -29,6 +29,9 @@ import mod.gottsch.hytale.magictreasures.core.jewelry.asset.Gemstone;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryDefinition;
 import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
 
+import com.hypixel.hytale.server.core.Message;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
+
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Objects;
@@ -71,9 +74,9 @@ public final class Imbuing {
      * @param kind    what the item does
      * @param result  the piece afterwards, or null if the item can't be used on it
      * @param text    for the page: what will happen, or why it can't
-     * @param message for chat, once done
+     * @param message for chat, once done (translation keys, magictreasures.imbue.*, v1.2)
      */
-    public record Outcome(Kind kind, @Nullable ItemStack result, String text, String message) {
+    public record Outcome(Kind kind, @Nullable ItemStack result, Message text, Message message) {
         public boolean allowed() {
             return result != null;
         }
@@ -97,10 +100,10 @@ public final class Imbuing {
         }
         JewelryStats stats = Jewelry.stats(piece);
         if (!stats.known()) {
-            return refused(kind, "This piece's material or style is missing");
+            return refused(kind, "unknownPiece");
         }
         JewelryState state = Jewelry.state(piece);
-        String name = Jewelry.displayName(piece);
+        Message name = Jewelry.name(piece);
         String id = material.getItemId();
         return switch (kind) {
             case SPELL -> spell(piece, stats, state, name, Spell.get(id.substring(SCROLL_PREFIX.length())));
@@ -109,7 +112,7 @@ public final class Imbuing {
             case RECHARGE -> recharge(piece, stats, state, name);
             // a named piece is never used up to repair another (Nov 13)
             case REPAIR -> Jewelry.stats(material).definition() != null && Jewelry.stats(material).definition().isNamed()
-                    ? refused(Kind.REPAIR, Jewelry.displayName(material) + " is one of a kind; it won't be used up")
+                    ? refused(Kind.REPAIR, Lang.of("imbue.oneOfAKind").param("piece", Jewelry.name(material)))
                     : repair(piece, stats, state, name);
         };
     }
@@ -143,57 +146,58 @@ public final class Imbuing {
         return null;
     }
 
-    private static Outcome spell(ItemStack piece, JewelryStats stats, JewelryState state, String name,
+    private static Outcome spell(ItemStack piece, JewelryStats stats, JewelryState state, Message name,
                                  @Nullable Spell spell) {
         if (spell == null) {
-            return refused(Kind.SPELL, "Unknown spell");
+            return refused(Kind.SPELL, "unknownSpell");
         }
         if (state.getSpells().length > 0) {
-            Spell held = Spell.get(state.getSpells()[0]);
-            return refused(Kind.SPELL, "Already holds " + (held == null ? state.getSpells()[0] : held.getName()));
+            return refused(Kind.SPELL, Lang.of("imbue.holdsSpell").param("spell", Lang.spell(state.getSpells()[0])));
         }
         if (spell.getLevel() > stats.maxLevel()) {
-            return refused(Kind.SPELL, spell.getName() + " is level " + spell.getLevel()
-                    + "; this piece takes up to " + stats.maxLevel());
+            return refused(Kind.SPELL, Lang.of("imbue.spellLevel").param("spell", Lang.spell(spell.getId()))
+                    .param("level", spell.getLevel()).param("max", stats.maxLevel()));
         }
         JewelryState next = state.copy().setSpells(spell.getId());
-        return new Outcome(Kind.SPELL, Jewelry.withState(piece, next), "Imbue with " + spell.getName(),
-                "Your " + name + " is imbued with " + spell.getName() + ".");
+        return new Outcome(Kind.SPELL, Jewelry.withState(piece, next),
+                Lang.of("imbue.spell").param("spell", Lang.spell(spell.getId())),
+                Lang.of("imbue.spellDone").param("piece", name).param("spell", Lang.spell(spell.getId())));
     }
 
-    private static Outcome rune(ItemStack piece, JewelryStats stats, JewelryState state, String name, String runeId) {
-        String runeName = Jewelry.runeName(runeId);
+    private static Outcome rune(ItemStack piece, JewelryStats stats, JewelryState state, Message name,
+                                String runeId) {
+        Message runeName = Lang.item(runeId);
         if (Arrays.asList(state.getRunes()).contains(runeId)) {
-            return refused(Kind.RUNE, "Already holds " + runeName);
+            return refused(Kind.RUNE, Lang.of("imbue.holdsRune").param("rune", runeName));
         }
         if (state.getRunes().length >= stats.sockets()) {
-            return refused(Kind.RUNE, "Rune sockets full (" + stats.sockets() + ")");
+            return refused(Kind.RUNE, Lang.of("imbue.socketsFull").param("sockets", stats.sockets()));
         }
         String[] runes = Arrays.copyOf(state.getRunes(), state.getRunes().length + 1);
         runes[runes.length - 1] = runeId;
         JewelryState next = state.copy().setRunes(runes);
-        return new Outcome(Kind.RUNE, Jewelry.withState(piece, next), "Socket " + runeName,
-                runeName + " is socketed in your " + name + ". Casting " + runeName
-                        + " from your ability slots is now boosted while you wear it.");
+        return new Outcome(Kind.RUNE, Jewelry.withState(piece, next),
+                Lang.of("imbue.rune").param("rune", runeName),
+                Lang.of("imbue.runeDone").param("rune", runeName).param("piece", name));
     }
 
-    private static Outcome gem(ItemStack piece, JewelryStats stats, JewelryState state, String name, String gemItemId) {
+    private static Outcome gem(ItemStack piece, JewelryStats stats, JewelryState state, Message name,
+                               String gemItemId) {
         if (GemCut.gemOfRaw(gemItemId) != null) {
-            return refused(Kind.GEM, "Raw gem: cut it with a gem cutter's kit first");
+            return refused(Kind.GEM, "rawGem");
         }
         GemCut cut = GemCut.ofItem(gemItemId);
         Gemstone gem = GemCut.gemOfItem(gemItemId);
         if (cut == null || gem == null) {
-            return refused(Kind.GEM, "Unknown gem");
+            return refused(Kind.GEM, "unknownGem");
         }
         if (stats.gem() != null) {
-            return refused(Kind.GEM, "Already set with a " + stats.gem().getId().toLowerCase());
+            return refused(Kind.GEM, Lang.of("imbue.hasGem").param("gem", Lang.source(stats.gem().getId())));
         }
         JewelryDefinition definition = stats.definition();
         String targetId = gemmedItemId(definition, gem.getId());
         if (targetId == null) {
-            return refused(Kind.GEM, "No " + definition.getMaterial() + " " + gem.getId() + " "
-                    + definition.getType() + " yet");
+            return refused(Kind.GEM, "noSuchPiece");
         }
         JewelryStats target = JewelryStats.of(JewelryDefinition.get(targetId), cut);
         // as in Minecraft: the gem adds its extra charge and recharges to the current values
@@ -209,47 +213,57 @@ public final class Imbuing {
             next = ElementRolling.addGem(next, gem, cut);
         }
         ItemStack result = Jewelry.withState(new ItemStack(targetId, 1), next);
-        return new Outcome(Kind.GEM, result, String.format("Set: charge +%.0f, recharges +%d", extraMana, extraRecharges),
-                "Your " + name + " is now a " + Jewelry.displayName(result) + ", with a "
-                        + cut.getName().toLowerCase() + " " + gem.getId().toLowerCase() + ".");
+        return new Outcome(Kind.GEM, result,
+                Lang.of("imbue.gem").param("charge", String.format("%.0f", extraMana))
+                        .param("recharges", extraRecharges),
+                Lang.of("imbue.gemDone").param("piece", name).param("result", Jewelry.name(result))
+                        .param("gem", Lang.item(gemItemId)));
     }
 
-    private static Outcome recharge(ItemStack piece, JewelryStats stats, JewelryState state, String name) {
+    private static Outcome recharge(ItemStack piece, JewelryStats stats, JewelryState state, Message name) {
         if (stats.definition().isUnlimited()) {
-            return refused(Kind.RECHARGE, "Its charge never runs out");
+            return refused(Kind.RECHARGE, "neverRunsOut");
         }
         if (state.getRecharges() <= 0) {
-            return refused(Kind.RECHARGE, "No recharges left");
+            return refused(Kind.RECHARGE, "noRecharges");
         }
         if (state.getMana() >= stats.maxMana()) {
-            return refused(Kind.RECHARGE, "Charge is full");
+            return refused(Kind.RECHARGE, "chargeFull");
         }
         JewelryState next = state.copy().setMana(stats.maxMana()).setRecharges(state.getRecharges() - 1);
+        String from = String.format("%.0f", state.getMana());
+        String to = String.format("%.0f", stats.maxMana());
         return new Outcome(Kind.RECHARGE, Jewelry.withState(piece, next),
-                String.format("Recharge: %.0f -> %.0f (%d left)", state.getMana(), stats.maxMana(), next.getRecharges()),
-                String.format("Your %s is recharged to %.0f. Recharges left: %d.", name, stats.maxMana(),
-                        next.getRecharges()));
+                Lang.of("imbue.recharge").param("from", from).param("to", to).param("left", next.getRecharges()),
+                Lang.of("imbue.rechargeDone").param("piece", name).param("to", to)
+                        .param("left", next.getRecharges()));
     }
 
-    private static Outcome repair(ItemStack piece, JewelryStats stats, JewelryState state, String name) {
+    private static Outcome repair(ItemStack piece, JewelryStats stats, JewelryState state, Message name) {
         if (stats.definition().isUnbreakable()) {
-            return refused(Kind.REPAIR, "It can't wear out");
+            return refused(Kind.REPAIR, "cantWearOut");
         }
         if (state.getRepairs() <= 0) {
-            return refused(Kind.REPAIR, "No repairs left");
+            return refused(Kind.REPAIR, "noRepairs");
         }
         if (state.getUses() >= stats.maxUses()) {
-            return refused(Kind.REPAIR, "Uses are full");
+            return refused(Kind.REPAIR, "usesFull");
         }
         JewelryState next = state.copy().setUses(stats.maxUses()).setRepairs(state.getRepairs() - 1);
         return new Outcome(Kind.REPAIR, Jewelry.withState(piece, next),
-                String.format("Repair: uses %d -> %d (%d left)", state.getUses(), stats.maxUses(), next.getRepairs()),
-                String.format("Your %s is repaired to %d uses. Repairs left: %d.", name, stats.maxUses(),
-                        next.getRepairs()));
+                Lang.of("imbue.repair").param("from", state.getUses()).param("to", stats.maxUses())
+                        .param("left", next.getRepairs()),
+                Lang.of("imbue.repairDone").param("piece", name).param("to", stats.maxUses())
+                        .param("left", next.getRepairs()));
     }
 
-    private static Outcome refused(Kind kind, String why) {
-        return new Outcome(kind, null, why, why + ".");
+    /** @return a refusal whose reason is {@code magictreasures.imbue.<key>} */
+    private static Outcome refused(Kind kind, String key) {
+        return refused(kind, Lang.of("imbue." + key));
+    }
+
+    private static Outcome refused(Kind kind, Message why) {
+        return new Outcome(kind, null, why, why);
     }
 
     /**

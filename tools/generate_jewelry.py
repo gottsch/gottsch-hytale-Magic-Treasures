@@ -50,6 +50,8 @@ import json
 import shutil
 from pathlib import Path
 
+import lang_pt_br
+
 ROOT = Path(__file__).resolve().parent.parent
 SERVER = ROOT / "src" / "main" / "resources" / "Server"
 DATA = SERVER / "MagicTreasures"
@@ -58,6 +60,8 @@ DEFS_OUT = DATA / "Jewelry"
 SCROLLS_OUT = SERVER / "Item" / "Items" / "MagicTreasures" / "Scrolls"
 GEMS_OUT = SERVER / "Item" / "Items" / "MagicTreasures" / "Gems"
 LANG = SERVER / "Languages" / "en-US" / "server.lang"
+# Brazilian Portuguese (v1.2): the same block, from lang_pt_br.py
+LANG_PT = SERVER / "Languages" / "pt-BR" / "server.lang"
 NAMED = Path(__file__).resolve().parent / "named_pieces.json"
 # a named piece's fields copied into its jewelry definition as they are
 # (Material, Style and Gem replace the base's: the Vampire Lich's Ring is
@@ -159,7 +163,10 @@ def ring_art(jewelry_type, material_id, gem_id, style_id, iid):
             or material_id not in RING_MATERIALS or gem_id not in RING_GEMS):
         return None
     model = f"Items/MagicTreasures/Rings/Ring_{style_id}" +         ("_Set" if gem_id else "") + ".blockymodel"
-    texture = f"Items/MagicTreasures/Rings/Ring_{material_id}" +         (f"_{gem_id}" if gem_id else "") + ".png"
+    # Great rings have their own textures, at twice the metal density
+    # (make_ring_art.FINE, v1.2)
+    great = "Great_" if style_id == "Great" else ""
+    texture = f"Items/MagicTreasures/Rings/Ring_{great}{material_id}" +         (f"_{gem_id}" if gem_id else "") + ".png"
     return model, texture, f"Icons/Items/MagicTreasures/{iid}.png"
 
 
@@ -220,8 +227,11 @@ def write_json(path, data):
                     encoding="utf-8", newline="\n")
 
 
-def write_lang(entries):
-    text = LANG.read_text(encoding="utf-8") if LANG.exists() else ""
+def write_lang(entries, path=LANG):
+    """Replaces the generated block of a server.lang, keeping the
+    hand-written lines around it."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = path.read_text(encoding="utf-8") if path.exists() else ""
     if BEGIN in text:
         before = text[:text.index(BEGIN)]
         after = text[text.index(END) + len(END):] if END in text else ""
@@ -229,7 +239,7 @@ def write_lang(entries):
         before, after = text, ""
     before = before.rstrip("\n") + "\n\n" if before.strip() else ""
     block = "\n".join([BEGIN, *entries, END])
-    LANG.write_text(before + block + "\n" + after.lstrip("\n"),
+    path.write_text(before + block + "\n" + after.lstrip("\n"),
                     encoding="utf-8", newline="\n")
 
 
@@ -254,6 +264,7 @@ def main():
         folder.mkdir(parents=True)
 
     lang = []
+    pieces = []
     count = 0
     for jewelry_type in types:
         for material_id in material_ids:
@@ -320,6 +331,8 @@ def main():
                     if gem_id:
                         definition["Gem"] = gem_id
                     write_json(DEFS_OUT / f"{iid}.json", definition)
+                    pieces.append((iid, jewelry_type, material_id, gem_id,
+                                   style_id))
                     lang.append(f"items.{iid}.name="
                                 + display_name(jewelry_type,
                                                material_id, gem_id,
@@ -330,9 +343,21 @@ def main():
                     count += 1
 
     named = write_named(lang)
-    scrolls = write_scrolls(load("Spells"), types, lang)
+    spells = load("Spells")
+    scrolls = write_scrolls(spells, types, lang)
     gems = write_gems(load("Gems"), lang)
+    # spell names, for tooltips and messages (Lang.spell in Java, v1.2)
+    for spell_id, spell in spells.items():
+        lang.append(f"magictreasures.spells.{spell_id}.name="
+                    + spell.get("Name", spell_id.replace("_", " ")))
     write_lang(lang)
+    named_pieces = (json.loads(NAMED.read_text(encoding="utf-8"))
+                    if NAMED.exists() else [])
+    write_lang(lang_pt_br.entries(pieces, spells, types, load("Gems"),
+                                  named_pieces, RECIPE_QUANTITY, KIT_USES,
+                                  CUTS), LANG_PT)
+    if lang_pt_br.missing():
+        print("pt-BR: no translation for " + ", ".join(lang_pt_br.missing()))
     print(f"Generated {count} jewelry items, {named} named pieces, "
           f"{scrolls} scrolls and {gems} cut gems and kits.")
 
@@ -516,6 +541,11 @@ def describe_rolls(rolls):
     return text + penalty
 
 
+def an(word):
+    """"A ruby", "An emerald"."""
+    return ("An " if word[0].lower() in "aeiou" else "A ") + word.lower()
+
+
 def sentence(text):
     return text[0].upper() + text[1:]
 
@@ -581,7 +611,7 @@ def write_gems(gems, lang):
                 },
             })
             lang.append(f"items.{gid}.name={cut} {gem_id}")
-            lang.append(f"items.{gid}.description=A {gem_id.lower()} "
+            lang.append(f"items.{gid}.description={an(gem_id)} "
                         f"given {look}. {cut_powers(gem, cut)} "
                         f"Set in jewelry, it adds {share} of "
                         "the gem's charge, recharges and rune boosts. "

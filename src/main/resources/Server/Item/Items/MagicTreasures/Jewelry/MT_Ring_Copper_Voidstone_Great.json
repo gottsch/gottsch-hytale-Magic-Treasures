@@ -15,7 +15,7 @@
     ]
   },
   "Model": "Items/MagicTreasures/Rings/Ring_Great_Set.blockymodel",
-  "Texture": "Items/MagicTreasures/Rings/Ring_Copper_Voidstone.png",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Great_Copper_Voidstone.png",
   "PlayerAnimationsId": "Item",
   "Utility": {
     "Compatible": true

@@ -56,6 +56,6 @@ public class ImbueElement extends ChoiceElement {
         commandBuilder.set(selector + " #Icon.ItemId", iconItemId);
         commandBuilder.set(selector + " #Name.TextSpans",
                 label.color(outcome.allowed() ? "#ffffff" : "#8a8a8a"));
-        commandBuilder.set(selector + " #Durability.Text", outcome.text());
+        commandBuilder.set(selector + " #Durability.TextSpans", outcome.text());
     }
 }

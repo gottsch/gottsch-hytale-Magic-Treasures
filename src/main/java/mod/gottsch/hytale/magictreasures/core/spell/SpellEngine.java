@@ -35,6 +35,7 @@ import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import mod.gottsch.hytale.magictreasures.core.config.MagicTreasuresConfig;
 import mod.gottsch.hytale.magictreasures.core.element.ElementBonusSource;
 import mod.gottsch.hytale.magictreasures.core.element.ElementWear;
 import mod.gottsch.hytale.magictreasures.core.hud.JewelryHud;
@@ -53,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
 
 /**
  * Runs the passive spells on worn jewelry.
@@ -63,7 +65,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * the player's world thread, outside the ECS systems, so they can change the inventory.
  * <p>
  * {@link #onHurt} runs when the player takes damage and tries every
- * {@link SpellKind.Trigger#HURT} spell (the Wards) whose element it is.
+ * {@link SpellKind.Trigger#HURT} spell (Wards, Thorns, Barrier) whose element it is.
  * <p>
  * A spell casts when the piece's cooldown for it is over and the piece has the mana. A cast
  * that does something (a heal, a buff started) spends the mana and one use, and starts the
@@ -92,6 +94,12 @@ public final class SpellEngine {
      * doesn't say ({@code RefillSeconds}, Nov 13). Was the same for every material (Nov 12).
      */
     public static final double REFILL_SECONDS = 600;
+
+    /** A Barrier starts when a hit leaves the wearer below this share of their health. */
+    public static final double BARRIER_HEALTH = 0.35;
+
+    /** The damage cause Thorns hands back. */
+    private static final String THORNS_CAUSE = "Physical";
 
     /**
      * Per player: the share of each hit that the last cast of each Weapon spell adds as its
@@ -151,16 +159,21 @@ public final class SpellEngine {
     }
 
     /**
-     * Tries every hurt spell (the Wards) on the player's worn jewelry that wards this damage.
+     * Tries every hurt spell (Wards, Thorns, Barrier) on the player's worn jewelry whose
+     * elements match this damage.
+     *
+     * @param damage   the hit taken, after worn resistances and before armor
+     * @param attacker who dealt it, for Thorns: only for a direct hit by an entity, else null
      */
-    public static void onHurt(Ref<EntityStore> ref, Store<EntityStore> store, DamageCause cause) {
+    public static void onHurt(Ref<EntityStore> ref, Store<EntityStore> store, DamageCause cause,
+                              float damage, @Nullable Ref<EntityStore> attacker) {
         PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
         if (playerRef == null) {
             return;
         }
         WornJewelry worn = WornJewelry.of(ref, store);
         if (!worn.pieces().isEmpty()) {
-            cast(SpellKind.Trigger.HURT, playerRef.getUuid(), ref, store, worn, 0, cause, null);
+            cast(SpellKind.Trigger.HURT, playerRef.getUuid(), ref, store, worn, damage, cause, attacker);
         }
     }
 
@@ -169,6 +182,12 @@ public final class SpellEngine {
      * ({@link #refillSeconds}), once a second.
      */
     private static void refill(UUID uuid, WornJewelry worn) {
+        // the config's RefillSpeed (v1.2): 0 turns refilling off
+        double speed = MagicTreasuresConfig.get().getRefillSpeed();
+        if (speed <= 0) {
+            REFILL.remove(uuid);
+            return;
+        }
         Map<String, Double> owed = REFILL.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>());
         Set<String> kept = new HashSet<>();
         for (int i = 0; i < worn.pieces().size(); i++) {
@@ -182,7 +201,7 @@ public final class SpellEngine {
             String key = slot + ":" + piece.getItemId();
             kept.add(key);
             double total = owed.getOrDefault(key, 0.0)
-                    + stats.maxMana() / refillSeconds(stats) * SpellTickSystem.INTERVAL_SECONDS;
+                    + stats.maxMana() / refillSeconds(stats) * speed * SpellTickSystem.INTERVAL_SECONDS;
             double whole = Math.floor(total);
             owed.put(key, total - whole);
             if (whole > 0) {
@@ -228,7 +247,7 @@ public final class SpellEngine {
         worn.replace(slot, null);
         PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
         if (playerRef != null) {
-            playerRef.sendMessage(Message.raw("Your " + Jewelry.displayName(piece) + " is worn out and broke.")
+            playerRef.sendMessage(Lang.of("spell.broke").param("piece", Jewelry.name(piece))
                     .color("#ff7070"));
             Map<String, Long> cooldowns = COOLDOWNS.get(playerRef.getUuid());
             if (cooldowns != null) {
@@ -255,9 +274,12 @@ public final class SpellEngine {
     }
 
     /**
+     * @param damage for a {@link SpellKind.Trigger#HIT} cast the damage dealt, for a
+     *               {@link SpellKind.Trigger#HURT} cast the damage taken
      * @param cause for a {@link SpellKind.Trigger#HURT} cast, the damage taken: only spells
      *              warding it are tried
-     * @param victim for a {@link SpellKind.Trigger#HIT} cast, what was hit
+     * @param victim for a {@link SpellKind.Trigger#HIT} cast, what was hit; for a
+     *               {@link SpellKind.Trigger#HURT} cast, the attacker, if any
      */
     private static void cast(SpellKind.Trigger trigger, UUID uuid, Ref<EntityStore> ref, Store<EntityStore> store,
                              WornJewelry worn, float damage, @Nullable DamageCause cause,
@@ -301,7 +323,8 @@ public final class SpellEngine {
                 if (!definition.isUnbreakable()) {
                     state.setUses(state.getUses() - 1);
                 }
-                cooldowns.put(key, now + Math.round(spell.getCooldown() * factors.getCooldown() * 1000));
+                cooldowns.put(key, now + Math.round(spell.getCooldown() * factors.getCooldown()
+                        * MagicTreasuresConfig.get().getSpellCooldowns() * 1000));
                 changed = true;
                 LOGGER.atFine().log("%s cast %s from %s: mana %.1f, uses %d", uuid, spellId, piece.getItemId(),
                         state.getMana(), state.getUses());
@@ -316,7 +339,7 @@ public final class SpellEngine {
                 worn.replace(slot, null);
                 PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
                 if (playerRef != null) {
-                    playerRef.sendMessage(Message.raw("Your " + Jewelry.displayName(piece) + " is worn out and broke.")
+                    playerRef.sendMessage(Lang.of("spell.broke").param("piece", Jewelry.name(piece))
                             .color("#ff7070"));
                 }
                 clearCooldowns(cooldowns, slot);
@@ -363,6 +386,8 @@ public final class SpellEngine {
                 yield true;
             }
             case SPEED, STRENGTH, WARD -> buff(spell, factors, ref, store) != null;
+            case THORNS -> thorns(spell, factors, ref, damage, victim);
+            case BARRIER -> lowHealth(ref, store) && buff(spell, factors, ref, store) != null;
             case CAT_SIGHT -> {
                 EntityEffect effect = buff(spell, factors, ref, store);
                 if (effect == null) {
@@ -468,6 +493,47 @@ public final class SpellEngine {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Thorns: deals the spell's {@code Effect} share (scaled by the piece) of the hit the wearer
+     * took back to the attacker, as the wearer's own {@code Physical} hit. It's an
+     * {@link ElementBonusSource} hit, like a Strike: the attacker's resistances and armor apply,
+     * the wearer gets the kill, and it doesn't crit or start hit spells. That also keeps two
+     * wearers from bouncing it back and forth, as only direct hits start Thorns. A hit vanilla
+     * cancels isn't charged.
+     *
+     * @return true if it dealt the hit
+     */
+    private static boolean thorns(Spell spell, SpellFactors factors, Ref<EntityStore> wearer, float taken,
+                                  @Nullable Ref<EntityStore> attacker) {
+        if (attacker == null || !attacker.isValid() || taken <= 0) {
+            return false;
+        }
+        Store<EntityStore> attackerStore = attacker.getStore();
+        EntityStatMap stats = attackerStore.getComponent(attacker, EntityStatMap.getComponentType());
+        EntityStatValue health = stats == null ? null : stats.get(DefaultEntityStatTypes.getHealth());
+        if (health == null || health.get() <= health.getMin()) {
+            return false;
+        }
+        DamageCause cause = DamageCause.getAssetMap().getAsset(THORNS_CAUSE);
+        float amount = (float) (taken * spell.getEffect() * factors.getEffect());
+        if (cause == null || amount < 0.1f) {
+            return false;
+        }
+        Damage hit = new Damage(new ElementBonusSource(wearer), cause, amount);
+        DamageSystems.executeDamage(attacker, attackerStore, hit);
+        return !hit.isCancelled();
+    }
+
+    /**
+     * @return true if the player is alive and below {@link #BARRIER_HEALTH} of their health
+     */
+    private static boolean lowHealth(Ref<EntityStore> ref, Store<EntityStore> store) {
+        EntityStatMap stats = store.getComponent(ref, EntityStatMap.getComponentType());
+        EntityStatValue value = stats == null ? null : stats.get(DefaultEntityStatTypes.getHealth());
+        return value != null && value.get() > value.getMin()
+                && value.get() < value.getMax() * BARRIER_HEALTH;
     }
 
     /**

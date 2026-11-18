@@ -29,6 +29,7 @@ import mod.gottsch.hytale.magictreasures.core.cutting.GemCutPage;
 import mod.gottsch.hytale.magictreasures.core.cutting.GemCutting;
 
 import javax.annotation.Nonnull;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
 
 /**
  * {@code /mt cutting}: shows your gem cutting level and XP. Open to every player (Nov 15,
@@ -39,22 +40,23 @@ import javax.annotation.Nonnull;
 public class CuttingCommand extends AbstractPlayerCommand {
 
     public CuttingCommand() {
-        super("cutting", "Show your gem cutting level.");
+        super("cutting", "server.magictreasures.commands.cutting.desc");
         this.setPermissionGroups(MagicTreasuresCommand.PERMISSION_EVERYONE);
     }
 
     @Override
     protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
                            @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
-        context.sendMessage(Message.raw(describe(GemCutPage.skill(store, ref))));
+        context.sendMessage(describe(GemCutPage.skill(store, ref)));
     }
 
     /**
      * @return for example "Gem cutting level 3 (50 XP, 40 XP to the next)."
      */
-    static String describe(int xp) {
+    static Message describe(int xp) {
         int now = GemCutting.level(xp);
-        String next = now >= GemCutting.MAX_LEVEL ? "max level" : (GemCutting.xpFor(now + 1) - xp) + " XP to the next";
-        return "Gem cutting level " + now + " (" + xp + " XP, " + next + ").";
+        Message next = now >= GemCutting.MAX_LEVEL ? Lang.of("cutting.maxLevel")
+                : Lang.of("cutting.toNext").param("xp", GemCutting.xpFor(now + 1) - xp);
+        return Lang.of("cutting.command").param("level", now).param("xp", xp).param("next", next);
     }
 }

@@ -21,7 +21,7 @@ Download it from [CurseForge](https://www.curseforge.com/hytale/mods/magic-treas
 
 ## Installing
 
-1. Put `MagicTreasures-1.1.0.jar` in your Hytale `UserData\Mods` folder (or your server's `mods` folder).
+1. Put `MagicTreasures-1.2.0.jar` in your Hytale `UserData\Mods` folder (or your server's `mods` folder).
 2. For a local world, enable it in the world's `config.json` (`UserData\Saves\<your world>`):
    ```json
    "Mods": {
@@ -31,6 +31,16 @@ Download it from [CurseForge](https://www.curseforge.com/hytale/mods/magic-treas
 3. Start the world and craft a Treasures Case (Workbench, Tinkering).
 
 Requires Hytale server 0.7.7 or newer in the 0.7 line. No other mods needed.
+
+## Settings
+
+The first start writes `mods/gottsch_MagicTreasures/MagicTreasures.json`, next to the server's other mod data. Edit it and restart. Each setting multiplies the mod as shipped, so `1.0` changes nothing:
+
+- `ChestLootChance`: the chance a chest gets Magic Treasures loot (`2.0` doubles it, `0` turns it off; capped at 100%)
+- `MobLootChance`: the same for monsters
+- `BossLootChance`: the same for bosses
+- `RefillSpeed`: how fast worn pieces refill their charge (`0` turns refilling off, so only a recharge refills a piece)
+- `SpellCooldowns`: every spell's cooldown (`0.5` halves it); tooltips show the result
 
 ## Commands
 
@@ -48,6 +58,7 @@ All under `/magictreasures` (alias `/mt`). `worn` and `cutting` are open to ever
 
 - Frost, Storm and Stone Ward are in the mod but kept out of loot: almost nothing in Hytale deals Ice, Lightning or Earth damage yet.
 - Tested solo. Please report anything odd with several players.
+- Languages: English and Brazilian Portuguese (pt-BR). Corrections from native speakers are welcome.
 
 ## Data and tools
 
@@ -61,6 +72,7 @@ Everything is data, so asset packs can add their own:
   ```
   It empties its output folders first. Close the dev server before running it, since the server runs from `src/main/resources`.
 - Named pieces (such as the Vampire Lich's Ring) are authored in `tools/named_pieces.json`; `generate_jewelry.py` writes them too.
+- Translations: `generate_jewelry.py` writes the generated block of each `Server/Languages/<lang>/server.lang`; the pt-BR names come from `tools/lang_pt_br.py`. Text built in code is the `magictreasures.*` keys above that block, written by hand. A new language needs both.
 - The art scripts in `tools/` (`make_*.py`) take `--assets <Assets.zip>`.
 
 ## Building

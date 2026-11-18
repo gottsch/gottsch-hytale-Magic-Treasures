@@ -43,7 +43,7 @@ public class SetCuttingCommand extends AbstractPlayerCommand {
     private final RequiredArg<Integer> levelArg;
 
     public SetCuttingCommand() {
-        super("setcutting", "Set your gem cutting level (testing).");
+        super("setcutting", "server.magictreasures.commands.setcutting.desc");
         this.levelArg = withRequiredArg("level", "Gem cutting level, 1-" + GemCutting.MAX_LEVEL, ArgTypes.INTEGER);
     }
 
@@ -53,6 +53,6 @@ public class SetCuttingCommand extends AbstractPlayerCommand {
         int level = Math.max(1, Math.min(levelArg.get(context), GemCutting.MAX_LEVEL));
         int xp = GemCutting.xpFor(level);
         store.putComponent(ref, GemCuttingSkill.getComponentType(), new GemCuttingSkill(xp));
-        context.sendMessage(Message.raw(CuttingCommand.describe(xp)));
+        context.sendMessage(CuttingCommand.describe(xp));
     }
 }

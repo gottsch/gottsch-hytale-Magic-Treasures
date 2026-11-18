@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
 
 /**
  * /mt worn: lists the pieces the player wears, each with its charge, uses, runes and the
@@ -57,7 +58,7 @@ import java.util.TreeMap;
 public class WornCommand extends AbstractPlayerCommand {
 
     public WornCommand() {
-        super("worn", "Show the jewelry you are wearing.");
+        super("worn", "server.magictreasures.commands.worn.desc");
         // open to every player (Nov 15, release)
         this.setPermissionGroups(MagicTreasuresCommand.PERMISSION_EVERYONE);
     }
@@ -71,23 +72,23 @@ public class WornCommand extends AbstractPlayerCommand {
             JewelryWear.update(ref, store, true);
         }
         if (worn.caseLocation() == null) {
-            context.sendMessage(Message.raw("You have no Treasures Case, so nothing is worn."));
+            context.sendMessage(Lang.of("worn.noCase"));
             return;
         }
         if (worn.pieces().isEmpty()) {
-            context.sendMessage(Message.raw("Your Treasures Case is empty."));
+            context.sendMessage(Lang.of("worn.empty"));
             return;
         }
         int count = worn.pieces().size();
-        context.sendMessage(Message.raw("You're wearing " + count + (count == 1 ? " piece:" : " pieces:")));
+        context.sendMessage(Lang.of("worn.count").param("count", count));
         for (int i = 0; i < count; i++) {
             ItemStack piece = worn.pieces().get(i);
             short slot = worn.pieceSlots().get(i);
             context.sendMessage(Message.join(Message.raw("  "), Jewelry.name(piece),
-                    Message.raw(": " + condition(piece)).color("#c8c8c8")));
-            String spells = spells(playerRef, slot, Jewelry.state(piece));
-            if (!spells.isEmpty()) {
-                context.sendMessage(Message.raw("    " + spells).color("#9fd3ff"));
+                    Message.join(Message.raw(": "), condition(piece)).color("#c8c8c8")));
+            Message spells = spells(playerRef, slot, Jewelry.state(piece));
+            if (spells != null) {
+                context.sendMessage(Message.join(Message.raw("    "), spells).color("#9fd3ff"));
             }
         }
         // the worn element powers, added up per kind and element (Nov 11)
@@ -99,12 +100,12 @@ public class WornCommand extends AbstractPlayerCommand {
             examples.putIfAbsent(key, property);
         }
         if (!totals.isEmpty()) {
-            context.sendMessage(Message.raw("Element powers (resistance held within "
-                    + Math.round(ElementWear.RESISTANCE_CAP * 100) + "%):"));
+            context.sendMessage(Lang.of("worn.powers")
+                    .param("cap", Math.round(ElementWear.RESISTANCE_CAP * 100)));
             totals.forEach((key, value) -> {
                 ElementProperty e = examples.get(key);
                 ElementProperty sum = new ElementProperty(e.kind(), e.element(), value, e.effect());
-                context.sendMessage(Message.raw("  " + sum.describe()).color(sum.good() ? "#7ddc7d" : "#ff7070"));
+                context.sendMessage(Message.join(Message.raw("  "), sum.describe()).color(sum.good() ? "#7ddc7d" : "#ff7070"));
             });
         }
     }
@@ -112,38 +113,39 @@ public class WornCommand extends AbstractPlayerCommand {
     /**
      * @return for example "charge 40/60, uses 120/300"
      */
-    private static String condition(ItemStack piece) {
+    private static Message condition(ItemStack piece) {
         JewelryStats stats = Jewelry.stats(piece);
         JewelryState state = Jewelry.state(piece);
         if (state == null || !stats.known()) {
-            return "unknown";
+            return Lang.of("worn.unknown");
         }
         JewelryDefinition definition = stats.definition();
-        String charge = definition.isUnlimited() ? "charge unlimited"
-                : String.format("charge %.0f/%.0f", state.getMana(), stats.maxMana());
-        String uses = definition.isUnbreakable() ? "unbreakable"
-                : "uses " + state.getUses() + "/" + stats.maxUses();
-        return charge + ", " + uses;
+        Message charge = definition.isUnlimited() ? Lang.of("worn.chargeUnlimited")
+                : Lang.of("worn.charge").param("charge", String.format("%.0f/%.0f", state.getMana(), stats.maxMana()));
+        Message uses = definition.isUnbreakable() ? Lang.of("tooltip.unbreakable")
+                : Lang.of("worn.uses").param("uses", state.getUses() + "/" + stats.maxUses());
+        return Message.join(charge, Message.raw(", "), uses);
     }
 
     /**
      * @return the piece's spells with the seconds until each is ready, then its runes, for
      * example "Healing ready, Speed in 42 s, Fireball rune"; empty if it has neither
      */
-    private static String spells(PlayerRef playerRef, short slot, @Nullable JewelryState state) {
+    @Nullable
+    private static Message spells(PlayerRef playerRef, short slot, @Nullable JewelryState state) {
         if (state == null) {
-            return "";
+            return null;
         }
-        List<String> parts = new ArrayList<>();
+        List<Message> parts = new ArrayList<>();
         for (String id : state.getSpells()) {
-            Spell spell = Spell.get(id);
-            String name = spell == null ? id : spell.getName();
+            Message name = Spell.get(id) == null ? Message.raw(id) : Lang.spell(id);
             double left = SpellEngine.cooldownLeft(playerRef.getUuid(), slot, id);
-            parts.add(name + (left > 0 ? " in " + (int) Math.ceil(left) + " s" : " ready"));
+            parts.add(left > 0 ? Lang.of("worn.spellIn").param("spell", name).param("seconds", (int) Math.ceil(left))
+                    : Lang.of("worn.spellReady").param("spell", name));
         }
         for (String rune : state.getRunes()) {
-            parts.add(Jewelry.runeName(rune) + " rune");
+            parts.add(Lang.of("worn.rune").param("rune", Lang.item(rune)));
         }
-        return String.join(", ", parts);
+        return parts.isEmpty() ? null : Lang.join(parts, ", ");
     }
 }

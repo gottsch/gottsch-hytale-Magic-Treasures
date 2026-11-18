@@ -26,6 +26,9 @@ import com.hypixel.hytale.server.core.modules.interaction.interaction.config.ser
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.server.core.util.Config;
+import mod.gottsch.hytale.magictreasures.core.config.MagicTreasuresConfig;
+import mod.gottsch.hytale.magictreasures.core.loot.LootTable;
 import mod.gottsch.hytale.magictreasures.core.cutting.GemCutPageSupplier;
 import mod.gottsch.hytale.magictreasures.core.cutting.GemCuttingSkill;
 import mod.gottsch.hytale.magictreasures.core.command.MagicTreasuresCommand;
@@ -58,13 +61,25 @@ import javax.annotation.Nonnull;
 public class MagicTreasures extends JavaPlugin {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
+    private final Config<MagicTreasuresConfig> config;
+
     public MagicTreasures(@Nonnull JavaPluginInit init) {
         super(init);
+        // the server settings, MagicTreasures.json in the plugin's data folder (v1.2)
+        config = this.withConfig("MagicTreasures", MagicTreasuresConfig.CODEC);
     }
 
     @Override
     protected void setup() {
         LOGGER.atInfo().log("Setting up %s version %s", this.getName(), this.getManifest().getVersion().toString());
+        // write the settings file with the defaults if it isn't there (and add new settings
+        // to an old one), then use what it holds
+        config.save();
+        MagicTreasuresConfig.use(config.get());
+        MagicTreasuresConfig settings = MagicTreasuresConfig.get();
+        LOGGER.atInfo().log("Settings: loot chance x%s chests, x%s monsters, x%s bosses; refill speed x%s; "
+                        + "spell cooldowns x%s", settings.getChestLootChance(), settings.getMobLootChance(),
+                settings.getBossLootChance(), settings.getRefillSpeed(), settings.getSpellCooldowns());
         JewelryAssets.register(this.getAssetRegistry());
         this.getCommandRegistry().registerCommand(new MagicTreasuresCommand());
         // worn jewelry: re-read on every inventory change, and shown again after joining
@@ -85,6 +100,14 @@ public class MagicTreasures extends JavaPlugin {
         LootRoller.setItemFactory((id, count, cut) -> {
             ItemStack jewelry = Jewelry.create(id, cut);
             return jewelry != null ? jewelry : new ItemStack(id, count);
+        });
+        // the config scales each table's chance: chests, bosses, other monsters
+        LootRoller.setChanceScale(table -> {
+            MagicTreasuresConfig scale = MagicTreasuresConfig.get();
+            if (LootTable.CHEST.equalsIgnoreCase(table.getSource())) {
+                return scale.getChestLootChance();
+            }
+            return table.getId().contains("Boss") ? scale.getBossLootChance() : scale.getMobLootChance();
         });
         this.getChunkStoreRegistry().registerSystem(new ChestLootSystem());
         this.getEntityStoreRegistry().registerSystem(new MobLootSystem());

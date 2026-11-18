@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.ToDoubleFunction;
 
 /**
  * Rolls a {@link LootTable} into item stacks.
@@ -52,6 +53,7 @@ public final class LootRoller {
     }
 
     private static volatile ItemFactory factory = (id, count, cut) -> new ItemStack(id, count);
+    private static volatile ToDoubleFunction<LootTable> chanceScale = table -> 1;
 
     private LootRoller() {
     }
@@ -61,12 +63,27 @@ public final class LootRoller {
     }
 
     /**
-     * Rolls the table: its chance first, then its rolls.
+     * Sets what each table's chance is multiplied by (a mod's config, v1.2); the product is
+     * capped at 1.
+     */
+    public static void setChanceScale(ToDoubleFunction<LootTable> scale) {
+        chanceScale = scale;
+    }
+
+    /**
+     * @return the chance the table is rolled with: its own, times the chance scale, at most 1
+     */
+    public static double chance(LootTable table) {
+        return Math.min(1, Math.max(0, table.getChance() * chanceScale.applyAsDouble(table)));
+    }
+
+    /**
+     * Rolls the table: its chance first ({@link #chance}), then its rolls.
      *
      * @return the stacks, empty if the chance failed or nothing could be made
      */
     public static List<ItemStack> roll(LootTable table, Random random) {
-        if (random.nextDouble() >= table.getChance()) {
+        if (random.nextDouble() >= chance(table)) {
             return List.of();
         }
         return rollEntries(table, random);
