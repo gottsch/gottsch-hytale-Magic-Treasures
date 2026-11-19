@@ -374,8 +374,8 @@ public final class SpellEngine {
                 if (effect == null) {
                     yield false;
                 }
-                // why it cast, while it's tested (Nov 18: it kept casting in daylight)
-                LOGGER.atInfo().log("Cat Sight cast for %s. %s", uuid, describeLight(ref, store));
+                // why it cast, at debug level (Nov 18: it kept casting in daylight, fixed)
+                LOGGER.atFine().log("Cat Sight cast for %s. %s", uuid, describeLight(ref, store));
                 store.putComponent(ref, DynamicLight.getComponentType(), new DynamicLight(new ColorLight(CAT_SIGHT_LIGHT)));
                 LIT.put(uuid, effect.getId());
                 yield true;
