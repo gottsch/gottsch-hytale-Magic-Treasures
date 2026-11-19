@@ -1,0 +1,38 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Bracer_Guardian.name",
+    "Description": "server.items.MT_Bracer_Guardian.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/MT_Bracer_Guardian.png",
+  "Quality": "Legendary",
+  "ItemLevel": 6,
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Tags": {
+    "Family": [
+      "MT_Jewelry"
+    ]
+  },
+  "Model": "Items/MagicTreasures/Bracers/Bracer_Guardian.blockymodel",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Silver_Sapphire.png",
+  "PlayerAnimationsId": "Item",
+  "Utility": {
+    "Compatible": true
+  },
+  "MaxStack": 1,
+  "Scale": 1.0,
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  }
+}

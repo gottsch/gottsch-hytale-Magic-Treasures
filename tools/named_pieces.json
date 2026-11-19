@@ -48,6 +48,30 @@
     ]
   },
   {
+    "Id": "MT_Bracer_Guardian",
+    "Base": "MT_Bracer_Silver_Sapphire_Great",
+    "Model": "Items/MagicTreasures/Bracers/Bracer_Guardian.blockymodel",
+    "Icon": "Icons/Items/MagicTreasures/MT_Bracer_Guardian.png",
+    "Name": "Guardian's Vambrace",
+    "Lore": "Worn by the knights who held the gate. Raise your guard and the blow costs you little, and the one who struck it reels.",
+    "Quality": "Legendary",
+    "Cut": "Perfect",
+    "Spells": [
+      "Guard"
+    ],
+    "SpellOverrides": {
+      "Cost": 0,
+      "Cooldown": 4,
+      "Effect": 0.5,
+      "Duration": 1.5
+    },
+    "Unlimited": true,
+    "Unbreakable": true,
+    "Curses": [
+      "Vanishing"
+    ]
+  },
+  {
     "Id": "MT_Necklace_Last_Stand",
     "Base": "MT_Necklace_Gold_Diamond_Great",
     "Model": "Items/MagicTreasures/Necklaces/Necklace_Last_Stand.blockymodel",

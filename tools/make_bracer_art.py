@@ -141,11 +141,20 @@ def ring_parts(prefix, y, hx, hz, t, h):
     ]
 
 
-def worn_model(assets, style, gem, side=WORN_SIDE, extra=None):
+def worn_model(assets, style, gem, side=WORN_SIDE, extra=None, height=None,
+               thickness=None):
     """The worn cuff. extra(st, y, hx, hz, t), if given, returns more
     nodes for the cuff, in the forearm's frame (v1.2: Thornguard's
-    thorns, make_thornguard_art.py)."""
-    st = STYLES[style]
+    thorns, make_thornguard_art.py). height and thickness, if given,
+    replace the style's worn_h and worn_t, for a named piece's own cuff
+    (v1.3: the Guardian's Vambrace); keep height within about 12 of the
+    forearm's 16, or the cuff reaches the elbow and pokes through the
+    upper arm when it bends."""
+    st = dict(STYLES[style])
+    if height is not None:
+        st["worn_h"] = height
+    if thickness is not None:
+        st["worn_t"] = thickness
     fx, fy, fz = FOREARM
     g, h, t = WORN_GAP, st["worn_h"], st["worn_t"]
     # resting on the hand: the bottom of the cuff is where the hand box

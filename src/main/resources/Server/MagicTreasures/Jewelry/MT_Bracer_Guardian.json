@@ -1,0 +1,22 @@
+{
+  "Type": "Bracer",
+  "Material": "Silver",
+  "Style": "Great",
+  "Gem": "Sapphire",
+  "Name": "Guardian's Vambrace",
+  "Cut": "Perfect",
+  "Spells": [
+    "Guard"
+  ],
+  "SpellOverrides": {
+    "Cost": 0,
+    "Cooldown": 4,
+    "Effect": 0.5,
+    "Duration": 1.5
+  },
+  "Unlimited": true,
+  "Unbreakable": true,
+  "Curses": [
+    "Vanishing"
+  ]
+}

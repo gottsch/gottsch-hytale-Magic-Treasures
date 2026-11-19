@@ -94,6 +94,7 @@ SPELLS = {
     "Greater Strength": "Força Maior",
     "Stoneskin": "Pele de Pedra",
     "Thorns": "Espinhos",
+    "Guard": "Guarda",
     "Vampiric Kiss": "Beijo Vampírico",
     "Vampiric Bite": "Mordida Vampírica",
     "Vampiric Embrace": "Abraço Vampírico",
@@ -109,6 +110,10 @@ NAMED = {
         "Guarda-Espinhos",
         "Suas farpas de ferro foram cultivadas, não forjadas. Elas mordem "
         "quem golpeia você, e mordem você também, só um pouco."),
+    "MT_Bracer_Guardian": (
+        "Braçal do Guardião",
+        "Usado pelos cavaleiros que defendiam o portão. Erga a guarda e o "
+        "golpe custa pouco a você, e quem o desferiu cambaleia."),
     "MT_Necklace_Last_Stand": (
         "Amuleto da Última Resistência",
         "Forjado para um capitão que jurou nunca abandonar a muralha. "

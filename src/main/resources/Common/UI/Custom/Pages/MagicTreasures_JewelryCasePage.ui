@@ -24,7 +24,7 @@ $C = "../Common.ui";
 $C.@PageOverlay {}
 
 $C.@DecoratedContainer {
-  Anchor: (Width: 730, Height: 440);
+  Anchor: (Width: 730, Height: 480);
 
   #Title {
     Group {
@@ -321,6 +321,21 @@ $C.@DecoratedContainer {
           Anchor: (Width: @Slot, Height: @Slot, Horizontal: 0, Vertical: 0);
           TextTooltipStyle: $C.@DefaultTextTooltipStyle;
         }
+      }
+    }
+
+    // v1.3 (Mark, Nov 19): how the worn-jewelry HUD shows spell
+    // cooldowns, seconds or bars, saved per player (HudSettings.java)
+    Group {
+      LayoutMode: Left;
+      Anchor: (Top: 8, Height: 32);
+      Label #HudCooldownMode {
+        Anchor: (Width: 300);
+        Text: "";
+        Style: (...@Label, VerticalAlignment: Center);
+      }
+      $C.@SmallSecondaryTextButton #HudCooldownButton {
+        @Text = %server.customUI.mtJewelryCase.hudSwitch;
       }
     }
 

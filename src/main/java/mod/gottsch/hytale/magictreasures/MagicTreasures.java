@@ -31,6 +31,7 @@ import mod.gottsch.hytale.magictreasures.core.config.MagicTreasuresConfig;
 import mod.gottsch.hytale.magictreasures.core.loot.LootTable;
 import mod.gottsch.hytale.magictreasures.core.cutting.GemCutPageSupplier;
 import mod.gottsch.hytale.magictreasures.core.cutting.GemCuttingSkill;
+import mod.gottsch.hytale.magictreasures.core.hud.HudSettings;
 import mod.gottsch.hytale.magictreasures.core.command.MagicTreasuresCommand;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import mod.gottsch.hytale.magictreasures.core.element.ElementDamageSystem;
@@ -42,6 +43,7 @@ import mod.gottsch.hytale.magictreasures.core.imbue.ImbuePageSupplier;
 import mod.gottsch.hytale.magictreasures.core.wear.JewelryCasePageSupplier;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryAssets;
 import mod.gottsch.hytale.magictreasures.core.curse.VanishingCurseSystem;
+import mod.gottsch.hytale.magictreasures.core.spell.GuardSystem;
 import mod.gottsch.hytale.magictreasures.core.spell.HitSpellDamageSystem;
 import mod.gottsch.hytale.magictreasures.core.spell.HitMeter;
 import mod.gottsch.hytale.magictreasures.core.spell.RuneBoostSystem;
@@ -93,6 +95,7 @@ public class MagicTreasures extends JavaPlugin {
         // elements (Nov 11): worn resistances, damage bonuses, crits and on-hit statuses.
         // Registered before HitMeter.After, which orders itself after it.
         this.getEntityStoreRegistry().registerSystem(new ElementDamageSystem());
+        this.getEntityStoreRegistry().registerSystem(new GuardSystem());
         this.getEntityStoreRegistry().registerSystem(new HitMeter.Before());
         this.getEntityStoreRegistry().registerSystem(new HitMeter.After());
         // loot (Nov 11): added in code to world chests and mob deaths, by our own loot tables,
@@ -123,6 +126,9 @@ public class MagicTreasures extends JavaPlugin {
                 GemCuttingSkill.ID, GemCuttingSkill.CODEC));
         OpenCustomUIInteraction.registerCustomPageSupplier(this, GemCutPageSupplier.class, GemCutPageSupplier.ID,
                 new GemCutPageSupplier());
+        // the HUD's settings (v1.3: cooldowns as seconds or bars), saved with the player
+        HudSettings.setComponentType(this.getEntityStoreRegistry().registerComponent(HudSettings.class,
+                HudSettings.ID, HudSettings.CODEC));
         // the Treasures Case opens its own page (Nov 11): a picture per slot, moving by click
         OpenCustomUIInteraction.registerCustomPageSupplier(this, JewelryCasePageSupplier.class,
                 JewelryCasePageSupplier.ID, new JewelryCasePageSupplier());

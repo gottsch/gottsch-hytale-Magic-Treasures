@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - Unreleased
+
+### Added
+
+- **Guard** (level 3), a new spell that works when you block with a shield or a weapon's guard:
+  - While the piece has the charge for a cast, every block costs 30% less stamina.
+  - A blocked melee hit stuns the attacker for 1 second, every 8 seconds.
+  - Its scroll is in chests and on monsters with the others.
+- **Guardian's Vambrace:** a named Legendary silver bracer of overlapping plates flaring to the elbow, ringed with small sapphires at the elbow and with a square boss set with a perfect sapphire and a small one at each corner.
+  - Its Guard cuts a block's stamina by about half and stuns for 1.5 seconds, as often as every 4 seconds.
+  - It never runs out or breaks, under a Curse of Vanishing.
+  - Worn, it covers most of your forearm, taller than other bracers, with its plates, the sapphire ring at the elbow and its boss.
+  - Found on bosses and in the deepest chests.
+- The worn-jewelry panel can show spell cooldowns as bars instead of seconds: a thin red bar per spell under its name, full when the spell is cast and emptying as its cooldown runs down. Switch it on the Treasures Case page ("HUD cooldowns"); each player's choice is saved.
+- `/mt hits` also shows each hit you block: the stamina it cost and the drain before and after Guard, and whether each worn Guard stunned the attacker or why not.
+
 ## [1.2.0] - 2026-11-19
 
 ### Added

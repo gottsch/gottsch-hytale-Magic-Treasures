@@ -100,12 +100,14 @@ def model():
 
 def worn_model(assets):
     """The worn Great set necklace with the shield, scaled as the worn
-    gem is to the held one."""
+    gem is to the held one. The shield takes ids from 4200: the worn
+    necklace's bail is 4000 and its chain decals 4100 and 4101."""
     vmodel, _ = necklace.vanilla_necklace(assets)
     m = necklace.worn_model(vmodel, "Great", "x")
     st = necklace.STYLES["Great"]
     find_pendant(m["nodes"])["children"] += shield_nodes(
-        necklace.collar_for(st["worn_gem"]), scale=st["worn_gem"] / st["gem"])
+        necklace.collar_for(st["worn_gem"]), nid=4200,
+        scale=st["worn_gem"] / st["gem"])
     return m
 
 

@@ -35,6 +35,8 @@ import javax.annotation.Nullable;
  *     {@code Element}s. A Ward (Stoneskin is a Ward of Physical and Projectile) starts its
  *     resistance, so the first hit isn't warded; Thorns hands part of a melee hit back to the
  *     attacker; a Barrier starts when the hit leaves the wearer low on health.</li>
+ *     <li>{@link Trigger#BLOCK}: when the wearer blocks a hit by an entity, with a shield or
+ *     a weapon's guard ({@link GuardSystem}). A Guard stuns a melee attacker.</li>
  * </ul>
  * A spell asset names its kind in {@code Kind}, for example {@code "Cat_Sight"}.
  *
@@ -77,10 +79,16 @@ public enum SpellKind {
      * A Ward that starts only when a hit leaves the wearer below
      * {@link SpellEngine#BARRIER_HEALTH} of their health (Nov 17, 1.2.0).
      */
-    BARRIER(Trigger.HURT);
+    BARRIER(Trigger.HURT),
+    /**
+     * While worn with the charge for a cast, takes the spell's {@code Effect} share off the
+     * stamina each block costs; a blocked melee hit stuns the attacker ({@code EntityEffect})
+     * for its {@code Duration}, once per cooldown (v1.3, {@link GuardSystem}).
+     */
+    GUARD(Trigger.BLOCK);
 
     public enum Trigger {
-        TICK, HIT, HURT
+        TICK, HIT, HURT, BLOCK
     }
 
     private final Trigger trigger;

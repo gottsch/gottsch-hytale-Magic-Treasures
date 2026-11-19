@@ -38,6 +38,8 @@ import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import mod.gottsch.hytale.magictreasures.core.hud.HudSettings;
+import mod.gottsch.hytale.magictreasures.core.hud.JewelryHud;
 import mod.gottsch.hytale.magictreasures.core.imbue.ItemSlot;
 import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryDefinition;
@@ -67,6 +69,9 @@ import mod.gottsch.hytale.magictreasures.core.lang.Lang;
  * <p>
  * Everything is read again on each click, as the player's inventory can change while the page
  * is open. Writing to the case raises an inventory change, which updates what is worn.
+ * <p>
+ * Under the slots (v1.3) is the worn-jewelry HUD's one setting, how spell cooldowns show,
+ * seconds or bars ({@link HudSettings}), with a button to switch it.
  *
  * @author Mark Gottschling on 11/11/2026
  */
@@ -87,6 +92,7 @@ public class JewelryCasePage extends InteractiveCustomUIPage<JewelryCasePage.Cli
     private static final String EMPTY = "#8f9bab";
     private static final String WORN = "Worn";
     private static final String CARRIED = "Carried";
+    private static final String HUD_COOLDOWNS = "HudCooldowns";
 
     /** The case: its section and slot. */
     private final ItemContainer caseSection;
@@ -113,6 +119,8 @@ public class JewelryCasePage extends InteractiveCustomUIPage<JewelryCasePage.Cli
             events.addEventBinding(CustomUIEventBindingType.Activating, "#CarryButton" + i,
                     new EventData().append(Click.ACTION, CARRIED).append(Click.INDEX, String.valueOf(i)));
         }
+        events.addEventBinding(CustomUIEventBindingType.Activating, "#HudCooldownButton",
+                new EventData().append(Click.ACTION, HUD_COOLDOWNS).append(Click.INDEX, "0"));
     }
 
     @Override
@@ -123,11 +131,23 @@ public class JewelryCasePage extends InteractiveCustomUIPage<JewelryCasePage.Cli
             message = takeOff(ref, store, (short) index);
         } else if (CARRIED.equals(click.action) && index >= 0 && index < carried.size()) {
             message = putOn(carried.get(index));
+        } else if (HUD_COOLDOWNS.equals(click.action)) {
+            switchCooldowns(ref, store);
         }
         // always answer: a click locks the page ("Loading...") until the server replies
         UICommandBuilder commands = new UICommandBuilder();
         fill(ref, store, commands, message);
         sendUpdate(commands, false);
+    }
+
+    /**
+     * Switches how the player's HUD shows spell cooldowns, seconds or bars, and rebuilds the HUD
+     * in the new mode.
+     */
+    private void switchCooldowns(Ref<EntityStore> ref, Store<EntityStore> store) {
+        boolean bars = !HudSettings.cooldownBars(ref, store);
+        store.putComponent(ref, HudSettings.getComponentType(), new HudSettings(bars));
+        JewelryHud.refresh(playerRef, ref, store, WornJewelry.of(ref, store));
     }
 
     /**
@@ -260,6 +280,8 @@ public class JewelryCasePage extends InteractiveCustomUIPage<JewelryCasePage.Cli
             message = Lang.of("case.noOtherJewelry");
         }
         commands.set("#Message.TextSpans", message == null ? Message.raw("") : message);
+        commands.set("#HudCooldownMode.TextSpans", Lang.of(HudSettings.cooldownBars(ref, accessor)
+                ? "case.hudCooldownBars" : "case.hudCooldownSeconds"));
     }
 
     /**

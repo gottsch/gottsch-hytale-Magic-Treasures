@@ -71,7 +71,8 @@ import mod.gottsch.hytale.magictreasures.core.lang.Lang;
  * the player's world thread, outside the ECS systems, so they can change the inventory.
  * <p>
  * {@link #onHurt} runs when the player takes damage and tries every
- * {@link SpellKind.Trigger#HURT} spell (Wards, Thorns, Barrier) whose element it is.
+ * {@link SpellKind.Trigger#HURT} spell (Wards, Thorns, Barrier) whose element it is, and
+ * {@link #onBlock} every {@link SpellKind.Trigger#BLOCK} spell (Guard) when they block a hit.
  * <p>
  * A spell casts when the piece's cooldown for it is over and the piece has the mana. A cast
  * that does something (a heal, a buff started) spends the mana and one use, and starts the
@@ -96,6 +97,9 @@ public final class SpellEngine {
     /** Per player: when each piece's spell is ready again, keyed {@code slot:spellId}, in epoch ms. */
     private static final Map<UUID, Map<String, Long>> COOLDOWNS = new ConcurrentHashMap<>();
 
+    /** Per player: each running cooldown's full length in ms, keyed as {@link #COOLDOWNS}, for the HUD's bars. */
+    private static final Map<UUID, Map<String, Long>> COOLDOWN_LENGTHS = new ConcurrentHashMap<>();
+
     /** Players lit by Cat Sight, and the effect that keeps the light on. */
     private static final Map<UUID, String> LIT = new ConcurrentHashMap<>();
 
@@ -111,6 +115,9 @@ public final class SpellEngine {
      * so the curse weakens but never leaves the wearer overdrawn (Mark, Nov 18).
      */
     public static final double WEARINESS_STAMINA = 2;
+
+    /** A Guard stuns only an attacker this close, in blocks: a melee hit, not a shot. */
+    public static final double GUARD_REACH = 4.5;
 
     /**
      * Per player: the share of each hit that the last cast of each Weapon spell adds as its
@@ -183,6 +190,79 @@ public final class SpellEngine {
     }
 
     /**
+     * Tries every block spell (Guard) on the player's worn jewelry, after they blocked a hit.
+     *
+     * @param attacker who dealt the blocked hit
+     */
+    public static void onBlock(Ref<EntityStore> ref, Store<EntityStore> store, Ref<EntityStore> attacker) {
+        PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
+        if (playerRef == null) {
+            return;
+        }
+        WornJewelry worn = WornJewelry.of(ref, store);
+        if (worn.pieces().isEmpty()) {
+            return;
+        }
+        UUID uuid = playerRef.getUuid();
+        Map<String, Long> before = new HashMap<>(COOLDOWNS.getOrDefault(uuid, Map.of()));
+        cast(SpellKind.Trigger.BLOCK, uuid, ref, store, worn, 0, null, attacker);
+        if (HitMeter.SHOW_HITS.contains(uuid)) {
+            reportGuard(playerRef, ref, store, worn, before, attacker);
+        }
+    }
+
+    /**
+     * For {@code /mt hits}: what each worn Guard did on a blocked hit, its stun or why not
+     * (cooldown, charge, the attacker out of melee reach or already stunned).
+     *
+     * @param before the player's cooldowns before the cast, to tell which Guards cast
+     */
+    private static void reportGuard(PlayerRef playerRef, Ref<EntityStore> ref, Store<EntityStore> store,
+                                    WornJewelry worn, Map<String, Long> before, Ref<EntityStore> attacker) {
+        long now = System.currentTimeMillis();
+        Map<String, Long> after = COOLDOWNS.getOrDefault(playerRef.getUuid(), Map.of());
+        for (int i = 0; i < worn.pieces().size(); i++) {
+            ItemStack piece = worn.pieces().get(i);
+            JewelryStats stats = Jewelry.stats(piece);
+            JewelryState state = Jewelry.state(piece);
+            if (!stats.known() || state == null) {
+                continue;
+            }
+            for (String spellId : state.getSpells()) {
+                Spell spell = Spell.get(spellId);
+                if (spell == null || spell.getKind() != SpellKind.GUARD) {
+                    continue;
+                }
+                spell = spell.withOverrides(stats.definition().getSpellOverrides());
+                String key = worn.pieceSlots().get(i) + ":" + spellId;
+                Long was = before.get(key);
+                double cost = stats.definition().isUnlimited() ? 0 : spell.getCost() * stats.factors().getCost();
+                String result;
+                if (!java.util.Objects.equals(was, after.get(key))) {
+                    result = String.format("stunned the attacker for %.1f s, cost %.1f charge",
+                            spell.getDuration() * stats.factors().getDuration(), cost);
+                } else if (was != null && was > now) {
+                    result = String.format("no stun, on cooldown (%.1f s left)", (was - now) / 1000.0);
+                } else if (state.getMana() < cost) {
+                    result = String.format("no stun, out of charge (%.1f of %.1f)", state.getMana(), cost);
+                } else {
+                    TransformComponent mine = store.getComponent(ref, TransformComponent.getComponentType());
+                    TransformComponent theirs = attacker.isValid() ? attacker.getStore()
+                            .getComponent(attacker, TransformComponent.getComponentType()) : null;
+                    double distance = mine == null || theirs == null ? -1
+                            : mine.getPosition().distance(theirs.getPosition());
+                    result = distance > GUARD_REACH
+                            ? String.format("no stun, attacker %.1f blocks away (melee reach %.1f)",
+                            distance, GUARD_REACH)
+                            : "no stun, the attacker is already stunned";
+                }
+                playerRef.sendMessage(Message.raw(String.format("  Guard on %s: %s",
+                        piece.getItemId(), result)).color("#9fe0b0"));
+            }
+        }
+    }
+
+    /**
      * Brings each worn piece's charge up to date ({@link Refill#catchUp}), once a second.
      */
     private static void refill(WornJewelry worn, long now) {
@@ -242,8 +322,10 @@ public final class SpellEngine {
         DrainAura.onLeave(uuid);
         WEAPON_SHARES.remove(uuid);
         COOLDOWNS.remove(uuid);
+        COOLDOWN_LENGTHS.remove(uuid);
         LIT.remove(uuid);
         Refill.onLeave(uuid);
+        GuardSystem.onLeave(uuid);
     }
 
     /**
@@ -300,8 +382,10 @@ public final class SpellEngine {
                 if (!definition.isUnbreakable()) {
                     state.setUses(state.getUses() - 1);
                 }
-                cooldowns.put(key, now + Math.round(spell.getCooldown() * factors.getCooldown()
-                        * MagicTreasuresConfig.get().getSpellCooldowns() * 1000));
+                long length = Math.round(spell.getCooldown() * factors.getCooldown()
+                        * MagicTreasuresConfig.get().getSpellCooldowns() * 1000);
+                cooldowns.put(key, now + length);
+                COOLDOWN_LENGTHS.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>()).put(key, length);
                 changed = true;
                 LOGGER.atFine().log("%s cast %s from %s: mana %.1f, uses %d", uuid, spellId, piece.getItemId(),
                         state.getMana(), state.getUses());
@@ -365,6 +449,7 @@ public final class SpellEngine {
             case SPEED, STRENGTH, WARD -> buff(spell, factors, ref, store) != null;
             case THORNS -> thorns(spell, factors, ref, damage, victim);
             case BARRIER -> barrier(spell, factors, ref, store);
+            case GUARD -> guard(spell, factors, ref, store, victim);
             case CAT_SIGHT -> {
                 // only in the dark: at night or underground, not in daylight (v1.2)
                 if (!dark(ref, store)) {
@@ -642,6 +727,34 @@ public final class SpellEngine {
     }
 
     /**
+     * A Guard's stun: starts the spell's effect on the attacker of a blocked hit, for its
+     * duration, if they are within {@link #GUARD_REACH} (a melee hit, not an arrow) and not
+     * already stunned. The stamina it saves is {@link GuardSystem}'s, cast or not.
+     *
+     * @return true if it stunned the attacker
+     */
+    private static boolean guard(Spell spell, SpellFactors factors, Ref<EntityStore> ref, Store<EntityStore> store,
+                                 @Nullable Ref<EntityStore> attacker) {
+        if (attacker == null || !attacker.isValid() || spell.getEntityEffect() == null) {
+            return false;
+        }
+        Store<EntityStore> attackerStore = attacker.getStore();
+        TransformComponent mine = store.getComponent(ref, TransformComponent.getComponentType());
+        TransformComponent theirs = attackerStore.getComponent(attacker, TransformComponent.getComponentType());
+        if (mine == null || theirs == null || mine.getPosition().distance(theirs.getPosition()) > GUARD_REACH) {
+            return false;
+        }
+        EntityEffect effect = EntityEffect.getAssetMap().getAsset(spell.getEntityEffect());
+        EffectControllerComponent effects = attackerStore.getComponent(attacker,
+                EffectControllerComponent.getComponentType());
+        if (effect == null || effects == null || effects.hasEffect(effect)) {
+            return false;
+        }
+        float duration = (float) (spell.getDuration() * factors.getDuration());
+        return effects.addEffect(attacker, effect, duration, OverlapBehavior.OVERWRITE, attackerStore);
+    }
+
+    /**
      * The Curse of Weariness: takes {@link #WEARINESS_STAMINA} from the wearer's stamina, down
      * to 0 at most (vanilla lets stamina go below 0, an overdrawn state; the curse doesn't).
      */
@@ -697,5 +810,19 @@ public final class SpellEngine {
         Map<String, Long> cooldowns = COOLDOWNS.getOrDefault(uuid, new HashMap<>());
         long left = cooldowns.getOrDefault(slot + ":" + spellId, 0L) - System.currentTimeMillis();
         return Math.max(0, left / 1000.0);
+    }
+
+    /**
+     * @return the share of this piece's spell's cooldown still to run, 1 just cast to 0 ready,
+     * for the HUD's cooldown bars
+     */
+    public static float cooldownRemaining(UUID uuid, short slot, String spellId) {
+        String key = slot + ":" + spellId;
+        long left = COOLDOWNS.getOrDefault(uuid, Map.of()).getOrDefault(key, 0L) - System.currentTimeMillis();
+        long length = COOLDOWN_LENGTHS.getOrDefault(uuid, Map.of()).getOrDefault(key, 0L);
+        if (left <= 0 || length <= 0) {
+            return 0f;
+        }
+        return (float) Math.clamp((double) left / length, 0.0, 1.0);
     }
 }

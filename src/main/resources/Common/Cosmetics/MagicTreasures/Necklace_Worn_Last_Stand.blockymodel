@@ -2302,7 +2302,7 @@
                   }
                 },
                 {
-                  "id": "4000",
+                  "id": "4200",
                   "name": "Shield_0",
                   "children": [],
                   "position": {
@@ -2410,7 +2410,7 @@
                   }
                 },
                 {
-                  "id": "4001",
+                  "id": "4201",
                   "name": "Shield_1",
                   "children": [],
                   "position": {
@@ -2518,7 +2518,7 @@
                   }
                 },
                 {
-                  "id": "4002",
+                  "id": "4202",
                   "name": "Shield_2",
                   "children": [],
                   "position": {
@@ -2626,7 +2626,7 @@
                   }
                 },
                 {
-                  "id": "4003",
+                  "id": "4203",
                   "name": "Shield_3",
                   "children": [],
                   "position": {
@@ -2734,7 +2734,7 @@
                   }
                 },
                 {
-                  "id": "4004",
+                  "id": "4204",
                   "name": "Shield_4",
                   "children": [],
                   "position": {
@@ -2842,7 +2842,7 @@
                   }
                 },
                 {
-                  "id": "4005",
+                  "id": "4205",
                   "name": "Shield_5",
                   "children": [],
                   "position": {
@@ -2950,7 +2950,7 @@
                   }
                 },
                 {
-                  "id": "4006",
+                  "id": "4206",
                   "name": "Shield_6",
                   "children": [],
                   "position": {
@@ -3058,7 +3058,7 @@
                   }
                 },
                 {
-                  "id": "4020",
+                  "id": "4220",
                   "name": "Shield_Rim",
                   "children": [],
                   "position": {

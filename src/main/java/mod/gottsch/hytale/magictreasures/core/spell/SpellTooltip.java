@@ -100,6 +100,13 @@ public record SpellTooltip(Message name, @Nullable Message summary, @Nullable Me
                 summary = Lang.of("spell.thorns").param("percent", Math.round(effect * 100));
                 baseText = Math.round(spell.getEffect() * 100) + "%";
             }
+            case GUARD -> {
+                summary = Lang.of("spell.guard").param("percent",
+                        Math.round(Math.min(GuardSystem.MAX_CUT, effect) * 100));
+                baseText = Math.round(spell.getEffect() * 100) + "%";
+                extras.add(Lang.of("spell.guardStun").param("seconds",
+                        rounded(spell.getDuration() * factors.getDuration())));
+            }
             case BARRIER -> {
                 // a Barrier with an Effect heals too (v1.2: 10 plain, 30 on the Amulet of the Last Stand)
                 summary = spell.getEffect() > 0
@@ -134,7 +141,8 @@ public record SpellTooltip(Message name, @Nullable Message summary, @Nullable Me
             }
         }
 
-        if (spell.getDuration() > 0) {
+        // a Guard's duration is its stun, said above
+        if (spell.getDuration() > 0 && spell.getKind() != SpellKind.GUARD) {
             extras.add(Lang.of("spell.lasts").param("seconds",
                     rounded(spell.getDuration() * factors.getDuration())));
         }
@@ -163,7 +171,7 @@ public record SpellTooltip(Message name, @Nullable Message summary, @Nullable Me
      */
     private static boolean usesEffect(SpellKind kind) {
         return switch (kind) {
-            case HEALING, VAMPIRIC, STRIKE, DRAIN, WEAPON, THORNS -> true;
+            case HEALING, VAMPIRIC, STRIKE, DRAIN, WEAPON, THORNS, GUARD -> true;
             default -> false;
         };
     }

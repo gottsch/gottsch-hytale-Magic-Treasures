@@ -1,0 +1,10 @@
+{
+  "Name": "Guard",
+  "Kind": "Guard",
+  "Level": 3,
+  "Cost": 4,
+  "Cooldown": 8,
+  "Effect": 0.3,
+  "Duration": 1,
+  "EntityEffect": "MT_Spell_Guard_Stun"
+}

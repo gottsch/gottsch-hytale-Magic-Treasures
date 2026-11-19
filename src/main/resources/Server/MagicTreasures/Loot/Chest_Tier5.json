@@ -52,6 +52,12 @@
     },
     {
       "Items": [
+        "MT_Bracer_Guardian"
+      ],
+      "Weight": 1
+    },
+    {
+      "Items": [
         "MT_Necklace_Last_Stand"
       ],
       "Weight": 1

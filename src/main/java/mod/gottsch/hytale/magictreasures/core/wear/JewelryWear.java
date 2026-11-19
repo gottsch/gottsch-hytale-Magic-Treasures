@@ -29,6 +29,7 @@ import com.hypixel.hytale.server.core.modules.entity.player.PlayerSkinComponent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import mod.gottsch.hytale.magictreasures.core.element.ElementWear;
+import mod.gottsch.hytale.magictreasures.core.spell.GuardSystem;
 import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryDefinition;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryStats;
@@ -99,6 +100,7 @@ public final class JewelryWear {
      */
     public static final Map<String, String> NAMED_WORN = Map.of(
             "MT_Bracer_Thornguard", "Cosmetics/MagicTreasures/Bracer_Worn_Thornguard.blockymodel",
+            "MT_Bracer_Guardian", "Cosmetics/MagicTreasures/Bracer_Worn_Guardian.blockymodel",
             "MT_Necklace_Last_Stand", "Cosmetics/MagicTreasures/Necklace_Worn_Last_Stand.blockymodel");
     /**
      * Named pieces worn with a texture of their own, by item id (v1.2): Starfall's ring texture
@@ -161,6 +163,7 @@ public final class JewelryWear {
         }
         WORN.put(uuid, new Worn(jewelry, shown));
         ElementWear.update(uuid, jewelry);
+        GuardSystem.update(uuid, jewelry);
         if (previous == null || !previous.jewelry().itemIds().equals(jewelry.itemIds())) {
             LOGGER.atInfo().log("%s wears %s (case: %s)%s", playerRef.getUsername(), jewelry.itemIds(),
                     jewelry.caseLocation(), send ? ", look sent" : "");

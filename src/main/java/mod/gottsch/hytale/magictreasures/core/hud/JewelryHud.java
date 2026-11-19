@@ -47,6 +47,10 @@ import com.hypixel.hytale.server.core.Message;
  * {@link #update} shows, hides and re-texts rows, and sends nothing when nothing changed.
  * A player gets the HUD the first time they wear jewelry, so players who never do are left
  * alone. It is added again whenever it is missing (after respawning).
+ * <p>
+ * Cooldowns show as seconds ({@code Healing 42s}) or, if the player chose bars on the Treasures
+ * Case page ({@link HudSettings}, v1.3), as a thin red bar per spell under the spell names, full
+ * when the spell is cast and emptying as its cooldown runs down (Mark, Nov 19). The mode is fixed when the HUD is built: switching rebuilds it.
  *
  * @author Mark Gottschling on 11/09/2026
  */
@@ -60,11 +64,17 @@ public class JewelryHud extends CustomUIHud {
     private static final String ANCHOR = "(Left: 20, Top: 70, Width: 360)";
 
     private static final int ROWS = 4;
+    /** Cooldown bars per row: a piece holds at most two spells (Starfall). */
+    private static final int BARS = 2;
+    /** The cooldown bars' fill, red so they don't read as the charge bar. */
+    private static final String BAR_FILL = "MagicTreasures/CooldownBarFill.png";
 
+    private final boolean cooldownBars;
     private String lastSignature = "";
 
-    public JewelryHud(PlayerRef playerRef) {
+    public JewelryHud(PlayerRef playerRef, boolean cooldownBars) {
         super(playerRef, KEY);
+        this.cooldownBars = cooldownBars;
     }
 
     @Override
@@ -75,7 +85,7 @@ public class JewelryHud extends CustomUIHud {
                       Group #JewelRow%1$d {
                         Visible: false;
                         LayoutMode: Top;
-                        Anchor: (Bottom: 6, Height: 62);
+                        Anchor: (Bottom: 6, Height: %2$d);
                         Background: #000000(0.35);
                         Padding: (Horizontal: 10, Vertical: 4);
 
@@ -110,8 +120,23 @@ public class JewelryHud extends CustomUIHud {
                           Text: "";
                           Style: (FontSize: 12, TextColor: #d0d0d0, VerticalAlignment: Center);
                         }
-                      }
-                    """.formatted(i));
+                    """.formatted(i, cooldownBars ? 62 + 6 * BARS : 62));
+            if (cooldownBars) {
+                for (int b = 1; b <= BARS; b++) {
+                    markup.append("""
+                              Group #JewelCdBox%1$d%2$d {
+                                Anchor: (Top: 2, Height: 4);
+                                Background: #1b1b24(0.9);
+
+                                ProgressBar #JewelCd%1$d%2$d {
+                                  Value: 0.0;
+                                  BarTexturePath: "%3$s";
+                                }
+                              }
+                            """.formatted(i, b, BAR_FILL));
+                }
+            }
+            markup.append("  }\n");
         }
         markup.append("}\n");
         builder.appendInline(null, markup.toString());
@@ -128,11 +153,16 @@ public class JewelryHud extends CustomUIHud {
         }
         HudManager hudManager = player.getHudManager();
         CustomUIHud existing = hudManager.getCustomHud(KEY);
+        boolean bars = HudSettings.cooldownBars(ref, store);
         JewelryHud hud;
-        if (existing instanceof JewelryHud jewelryHud) {
+        if (existing instanceof JewelryHud jewelryHud && jewelryHud.cooldownBars == bars) {
             hud = jewelryHud;
-        } else if (!worn.pieces().isEmpty()) {
-            hud = new JewelryHud(playerRef);
+        } else if (existing instanceof JewelryHud || !worn.pieces().isEmpty()) {
+            // new, or the player switched how cooldowns show: build it again in that mode
+            if (existing != null) {
+                hudManager.removeCustomHud(playerRef, KEY);
+            }
+            hud = new JewelryHud(playerRef, bars);
             hudManager.addCustomHud(playerRef, hud);
         } else {
             return;
@@ -163,7 +193,10 @@ public class JewelryHud extends CustomUIHud {
             float share = unlimited ? 1f
                     : stats.maxMana() <= 0 ? 0f : (float) Math.clamp(mana / stats.maxMana(), 0.0, 1.0);
             StringBuilder spellSignature = new StringBuilder();
-            Message spells = spells(playerRef, slot, state, spellSignature);
+            Message spells = spells(playerRef, slot, state, spellSignature, cooldownBars);
+            if (cooldownBars) {
+                bars(builder, i, playerRef, slot, state, spellSignature);
+            }
             builder.set("#JewelName" + i + ".TextSpans", Jewelry.name(piece));
             builder.set("#JewelCharge" + i + ".TextSpans", charge);
             builder.set("#JewelBar" + i + ".Value", share);
@@ -181,7 +214,8 @@ public class JewelryHud extends CustomUIHud {
      * @return the piece's spells with the seconds until each is ready, for example
      * {@code Healing ready, Speed 42s}
      */
-    private static Message spells(PlayerRef playerRef, short slot, JewelryState state, StringBuilder signature) {
+    private static Message spells(PlayerRef playerRef, short slot, JewelryState state, StringBuilder signature,
+                                  boolean bars) {
         if (state == null || (state.getSpells().length == 0 && state.getRunes().length == 0)) {
             return Lang.of("hud.noSpells");
         }
@@ -196,10 +230,30 @@ public class JewelryHud extends CustomUIHud {
         for (String id : state.getSpells()) {
             Message name = Spell.get(id) == null ? Message.raw(id) : Lang.spell(id);
             int left = (int) Math.ceil(SpellEngine.cooldownLeft(playerRef.getUuid(), slot, id));
-            parts.add(left > 0 ? Lang.of("hud.spellIn").param("spell", name).param("seconds", left)
-                    : Lang.of("hud.spellReady").param("spell", name));
+            // with bars, the bar shows the wait: just the name until it's ready
+            parts.add(left <= 0 ? Lang.of("hud.spellReady").param("spell", name)
+                    : bars ? name : Lang.of("hud.spellIn").param("spell", name).param("seconds", left));
             signature.append(id).append(':').append(Math.max(0, left)).append(',');
         }
         return Lang.join(parts, ", ");
+    }
+
+    /**
+     * Sets the row's cooldown bars, one per spell in the spell names' order, and hides the
+     * rest. A bar is full when its spell was just cast and empty when it is ready.
+     */
+    private static void bars(UICommandBuilder builder, int row, PlayerRef playerRef, short slot,
+                             JewelryState state, StringBuilder signature) {
+        String[] spells = state == null ? new String[0] : state.getSpells();
+        for (int b = 1; b <= BARS; b++) {
+            boolean visible = b <= spells.length;
+            builder.set("#JewelCdBox" + row + b + ".Visible", visible);
+            if (visible) {
+                float remaining = SpellEngine.cooldownRemaining(playerRef.getUuid(), slot, spells[b - 1]);
+                builder.set("#JewelCd" + row + b + ".Value", remaining);
+                // in twentieths, so the HUD resends as the bar moves, not every tick
+                signature.append('b').append(Math.round(remaining * 20));
+            }
+        }
     }
 }
