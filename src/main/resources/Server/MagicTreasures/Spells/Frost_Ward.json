@@ -2,7 +2,7 @@
   "Name": "Frost Ward",
   "Kind": "Ward",
   "Level": 3,
-  "Cost": 6,
+  "Cost": 18,
   "Cooldown": 180,
   "Duration": 60,
   "Element": "Ice, Water",

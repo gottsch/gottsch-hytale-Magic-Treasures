@@ -27,6 +27,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Great rings are engraved: a bevelled band with a vine running around it, and beads along the rims and the gem's setting, at twice the detail of plain rings. Their icons show the new look.
 - Tooltips and messages show in each player's own language. A piece made before this update keeps its English tooltip until its charge or state next changes.
 - The worn-jewelry panel no longer shortens spell names ("Gr. Healing" is "Greater Healing").
+- Charge matters: before, a piece almost never ran dry.
+  - A piece refills at its metal's own rate, whatever its size: copper 2 a minute, silver 3, gold 4. A gem adds charge but no longer speeds the refill.
+  - Gems add a third of the charge they did (a diamond 30, a ruby 25).
+  - Spells that last a while (Speed, Strength, Wards, Weapons, Drain auras, Stoneskin, Barrier, Cat Sight) cost three times as much.
+  - In a long fight, healing every cooldown empties most pieces in 1 to 6 minutes, and a piece keeping a buff up runs dry sooner or later.
+  - Pieces made before this update keep any extra charge until it's next spent.
+- Pieces refill when they aren't worn too, anywhere: take one off to let it fill up. A piece in a chest catches up when it's next picked up.
+- `/mt info` starts with the light where you stand, as Cat Sight reads it.
 
 ### Fixed
 

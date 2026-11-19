@@ -2,7 +2,7 @@
   "Name": "Stoneskin",
   "Kind": "Ward",
   "Level": 2,
-  "Cost": 4,
+  "Cost": 12,
   "Cooldown": 120,
   "Duration": 30,
   "Element": "Physical, Projectile",

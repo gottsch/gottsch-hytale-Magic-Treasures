@@ -39,7 +39,7 @@ The first start writes `mods/gottsch_MagicTreasures/MagicTreasures.json`, next t
 - `ChestLootChance`: the chance a chest gets Magic Treasures loot (`2.0` doubles it, `0` turns it off; capped at 100%)
 - `MobLootChance`: the same for monsters
 - `BossLootChance`: the same for bosses
-- `RefillSpeed`: how fast worn pieces refill their charge (`0` turns refilling off, so only a recharge refills a piece)
+- `RefillSpeed`: how fast pieces refill their charge, worn or not (`0` turns refilling off, so only a recharge refills a piece)
 - `SpellCooldowns`: every spell's cooldown (`0.5` halves it); tooltips show the result
 
 ## Commands

@@ -56,9 +56,8 @@ import mod.gottsch.hytale.magictreasures.core.wear.WornJewelry;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import mod.gottsch.hytale.magictreasures.core.lang.Lang;
@@ -77,10 +76,9 @@ import mod.gottsch.hytale.magictreasures.core.lang.Lang;
  * A spell casts when the piece's cooldown for it is over and the piece has the mana. A cast
  * that does something (a heal, a buff started) spends the mana and one use, and starts the
  * cooldown, all scaled by the piece's factors. A piece with no uses left breaks, as in 2.0.
- * Mana is the piece's own well (decision 3). A worn piece refills it, empty to full in
- * its material's {@code RefillSeconds} (default {@link #REFILL_SECONDS}; Nov 12: with no
- * refill a plain copper piece had 3 casts in it and its 75 uses never mattered); Recharges fill
- * it at once.
+ * Mana is the piece's own well (decision 3). A piece refills it at its metal's flat rate,
+ * worn or not ({@link Refill}, v1.2; Nov 12: with no refill a plain copper piece had 3 casts
+ * in it and its 75 uses never mattered); Recharges fill it at once.
  *
  * @author Mark Gottschling on 11/09/2026
  */
@@ -100,12 +98,6 @@ public final class SpellEngine {
 
     /** Players lit by Cat Sight, and the effect that keeps the light on. */
     private static final Map<UUID, String> LIT = new ConcurrentHashMap<>();
-
-    /**
-     * Seconds a worn piece takes to refill its mana from empty to full, when its material
-     * doesn't say ({@code RefillSeconds}, Nov 13). Was the same for every material (Nov 12).
-     */
-    public static final double REFILL_SECONDS = 600;
 
     /** A Barrier starts when a hit leaves the wearer below this share of their health. */
     public static final double BARRIER_HEALTH = 0.35;
@@ -128,13 +120,6 @@ public final class SpellEngine {
      */
     private static final Map<UUID, Map<String, Double>> WEAPON_SHARES = new ConcurrentHashMap<>();
 
-    /**
-     * Per player: refilled mana not yet written to each worn piece, keyed {@code slot:itemId}.
-     * A piece is written only when a whole point is owed, so the inventory doesn't change every
-     * second.
-     */
-    private static final Map<UUID, Map<String, Double>> REFILL = new ConcurrentHashMap<>();
-
     private SpellEngine() {
     }
 
@@ -151,13 +136,14 @@ public final class SpellEngine {
         DrainAura.tick(uuid, ref, store);
         WornJewelry worn = WornJewelry.of(ref, store);
         cast(SpellKind.Trigger.TICK, uuid, ref, store, worn, 0, null, null);
+        long now = System.currentTimeMillis();
+        Refill.inventory(uuid, ref, store, now);
         if (worn.pieces().isEmpty()) {
-            REFILL.remove(uuid);
             JewelryHud.refresh(playerRef, ref, store, worn);
             return;
         }
         // re-read: a cast may have spent mana or broken a piece
-        refill(uuid, WornJewelry.of(ref, store));
+        refill(WornJewelry.of(ref, store), now);
         JewelryHud.refresh(playerRef, ref, store, WornJewelry.of(ref, store));
     }
 
@@ -197,47 +183,15 @@ public final class SpellEngine {
     }
 
     /**
-     * Refills the mana of each worn piece that isn't full: its max mana over its refill time
-     * ({@link #refillSeconds}), once a second.
+     * Brings each worn piece's charge up to date ({@link Refill#catchUp}), once a second.
      */
-    private static void refill(UUID uuid, WornJewelry worn) {
-        // the config's RefillSpeed (v1.2): 0 turns refilling off
-        double speed = MagicTreasuresConfig.get().getRefillSpeed();
-        if (speed <= 0) {
-            REFILL.remove(uuid);
-            return;
-        }
-        Map<String, Double> owed = REFILL.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>());
-        Set<String> kept = new HashSet<>();
+    private static void refill(WornJewelry worn, long now) {
         for (int i = 0; i < worn.pieces().size(); i++) {
-            ItemStack piece = worn.pieces().get(i);
-            short slot = worn.pieceSlots().get(i);
-            JewelryStats stats = Jewelry.stats(piece);
-            JewelryState state = Jewelry.state(piece);
-            if (!stats.known() || state == null || stats.maxMana() <= 0 || state.getMana() >= stats.maxMana()) {
-                continue;
-            }
-            String key = slot + ":" + piece.getItemId();
-            kept.add(key);
-            double total = owed.getOrDefault(key, 0.0)
-                    + stats.maxMana() / refillSeconds(stats) * speed * SpellTickSystem.INTERVAL_SECONDS;
-            double whole = Math.floor(total);
-            owed.put(key, total - whole);
-            if (whole > 0) {
-                double mana = Math.min(stats.maxMana(), state.getMana() + whole);
-                worn.replace(slot, Jewelry.withState(piece, state.copy().setMana(mana)));
+            ItemStack updated = Refill.catchUp(worn.pieces().get(i), now);
+            if (updated != null) {
+                worn.replace(worn.pieceSlots().get(i), updated);
             }
         }
-        owed.keySet().retainAll(kept);
-    }
-
-    /**
-     * @return seconds the piece takes to refill from empty: its material's
-     * {@code RefillSeconds}, or {@link #REFILL_SECONDS}
-     */
-    private static double refillSeconds(JewelryStats stats) {
-        double seconds = stats.material() == null ? 0 : stats.material().getRefillSeconds();
-        return seconds > 0 ? seconds : REFILL_SECONDS;
     }
 
     /**
@@ -289,7 +243,7 @@ public final class SpellEngine {
         WEAPON_SHARES.remove(uuid);
         COOLDOWNS.remove(uuid);
         LIT.remove(uuid);
-        REFILL.remove(uuid);
+        Refill.onLeave(uuid);
     }
 
     /**
@@ -338,6 +292,7 @@ public final class SpellEngine {
                 if (!run(spell, factors, uuid, ref, store, damage, victim)) {
                     continue;
                 }
+                Refill.spent(state, stats, state.getMana(), now);
                 state.setMana(Math.max(0, state.getMana() - cost));
                 if (definition.hasCurse(JewelryDefinition.CURSE_WEARINESS)) {
                     weary(ref, store);
@@ -419,6 +374,8 @@ public final class SpellEngine {
                 if (effect == null) {
                     yield false;
                 }
+                // why it cast, while it's tested (Nov 18: it kept casting in daylight)
+                LOGGER.atInfo().log("Cat Sight cast for %s. %s", uuid, describeLight(ref, store));
                 store.putComponent(ref, DynamicLight.getComponentType(), new DynamicLight(new ColorLight(CAT_SIGHT_LIGHT)));
                 LIT.put(uuid, effect.getId());
                 yield true;
@@ -566,21 +523,74 @@ public final class SpellEngine {
         }
         World world = store.getExternalData().getWorld();
         WorldTimeResource time = store.getResource(WorldTimeResource.getResourceType());
-        Vector3d position = transform.getPosition();
-        int x = (int) Math.floor(position.x());
-        int y = (int) Math.floor(position.y() + 1.5);
-        int z = (int) Math.floor(position.z());
-        Ref<ChunkStore> section = world.getChunkStore().getChunkSectionReferenceAtBlock(x, y, z);
-        if (section == null || !section.isValid() || time == null) {
+        if (time == null) {
             return false;
         }
+        Vector3d position = transform.getPosition();
+        int x = (int) Math.floor(position.x());
+        int z = (int) Math.floor(position.z());
+        // the brighter of the feet's and head's blocks: a solid block reads 0, and on a slope
+        // or under a low ceiling the head's block can be one (Nov 18: cast at midday at a
+        // tunnel's mouth)
+        int feet = light(world, x, (int) Math.floor(position.y() + 0.2), z, time);
+        int head = light(world, x, (int) Math.floor(position.y() + 1.5), z, time);
+        return Math.max(feet, head) <= DARK_LIGHT;
+    }
+
+    /**
+     * @return what {@link #dark} reads where the player stands, for {@code /mt info} and the
+     * log: each block's light, its sky light, the sun factor and its block light
+     */
+    public static String describeLight(Ref<EntityStore> ref, Store<EntityStore> store) {
+        TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());
+        WorldTimeResource time = store.getResource(WorldTimeResource.getResourceType());
+        if (transform == null || time == null) {
+            return "Light: unknown (no position or time)";
+        }
+        World world = store.getExternalData().getWorld();
+        Vector3d position = transform.getPosition();
+        int x = (int) Math.floor(position.x());
+        int z = (int) Math.floor(position.z());
+        StringBuilder text = new StringBuilder(String.format(Locale.ROOT, "Light (sun %.2f, hour %d): ",
+                time.getSunlightFactor(), time.getCurrentHour()));
+        int[] ys = {(int) Math.floor(position.y() + 0.2), (int) Math.floor(position.y() + 1.5)};
+        String[] names = {"feet", "head"};
+        for (int i = 0; i < 2; i++) {
+            int y = ys[i];
+            text.append(names[i]).append(" y").append(y).append(' ');
+            Ref<ChunkStore> section = world.getChunkStore().getChunkSectionReferenceAtBlock(x, y, z);
+            BlockSection blocks = section == null || !section.isValid() ? null
+                    : world.getChunkStore().getStore().getComponent(section, BlockSection.getComponentType());
+            if (blocks == null) {
+                text.append("not loaded");
+            } else {
+                ChunkLightData light = blocks.getGlobalLight();
+                text.append(light(world, x, y, z, time)).append(" (sky ").append(light.getSkyLight(x, y, z))
+                        .append(", block ").append(light.getBlockLightIntensity(x, y, z))
+                        .append(blocks.hasGlobalLight() ? "" : ", light not worked out").append(')');
+            }
+            text.append(i == 0 ? "; " : "");
+        }
+        return text.append(dark(ref, store) ? ": dark" : ": not dark").append(", Cat Sight casts at ")
+                .append(DARK_LIGHT).append(" or less").toString();
+    }
+
+    /**
+     * @return the light at a block as {@link #dark} reads it, or 15 (not dark) if the block's
+     * section isn't loaded or its light isn't worked out yet: an unlit section reads all 0
+     */
+    private static int light(World world, int x, int y, int z, WorldTimeResource time) {
+        Ref<ChunkStore> section = world.getChunkStore().getChunkSectionReferenceAtBlock(x, y, z);
+        if (section == null || !section.isValid()) {
+            return 15;
+        }
         BlockSection blocks = world.getChunkStore().getStore().getComponent(section, BlockSection.getComponentType());
-        if (blocks == null) {
-            return false;
+        if (blocks == null || !blocks.hasGlobalLight()) {
+            return 15;
         }
         ChunkLightData light = blocks.getGlobalLight();
         int sky = (int) (light.getSkyLight(x, y, z) * time.getSunlightFactor());
-        return Math.max(sky, light.getBlockLightIntensity(x, y, z)) <= DARK_LIGHT;
+        return Math.max(sky, light.getBlockLightIntensity(x, y, z));
     }
 
     /**

@@ -2,7 +2,7 @@
   "Name": "Barrier",
   "Kind": "Barrier",
   "Level": 5,
-  "Cost": 6,
+  "Cost": 18,
   "Cooldown": 180,
   "Duration": 8,
   "Effect": 10,

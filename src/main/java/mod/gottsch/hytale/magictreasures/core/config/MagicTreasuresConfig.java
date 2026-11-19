@@ -31,7 +31,7 @@ import com.hypixel.hytale.codec.builder.BuilderCodec;
  *     <li>{@code ChestLootChance}, {@code MobLootChance}, {@code BossLootChance}: multiply the
  *     chance that a chest, a monster or a boss gets anything from Magic Treasures (2 doubles it,
  *     0 turns it off). The result is capped at 100%.</li>
- *     <li>{@code RefillSpeed}: how fast worn pieces refill their charge (2 is twice as fast,
+ *     <li>{@code RefillSpeed}: how fast pieces refill their charge, worn or not (2 is twice as fast,
  *     0 turns refilling off, so only a recharge refills a piece).</li>
  *     <li>{@code SpellCooldowns}: multiplies every spell's cooldown (0.5 halves it). Tooltips
  *     show the result.</li>

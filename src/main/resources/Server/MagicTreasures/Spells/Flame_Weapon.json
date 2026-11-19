@@ -2,7 +2,7 @@
   "Name": "Flame Weapon",
   "Kind": "Weapon",
   "Level": 4,
-  "Cost": 8,
+  "Cost": 24,
   "Cooldown": 120,
   "Duration": 30,
   "Effect": 0.25,

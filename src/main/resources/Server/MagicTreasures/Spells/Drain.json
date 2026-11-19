@@ -2,7 +2,7 @@
   "Name": "Drain",
   "Kind": "Drain",
   "Level": 4,
-  "Cost": 6,
+  "Cost": 18,
   "Cooldown": 90,
   "Duration": 21,
   "Effect": 2,

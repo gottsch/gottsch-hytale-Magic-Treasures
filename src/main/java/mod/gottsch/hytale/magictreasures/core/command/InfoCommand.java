@@ -38,6 +38,7 @@ import mod.gottsch.hytale.magictreasures.core.element.ElementRolling;
 import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryState;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryStats;
+import mod.gottsch.hytale.magictreasures.core.spell.SpellEngine;
 import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
 
 import javax.annotation.Nonnull;
@@ -82,6 +83,8 @@ public class InfoCommand extends AbstractPlayerCommand {
     @Override
     protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
                            @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
+        // what Cat Sight's dark check reads here (Nov 18: it kept casting in daylight)
+        context.sendMessage(Message.raw(SpellEngine.describeLight(ref, store)).color("#c8c8c8"));
         InventoryComponent.Hotbar hotbar = store.getComponent(ref, InventoryComponent.Hotbar.getComponentType());
         if (hotbar == null) {
             context.sendMessage(Message.raw("You have no hotbar."));

@@ -1,7 +1,7 @@
 {
   "Mana": 25,
   "Uses": 200,
-  "RefillSeconds": 720,
+  "RefillPerMinute": 2,
   "Repairs": 3,
   "MaxLevel": 3,
   "Quality": "Common",
