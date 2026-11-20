@@ -125,16 +125,20 @@ public class ElementDamageSystem extends DamageEventSystem {
         if (victimPlayer != null && !cause.doesBypassResistances()) {
             amount *= (float) (1 - ElementWear.resistance(victimPlayer.getUuid(), cause));
         }
+        Ref<EntityStore> attacker = damage.getSource() instanceof Damage.EntitySource source ? source.getRef() : null;
         if (victimPlayer != null) {
-            // a Ward of this element starts now (Nov 12), after the damage systems
+            // hurt spells start now (a Ward Nov 12; Thorns and Barrier Nov 17), after the
+            // damage systems, so a Barrier sees the health the hit left
+            float taken = Math.max(0, amount);
+            Ref<EntityStore> hitter = isWeaponHit(damage) && attacker != null && attacker.isValid()
+                    && attacker.getIndex() != victim.getIndex() ? attacker : null;
             store.getExternalData().getWorld().execute(() -> {
                 if (victim.isValid()) {
-                    SpellEngine.onHurt(victim, store, cause);
+                    SpellEngine.onHurt(victim, store, cause, taken, hitter);
                 }
             });
         }
 
-        Ref<EntityStore> attacker = damage.getSource() instanceof Damage.EntitySource source ? source.getRef() : null;
         PlayerRef attackerPlayer = attacker == null || !attacker.isValid() || attacker.getIndex() == victim.getIndex()
                 ? null : commandBuffer.getComponent(attacker, PlayerRef.getComponentType());
         boolean weaponHit = attackerPlayer != null && isWeaponHit(damage);

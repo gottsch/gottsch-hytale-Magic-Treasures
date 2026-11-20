@@ -1,6 +1,6 @@
 {
   "Item": "Rock_Gem_Zephyr",
-  "Mana": 60,
+  "Mana": 20,
   "Recharges": 1,
   "Factors": {
     "Cooldown": 0.98,

@@ -49,7 +49,7 @@ public class LootCommand extends AbstractPlayerCommand {
     private final DefaultArg<Boolean> chanceArg;
 
     public LootCommand() {
-        super("loot", "Roll our loot for a vanilla drop list, e.g. Zone2_Undead_Tier3.");
+        super("loot", "server.magictreasures.commands.loot.desc");
         this.dropListArg = withDefaultArg("droplist", "Vanilla drop list id", ArgTypes.STRING, "", "");
         this.sourceArg = withDefaultArg("source", "Chest or Mob", ArgTypes.STRING, LootTable.CHEST, LootTable.CHEST);
         this.chanceArg = withDefaultArg("chance", "Apply the table's chance", ArgTypes.BOOLEAN, false, "false");
@@ -74,7 +74,7 @@ public class LootCommand extends AbstractPlayerCommand {
                 ? LootRoller.roll(table, ThreadLocalRandom.current())
                 : LootRoller.rollEntries(table, ThreadLocalRandom.current());
         context.sendMessage(Message.raw(dropList + " -> " + table.getId() + String.format(" (chance %.0f%%): ",
-                table.getChance() * 100) + (loot.isEmpty() ? "nothing" : String.join(", ",
+                LootRoller.chance(table) * 100) + (loot.isEmpty() ? "nothing" : String.join(", ",
                 loot.stream().map(s -> s.getQuantity() + " " + s.getItemId()).toList()))));
         for (ItemStack stack : loot) {
             Player.giveItem(stack, ref, store);

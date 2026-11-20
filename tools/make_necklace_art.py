@@ -41,7 +41,7 @@ import blocky_render
 import make_brilliant_gem as brilliant
 from make_gem_art import COMMON
 from make_ring_art import (CHAIN_FRONT, CHAIN_TOP, CORD, METAL, RINGS_OUT,
-                           as_pieces, box, layout)
+                           PROUD, as_pieces, box, layout)
 
 NECK_OUT = COMMON / "Items" / "MagicTreasures" / "Necklaces"
 ICON_OUT = COMMON / "Icons" / "Items" / "MagicTreasures"
@@ -176,10 +176,12 @@ def pendant_nodes(st, gem, center, rot, regions, coin, collar, gem_scale,
     and boss), or a collar holding a brilliant. Returns a group node."""
     kids = []
     if not gem:
+        # the second square stands PROUD further out (same back), so
+        # the two faces don't z-fight
         for i, a in enumerate((0, math.pi / 4)):
-            kids.append(box(nid + i, f"Coin_{i}", (0, 0, 0),
+            kids.append(box(nid + i, f"Coin_{i}", (0, 0, i * PROUD / 2),
                             brilliant.quat_axis((0, 0, 1), a), (6, 6, 2),
-                            (coin, coin, coin * 0.22),
+                            (coin, coin, coin * 0.22 + i * PROUD),
                             # sides are 2 x 6 texels: they take a corner
                             # of the face region
                             faces({"front": "coin_face", "back": "coin_face",
@@ -193,9 +195,9 @@ def pendant_nodes(st, gem, center, rot, regions, coin, collar, gem_scale,
         # an octagonal bezel: two squares turned 45 degrees apart
         side = collar * 0.92
         for i, ang in enumerate((0, math.pi / 4)):
-            kids.append(box(nid + i, f"Collar_{i}", (0, 0, 0),
+            kids.append(box(nid + i, f"Collar_{i}", (0, 0, i * PROUD / 2),
                             brilliant.quat_axis((0, 0, 1), ang), (6, 6, 2),
-                            (side, side, collar * 0.3),
+                            (side, side, collar * 0.3 + i * PROUD),
                             faces({"front": "collar_face", "back": "collar_face",
                                    "left": "collar_face", "right": "collar_face",
                                    "top": "collar_side", "bottom": "collar_side"},

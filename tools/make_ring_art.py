@@ -14,6 +14,14 @@ regions sit in the top half at the same places as in the loose
 brilliant's texture, so the gem nodes need no changes; the metal is in
 the bottom half, coloured from the vanilla bar of that metal.
 
+Great rings have their own, Ring_Great_<Material>[_<Gem>].png
+(128 x 128, v1.2): the same gem at the top left, and the metal at twice
+the density (FINE) in the bottom half, engraved with the logo's look: a
+bevelled band with a wavy engraved line, and beads along the edges,
+rims and collar. Mark, Nov 18: 2x, as 4x looked painted next to the
+vanilla items, which are about one texel per model unit. Necklaces,
+bracers and the worn pieces keep the 64 x 64 textures.
+
 Icons, Common/Icons/Items/MagicTreasures/MT_Ring_*.png: one per item,
 rendered with blocky_render.
 
@@ -44,6 +52,7 @@ import io
 import json
 import math
 import zipfile
+from contextlib import contextmanager
 
 from PIL import Image
 
@@ -84,6 +93,49 @@ METAL = {
     "prong": (12, METAL_Y + 8, 2, 4),
     "rim_outer": (16, METAL_Y + 8, 4, 2),
 }
+
+# Great rings: metal texels per texel of METAL, and where the denser
+# regions start in their 128 x 128 texture (the gem stays at 1x in the
+# top left, so its nodes are the same as on every other ring)
+FINE = {"Regular": 1, "Great": 2}
+FINE_TEX = 128
+FINE_Y = 64
+
+
+def regions(style):
+    """The metal regions a style's models use."""
+    k = FINE.get(style, 1)
+    if k == 1:
+        return METAL
+    return {name: (x * k, FINE_Y + (y - METAL_Y) * k, w * k, h * k)
+            for name, (x, y, w, h) in METAL.items()}
+
+
+# how far a box stands out of a face it would otherwise share a plane
+# with: coplanar overlapping faces z-fight, worst on a held item in
+# first person (Mark, Nov 18, on Starfall's octagons)
+PROUD = 0.04
+
+
+def texels(style, size):
+    """A box's texture size in texels on this style."""
+    return tuple(v * FINE.get(style, 1) for v in size)
+
+
+@contextmanager
+def plain_density():
+    """Every style at 1x while inside: for a ring built on the Great
+    band whose texture is 64 square at the old layout (the Vampire
+    Lich's Ring, make_bone_ring_art; Nov 18: after FINE, its band
+    would have read the empty 2x regions)."""
+    saved = dict(FINE)
+    FINE.update({style: 1 for style in FINE})
+    try:
+        yield
+    finally:
+        FINE.clear()
+        FINE.update(saved)
+
 
 # The necklace's leather cord (v1.1, Mark, Nov 16: an all-metal chain
 # ran together with the pendant, so the cord is leather and only the
@@ -152,20 +204,23 @@ def band_nodes(style, nid=1000, radius_add=0.0, width=None, prefix="Band",
         pos = (mid * math.cos(phi), mid * math.sin(phi), 0.0)
         # local +y points outward
         rot = quat_z(phi - math.pi / 2)
-        faces = {"top": layout(METAL[outer_region]),
-                 "bottom": layout(METAL["inner"]),
-                 "front": layout(METAL["edge"]),
-                 "back": layout(METAL["edge"]),
-                 "left": layout(METAL["end"]),
-                 "right": layout(METAL["end"])}
+        reg = regions(style)
+        faces = {"top": layout(reg[outer_region]),
+                 "bottom": layout(reg["inner"]),
+                 "front": layout(reg["edge"]),
+                 "back": layout(reg["edge"]),
+                 "left": layout(reg["end"]),
+                 "right": layout(reg["end"])}
         tex = (SEG[0], 2, SEG[1]) if outer_region == "outer" else (4, 2, 2)
-        nodes.append(box(nid + k, f"{prefix}_{k}", pos, rot, tex,
+        nodes.append(box(nid + k, f"{prefix}_{k}", pos, rot,
+                         texels(style, tex),
                          (chord, t, w), faces))
     return nodes
 
 
 def item_model(style, gem):
     st = STYLES[style]
+    reg = regions(style)
     nodes = band_nodes(style)
     if st["rims"]:
         # raised rims at both edges of a great band
@@ -173,17 +228,19 @@ def item_model(style, gem):
             rim = band_nodes(style, 1100 + (0 if z > 0 else 50), 0.25,
                              0.7, f"Rim_{side}", "rim_outer")
             for node in rim:
-                node["position"]["z"] = z * (st["w"] / 2 - 0.35)
+                # PROUD: the rim's outer face clear of the band's edge
+                node["position"]["z"] = z * (st["w"] / 2 - 0.35 + PROUD)
             nodes += rim
     if gem:
         top = st["r"] + st["t"]
         cw, ch, cd = st["collar"]
-        collar_faces = {f: layout(METAL["collar_side"])
+        collar_faces = {f: layout(reg["collar_side"])
                         for f in ("front", "back", "left", "right")}
-        collar_faces["top"] = layout(METAL["collar_top"])
-        collar_faces["bottom"] = layout(METAL["collar_top"])
+        collar_faces["top"] = layout(reg["collar_top"])
+        collar_faces["bottom"] = layout(reg["collar_top"])
         nodes.append(box(1200, "Collar", (0, top + ch / 2 - 0.2, 0),
-                         (0, 0, 0, 1), (6, 3, 6), (cw, ch, cd),
+                         (0, 0, 0, 1), texels(style, (6, 3, 6)),
+                         (cw, ch, cd),
                          collar_faces))
         g = st["gem"]
         # the brilliant's girdle sits just above the collar
@@ -193,12 +250,13 @@ def item_model(style, gem):
             reach = cw / 2 - 0.3
             for i, (sx, sz) in enumerate(((1, 1), (1, -1), (-1, 1),
                                           (-1, -1))):
-                pf = {f: layout(METAL["prong"])
+                pf = {f: layout(reg["prong"])
                       for f in ("front", "back", "left", "right", "top",
                                 "bottom")}
                 nodes.append(box(1250 + i, f"Prong_{i}",
                                  (sx * reach, gem_y + 0.3, sz * reach),
-                                 (0, 0, 0, 1), (2, 4, 2), (0.6, 2.0, 0.6),
+                                 (0, 0, 0, 1), texels(style, (2, 4, 2)),
+                                 (0.6, 2.0, 0.6),
                                  pf))
     root = dict(brilliant.ROOT_SHAPE)
     lift = st["r"] + st["t"] + 1
@@ -324,6 +382,93 @@ def item_texture(assets, material, gem):
     return im
 
 
+def paint_metal_fine(im, pal, seed):
+    """The Great rings' metal at FINE density, the logo's look (v1.2):
+    the band bevelled at both edges with a cut line inside each bevel
+    and a wavy engraved line along the middle (dark, lit below), beads
+    along the edges, rims and collar sides, and a light grain."""
+    import random
+    rnd = random.Random(seed)
+    reg = regions("Great")
+
+    def ramp(t):
+        t = max(0.0, min(1.0, t)) * 4
+        i = min(int(t), 3)
+        f = t - i
+        return tuple(int(pal[i][c] + (pal[i + 1][c] - pal[i][c]) * f)
+                     for c in range(3))
+
+    def put(x, y, c, grain=True):
+        n = rnd.randint(-4, 4) if grain else 0
+        im.putpixel((x, y), tuple(max(0, min(255, v + n)) for v in c)
+                    + (255,))
+
+    x0, y0, w, h = reg["outer"]
+    for v in range(h):
+        d = abs(v + 0.5 - h / 2) / (h / 2)
+        for u in range(w):
+            c = ramp(0.95 - 0.75 * d ** 1.4)
+            if v < 1:
+                c = ramp(0.98)
+            elif v in (1, h - 2):
+                c = ramp(0.12)
+            elif v > h - 2:
+                c = ramp(0.3)
+            put(x0 + u, y0 + v, c)
+    # one wave per segment, so it runs on round the band
+    mid, amp = h / 2, h * 0.2
+    for s in range(w * 8):
+        uu = s / 8
+        y = int(round(mid + amp * math.sin(2 * math.pi * uu / w)))
+        put(x0 + int(uu) % w, y0 + y, ramp(0.1), False)
+        put(x0 + int(uu) % w, y0 + y + 1, ramp(1.0), False)
+    for name, top, beads in (("edge", 0.85, True),
+                             ("collar_side", 0.6, True),
+                             ("rim_outer", 0.9, True),
+                             ("prong", 1.0, False), ("end", 0.4, False)):
+        x0, y0, w, h = reg[name]
+        for v in range(h):
+            for u in range(w):
+                c = ramp(top - 0.45 * v / h)
+                if name == "collar_side" and v < 1:
+                    c = ramp(0.95)
+                if beads and v == h // 2 and u % 4 == 1:
+                    c = ramp(1.0)
+                elif beads and v == h // 2 and u % 4 == 2:
+                    c = ramp(0.2)
+                put(x0 + u, y0 + v, c)
+    x0, y0, w, h = reg["inner"]
+    for v in range(h):
+        d = abs(v + 0.5 - h / 2) / (h / 2)
+        for u in range(w):
+            put(x0 + u, y0 + v, ramp(0.45 - 0.25 * d))
+    x0, y0, w, h = reg["collar_top"]
+    for v in range(h):
+        for u in range(w):
+            e = min(u, v, w - 1 - u, h - 1 - v)
+            c = ramp(0.95 if e < 1 else 0.15 if e == 1
+                     else 0.7 - 0.2 * (u + v) / (w + h))
+            put(x0 + u, y0 + v, c)
+
+
+def great_texture(assets, material, gem):
+    """A Great ring's texture (FINE_TEX square): the gem as on every
+    ring, the metal at FINE density."""
+    im = Image.new("RGBA", (FINE_TEX, FINE_TEX), (0, 0, 0, 0))
+    if gem:
+        gem_tex = brilliant.texture(palette(assets, gem))
+        im.paste(gem_tex.crop((0, 0, TEX, METAL_Y)), (0, 0))
+    seed = MATERIALS.index(material) * 31 + GEMS.index(gem)
+    paint_metal_fine(im, metal_palette(assets, material), seed)
+    return im
+
+
+def texture_name(style, material, gem):
+    """The item texture's file name, without the folder."""
+    return ("Ring_" + ("Great_" if FINE.get(style, 1) > 1 else "") + material
+            + (f"_{gem}" if gem else "") + ".png")
+
+
 def skeleton_chain(assets, side):
     """The player's bones from Belly down to the hand, from the game's
     Player.blockymodel, as shapeless nodes: [(name, position,
@@ -395,8 +540,11 @@ def worn_model(side, assets):
     parts = [
         ("Band_Front", (out * (hx / 2 - f / 2 + g / 2), y, hz / 2 + g / 2),
          (f + g, h, g)),
-        ("Band_Out", (out * (hx / 2 + g / 2), y, hz / 2 - f / 2 + g / 2),
-         (g, h, f + g)),
+        # PROUD short at the front, so the two don't share the front
+        # corner's face
+        ("Band_Out", (out * (hx / 2 + g / 2), y,
+                      hz / 2 - f / 2 + g / 2 - PROUD / 2),
+         (g, h, f + g - PROUD)),
     ]
     children = []
     for i, (name, pos, size) in enumerate(parts):
@@ -468,18 +616,23 @@ def main():
         write(model_path(style, "x"), item_model(style, "x"))
     # one scale for every ring icon, fitted to the largest ring (a set
     # Great), so a plain ring isn't blown up to fill its icon
-    span = max(blocky_render.fit_span(str(model_path(style, gem)),
-                                      str(RINGS_OUT / "Ring_Gold_Ruby.png"),
-                                      yaw=35, pitch=24)
+    if not a.variant:
+        for material in MATERIALS:
+            for gem in GEMS:
+                item_texture(a.assets, material, gem).save(
+                    RINGS_OUT / texture_name("Regular", material, gem))
+                great_texture(a.assets, material, gem).save(
+                    RINGS_OUT / texture_name("Great", material, gem))
+    span = max(blocky_render.fit_span(
+                   str(model_path(style, gem)),
+                   str(RINGS_OUT / texture_name(style, "Gold", "Ruby")),
+                   yaw=35, pitch=24)
                for style in STYLES for gem in (None, "x"))
     icons = {}
     for material in MATERIALS:
         for gem in GEMS:
-            name = f"Ring_{material}" + (f"_{gem}" if gem else "")
-            tex = RINGS_OUT / f"{name}.png"
-            if not a.variant:
-                item_texture(a.assets, material, gem).save(tex)
             for style in STYLES:
+                tex = RINGS_OUT / texture_name(style, material, gem)
                 iid = item_id(material, gem, style)
                 icons[iid] = blocky_render.render(
                     str(model_path(style, gem)), str(tex),

@@ -26,6 +26,8 @@ import com.hypixel.hytale.server.core.asset.type.item.config.metadata.ItemDispla
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryDefinition;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryStyle;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
+import mod.gottsch.hytale.magictreasures.core.spell.SpellEngine;
 import mod.gottsch.hytale.magictreasures.core.spell.SpellTooltip;
 import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
 
@@ -161,8 +163,9 @@ public final class Jewelry {
      * sockets, and its spells and runes.
      */
     public static Message describe(JewelryStats stats, JewelryState state) {
+        // every word is a translation key, magictreasures.tooltip.* (v1.2)
         if (!stats.known()) {
-            return Message.raw("This jewelry's material or style is missing. It can't cast.").color(LABEL);
+            return Lang.of("tooltip.unknown").color(LABEL);
         }
         List<Message> parts = new ArrayList<>();
         JewelryDefinition definition = stats.definition();
@@ -174,36 +177,36 @@ public final class Jewelry {
         // "Charge", not "Mana": the piece's own well, apart from the player's mana bar
         if (stats.gem() != null) {
             GemCut cut = GemCut.byName(state.getCut());
-            line(parts, "Gem", (cut == null ? GemCut.FINE : cut).getName() + " " + stats.gem().getId().toLowerCase(),
-                    VALUE);
+            // the cut gem's own item name, "Fine Ruby" ("Rubi Fino")
+            line(parts, "gem", Lang.item((cut == null ? GemCut.FINE : cut).itemId(stats.gem())), VALUE);
         }
         if (definition.isUnlimited()) {
-            line(parts, "Charge", "unlimited", MANA);
+            line(parts, "charge", Lang.of("tooltip.unlimited"), MANA);
         } else {
-            line(parts, "Charge", String.format("%.0f / %.0f", state.getMana(), stats.maxMana()), MANA);
+            line(parts, "charge", String.format("%.0f / %.0f", state.getMana(), stats.maxMana()), MANA);
         }
         if (definition.isUnbreakable()) {
-            line(parts, "Uses", "unbreakable", VALUE);
+            line(parts, "uses", Lang.of("tooltip.unbreakable"), VALUE);
         } else {
-            line(parts, "Uses", state.getUses() + " / " + stats.maxUses(), VALUE);
+            line(parts, "uses", state.getUses() + " / " + stats.maxUses(), VALUE);
         }
         if (!definition.isUnlimited()) {
-            line(parts, "Recharges", state.getRecharges() + " / " + stats.maxRecharges(), VALUE);
+            line(parts, "recharges", state.getRecharges() + " / " + stats.maxRecharges(), VALUE);
         }
         if (!definition.isUnbreakable()) {
-            line(parts, "Repairs", state.getRepairs() + " / " + stats.maxRepairs(), VALUE);
+            line(parts, "repairs", state.getRepairs() + " / " + stats.maxRepairs(), VALUE);
         }
-        line(parts, "Spell level", "up to " + stats.maxLevel(), VALUE);
-        line(parts, "Rune sockets", state.getRunes().length + " / " + stats.sockets(), VALUE);
+        line(parts, "spellLevel", Lang.of("tooltip.upTo").param("level", stats.maxLevel()), VALUE);
+        line(parts, "runeSockets", state.getRunes().length + " / " + stats.sockets(), VALUE);
         if (state.getSpells().length == 0) {
-            line(parts, "Spells", "none", VALUE);
+            line(parts, "spells", Lang.of("tooltip.none"), VALUE);
         } else {
             spells(parts, stats, state);
         }
         if (state.getRunes().length > 0) {
             // the runes' own names (server.items.Rune_Enrage.name is "Enrage"), not their ids
             // (Mark, Nov 16: the tooltip read "Rune_Enrage")
-            parts.add(Message.raw("Runes: ").color(LABEL));
+            parts.add(Message.join(Lang.of("tooltip.runes"), Message.raw(": ")).color(LABEL));
             for (int i = 0; i < state.getRunes().length; i++) {
                 if (i > 0) {
                     parts.add(Message.raw(", ").color(VALUE));
@@ -215,19 +218,20 @@ public final class Jewelry {
         for (List<ElementProperty> group : forTooltip(ElementRolling.decode(state))) {
             ElementProperty total = total(group);
             boolean several = group.size() > 1;
-            parts.add(Message.raw(total.describe() + (several ? "" : source(group.getFirst())))
+            Message source = several ? null : source(group.getFirst());
+            parts.add((source == null ? total.describe() : Message.join(total.describe(), source))
                     .color(total.good() ? GOOD : BAD));
             parts.add(Message.raw("\n"));
-            String breakdown = several ? breakdown(group) : null;
+            Message breakdown = several ? breakdown(group) : null;
             if (breakdown != null) {
                 // on its own line, like a spell's breakdown: on one line with the total it
                 // wrapped the tooltip (Mark, Nov 16)
-                parts.add(Message.raw("    (" + breakdown + ")").color(LABEL));
+                parts.add(Message.join(Message.raw("    ("), breakdown, Message.raw(")")).color(LABEL));
                 parts.add(Message.raw("\n"));
             }
         }
         for (String curse : definition.getCurses()) {
-            parts.add(Message.raw(curseText(curse)).color(BAD));
+            parts.add(curseText(curse).color(BAD));
             parts.add(Message.raw("\n"));
         }
         // drop the trailing newline
@@ -238,11 +242,14 @@ public final class Jewelry {
     /**
      * @return a curse's tooltip line, for example "Curse of Vanishing: destroyed when you die"
      */
-    public static String curseText(String curse) {
+    public static Message curseText(String curse) {
         if (JewelryDefinition.CURSE_VANISHING.equalsIgnoreCase(curse)) {
-            return "Curse of Vanishing: destroyed when you die";
+            return Lang.of("tooltip.curseVanishing");
         }
-        return "Curse of " + curse;
+        if (JewelryDefinition.CURSE_WEARINESS.equalsIgnoreCase(curse)) {
+            return Lang.of("tooltip.curseWeariness").param("stamina", SpellTooltip.number(SpellEngine.WEARINESS_STAMINA));
+        }
+        return Lang.of("tooltip.curse").param("curse", curse);
     }
 
     /**
@@ -255,7 +262,7 @@ public final class Jewelry {
      * </pre>
      */
     private static void spells(List<Message> parts, JewelryStats stats, JewelryState state) {
-        parts.add(Message.raw("Spells:").color(LABEL));
+        parts.add(Message.join(Lang.of("tooltip.spells"), Message.raw(":")).color(LABEL));
         parts.add(Message.raw("\n"));
         GemCut cut = GemCut.byName(state.getCut());
         for (String id : state.getSpells()) {
@@ -265,18 +272,19 @@ public final class Jewelry {
                 parts.add(Message.raw("\n"));
                 continue;
             }
-            parts.add(Message.raw(" " + spell.name() + (spell.summary().isEmpty() ? "" : ": ")).color(VALUE));
-            if (!spell.summary().isEmpty()) {
-                parts.add(Message.raw(spell.summary()).color(GOOD));
+            parts.add(Message.join(Message.raw(" "), spell.name(),
+                    Message.raw(spell.summary() == null ? "" : ": ")).color(VALUE));
+            if (spell.summary() != null) {
+                parts.add(spell.summary().color(GOOD));
             }
             parts.add(Message.raw("\n"));
             // on its own line, so it doesn't wrap mid-way (Nov 15)
-            if (!spell.breakdown().isEmpty()) {
-                parts.add(Message.raw("    (" + spell.breakdown() + ")").color(LABEL));
+            if (spell.breakdown() != null) {
+                parts.add(Message.join(Message.raw("    ("), spell.breakdown(), Message.raw(")")).color(LABEL));
                 parts.add(Message.raw("\n"));
             }
-            for (String detail : spell.details()) {
-                parts.add(Message.raw("    " + detail).color(LABEL));
+            for (Message detail : spell.details()) {
+                parts.add(Message.join(Message.raw("    "), detail).color(LABEL));
                 parts.add(Message.raw("\n"));
             }
         }
@@ -381,8 +389,10 @@ public final class Jewelry {
      * @return a lone power's source after its line, " (ruby)"; empty for a piece rolled before
      *         v1.1, which didn't save its sources
      */
-    private static String source(ElementProperty property) {
-        return property.source() == null ? "" : " (" + property.source().toLowerCase() + ")";
+    @Nullable
+    private static Message source(ElementProperty property) {
+        return property.source() == null ? null
+                : Message.join(Message.raw(" ("), Lang.source(property.source()), Message.raw(")"));
     }
 
     /**
@@ -390,21 +400,27 @@ public final class Jewelry {
      *         it; null for a piece rolled before v1.1, which didn't save its sources
      */
     @Nullable
-    private static String breakdown(List<ElementProperty> group) {
+    private static Message breakdown(List<ElementProperty> group) {
         if (group.stream().allMatch(part -> part.source() == null)) {
             return null;
         }
-        List<String> bits = new ArrayList<>();
+        List<Message> bits = new ArrayList<>();
         for (ElementProperty part : group) {
-            String percent = Math.round(part.value() * 100) + "%";
-            bits.add(part.source() == null ? percent : part.source().toLowerCase() + " " + percent);
+            Message percent = Message.raw(Math.round(part.value() * 100) + "%");
+            bits.add(part.source() == null ? percent
+                    : Message.join(Lang.source(part.source()), Message.raw(" "), percent));
         }
-        return String.join(", ", bits);
+        return Lang.join(bits, ", ");
     }
 
+    /** A "Label: value" line; the label is {@code magictreasures.tooltip.<label>}. */
     private static void line(List<Message> parts, String label, String value, String color) {
-        parts.add(Message.raw(label + ": ").color(LABEL));
-        parts.add(Message.raw(value).color(color));
+        line(parts, label, Message.raw(value), color);
+    }
+
+    private static void line(List<Message> parts, String label, Message value, String color) {
+        parts.add(Message.join(Lang.of("tooltip." + label), Message.raw(": ")).color(LABEL));
+        parts.add(value.color(color));
         parts.add(Message.raw("\n"));
     }
 }

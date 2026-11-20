@@ -51,6 +51,9 @@ public class JewelryState {
             // piece whose metal (and gem) were rolled, even if nothing came up
             .append(new KeyedCodec<>("Elements", Codec.STRING_ARRAY), (s, v) -> s.elements = v, s -> s.elements).add()
             .append(new KeyedCodec<>("Rolled", Codec.BOOLEAN), (s, v) -> s.rolled = v, s -> s.rolled).add()
+            // when its charge was last brought up to date, in epoch ms (v1.2): a piece refills
+            // from this wherever it is, worn or not (Refill)
+            .append(new KeyedCodec<>("RefilledAt", Codec.LONG), (s, v) -> s.refilledAt = v, s -> s.refilledAt).add()
             .build();
 
     public static final KeyedCodec<JewelryState> KEYED_CODEC = new KeyedCodec<>(KEY, CODEC);
@@ -66,6 +69,7 @@ public class JewelryState {
     protected String cut;
     protected String[] elements = NONE;
     protected Boolean rolled;
+    protected Long refilledAt;
 
     public JewelryState() {
     }
@@ -101,7 +105,20 @@ public class JewelryState {
         c.cut = cut;
         c.elements = getElements().clone();
         c.rolled = rolled;
+        c.refilledAt = refilledAt;
         return c;
+    }
+
+    /**
+     * @return when the piece's charge was last brought up to date (epoch ms), 0 if never
+     */
+    public long getRefilledAt() {
+        return refilledAt == null ? 0 : refilledAt;
+    }
+
+    public JewelryState setRefilledAt(long refilledAt) {
+        this.refilledAt = refilledAt;
+        return this;
     }
 
     /**

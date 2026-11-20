@@ -18,6 +18,7 @@
 package mod.gottsch.hytale.magictreasures.core.imbue;
 
 import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.asset.type.item.config.Item;
 import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Ref;
@@ -35,6 +36,7 @@ import mod.gottsch.hytale.magictreasures.core.cutting.GemCut;
 import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.Gemstone;
 import mod.gottsch.hytale.magictreasures.core.wear.WornJewelry;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -59,10 +61,10 @@ public class ImbuePage extends ChoiceBasePage {
     /** The page layout, under {@code Common/UI/Custom/}. */
     public static final String LAYOUT = "Pages/MagicTreasures_ImbuePage.ui";
 
-    private final String subtitle;
+    private final Message subtitle;
     private final boolean empty;
 
-    private ImbuePage(PlayerRef playerRef, ChoiceElement[] elements, String subtitle) {
+    private ImbuePage(PlayerRef playerRef, ChoiceElement[] elements, Message subtitle) {
         super(playerRef, elements, LAYOUT);
         this.subtitle = subtitle;
         this.empty = elements.length == 0;
@@ -75,11 +77,11 @@ public class ImbuePage extends ChoiceBasePage {
             commandBuilder.append(getPageLayout());
             commandBuilder.clear("#ElementList");
             commandBuilder.appendInline("#ElementList",
-                    "Label { Text: \"Nothing you carry can be used here.\"; Style: (Alignment: Center); }");
+                    "Label { Text: %server.magictreasures.imbue.nothing; Style: (Alignment: Center); }");
         } else {
             super.build(ref, commandBuilder, eventBuilder, store);
         }
-        commandBuilder.set("#Subtitle.Text", subtitle);
+        commandBuilder.set("#Subtitle.TextSpans", subtitle);
     }
 
     /**
@@ -93,16 +95,18 @@ public class ImbuePage extends ChoiceBasePage {
             ItemStack piece = pieceSlot.get();
             Imbuing.Outcome outcome = Imbuing.check(piece, scrollStack);
             if (outcome != null) {
-                String where = pieceSlot.inCase() ? " (in case)" : "";
-                elements.add(new ImbueElement(piece.getItemId(), Message.join(Jewelry.name(piece), Message.raw(where)),
+                Message label = pieceSlot.inCase()
+                        ? Message.join(Jewelry.name(piece), Message.raw(" ("), Lang.of("imbue.inCase"), Message.raw(")"))
+                        : Jewelry.name(piece);
+                elements.add(new ImbueElement(piece.getItemId(), label,
                         outcome,
                         new ImbueChoice(pieceSlot, piece.getItemId(), scroll, scrollStack.getItemId())));
             }
         }
         sort(elements);
         return new ImbuePage(playerRef, elements.toArray(ChoiceElement[]::new),
-                (Imbuing.kindOf(scrollStack) == Imbuing.Kind.GEM ? "Choose the jewelry to set with a "
-                        : "Choose the jewelry to imbue with ") + name(scrollStack) + ".");
+                Lang.of(Imbuing.kindOf(scrollStack) == Imbuing.Kind.GEM ? "imbue.chooseForGem" : "imbue.chooseForSpell")
+                        .param("item", name(scrollStack)));
     }
 
     /**
@@ -119,14 +123,14 @@ public class ImbuePage extends ChoiceBasePage {
             ItemStack material = materialSlot.get();
             Imbuing.Outcome outcome = Imbuing.check(piece, material);
             if (outcome != null) {
-                Message label = Jewelry.isJewelry(material) ? Jewelry.name(material) : Message.raw(name(material));
+                Message label = Jewelry.isJewelry(material) ? Jewelry.name(material) : name(material);
                 elements.add(new ImbueElement(material.getItemId(), label, outcome,
                         new ImbueChoice(pieceSlot, piece.getItemId(), materialSlot, material.getItemId())));
             }
         }
         sort(elements);
         return new ImbuePage(playerRef, elements.toArray(ChoiceElement[]::new),
-                "Choose what to use on your " + Jewelry.displayName(piece) + ".");
+                Lang.of("imbue.chooseForPiece").param("piece", Jewelry.name(piece)));
     }
 
     /** Usable choices first, then by kind, keeping the inventory order otherwise. */
@@ -184,26 +188,15 @@ public class ImbuePage extends ChoiceBasePage {
     }
 
     /**
-     * @return a plain name for a non-jewelry item, from its id ({@code Rune_Fireball} becomes
-     * {@code Fireball}, {@code MT_Scroll_Greater_Healing} becomes {@code Greater Healing})
+     * @return a non-jewelry item's name as players read it: a spell scroll's spell, otherwise the
+     * item's own translated name (a rune, a cut or raw gem, a crystal)
      */
-    static String name(ItemStack stack) {
+    static Message name(ItemStack stack) {
         String id = stack.getItemId();
-        GemCut cut = GemCut.ofItem(id);
-        if (cut != null) {
-            Gemstone gem = GemCut.gemOfItem(id);
-            return cut.getName() + " " + (gem == null ? id : gem.getId());
-        }
-        if (id.startsWith(GemCut.RAW_PREFIX)) {
-            return "Raw " + id.substring(GemCut.RAW_PREFIX.length());
-        }
         if (id.startsWith(Imbuing.SCROLL_PREFIX)) {
-            id = id.substring(Imbuing.SCROLL_PREFIX.length());
+            return Lang.spell(id.substring(Imbuing.SCROLL_PREFIX.length()));
         }
-        if (id.startsWith("Rune_")) {
-            return Jewelry.runeName(id);
-        }
-        return id.replace("Rock_Gem_", "").replace("Ingredient_Crystal_", "Crystal ")
-                .replace('_', ' ');
+        Item item = stack.getItem();
+        return item != null ? item.getTranslationMessage() : Message.raw(id);
     }
 }

@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-11-19
+
+### Added
+
+- **Defensive spells**, cast when you're hurt:
+  - Stoneskin (level 2): takes 25% off physical and projectile damage for 30 seconds.
+  - Thorns (level 3): hands 30% of a melee hit back to the attacker.
+  - Barrier (level 5): when a hit leaves you under 35% health, heals you 10 and takes 50% off all physical, projectile and elemental damage for 8 seconds.
+- Their spell scrolls are in chests and on monsters with the others.
+- **Thornguard:** a named Legendary iron bracer set with a perfect ruby, ringed with thorns. Its Thorns returns 60% of melee hits, as often as once a second, never runs out and never breaks. Worn, it keeps shorter thorns on the outer side of the wrist. Found on bosses and in the deepest chests.
+- **Amulet of the Last Stand:** a named Legendary gold necklace, a diamond set on a shield. Its Barrier, when a hit leaves you under 35% health, heals you 30 and takes 50% off all physical, projectile and elemental damage for 8 seconds, every 2 minutes. It never runs out or breaks, under a Curse of Vanishing. Worn, its shield hangs on your chest. Found on bosses and in the deepest chests.
+- **Starfall:** a named Epic gold ring, a blue enamel band dotted with gold stars and a sapphire bearing a gold star. It holds two spells, Cat Sight and Storm Strike, sharing its charge. Found on bosses and in the deeper chests.
+- **Curse of Weariness:** each cast of the cursed piece takes 2 stamina, never below empty. Thornguard carries it.
+- Worn iron pieces show on your character (iron, and iron with a ruby, for now).
+- **Server settings**, in `mods/gottsch_MagicTreasures/MagicTreasures.json`, written on the first start: how often chests, monsters and bosses get Magic Treasures loot, how fast worn pieces refill their charge, and spell cooldowns. Each is a multiplier, 1.0 being the mod as shipped.
+- **Brazilian Portuguese (pt-BR) translation**: item names and descriptions, tooltips, the imbue, gem cutting and Treasures Case pages, the worn-jewelry panel, messages and command descriptions. The output of the operator commands (`info`, `hits`, `loot`, `give`, `setcutting`) stays in English.
+
+### Changed
+
+- Great rings are engraved: a bevelled band with a vine running around it, and beads along the rims and the gem's setting, at twice the detail of plain rings. Their icons show the new look.
+- Tooltips and messages show in each player's own language. A piece made before this update keeps its English tooltip until its charge or state next changes.
+- The worn-jewelry panel no longer shortens spell names ("Gr. Healing" is "Greater Healing").
+- Charge matters: before, a piece almost never ran dry.
+  - A piece refills at its metal's own rate, whatever its size: copper 2 a minute, silver 3, gold 4. A gem adds charge but no longer speeds the refill.
+  - Gems add a third of the charge they did (a diamond 30, a ruby 25).
+  - Spells that last a while (Speed, Strength, Wards, Weapons, Drain auras, Stoneskin, Barrier, Cat Sight) cost three times as much.
+  - In a long fight, healing every cooldown empties most pieces in 1 to 6 minutes, and a piece keeping a buff up runs dry sooner or later.
+  - Pieces made before this update keep any extra charge until it's next spent.
+- Pieces refill when they aren't worn too, anywhere: take one off to let it fill up. A piece in a chest catches up when it's next picked up.
+- `/mt info` starts with the light where you stand, as Cat Sight reads it.
+
+### Fixed
+
+- Emerald descriptions read "A emerald".
+- Cat Sight cast itself in broad daylight. It now casts only in the dark, at night or underground (light 7 of 15 or less where your head is); its tooltip says so.
+- Gem settings, necklace pendants and the rims of Great rings and bracers flickered where two parts' faces met, most visibly on a held piece in first person.
+
 ## [1.1.0] - 2026-11-16
 
 ### Changed

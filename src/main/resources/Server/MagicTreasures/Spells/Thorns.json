@@ -1,0 +1,9 @@
+{
+  "Name": "Thorns",
+  "Kind": "Thorns",
+  "Level": 3,
+  "Cost": 1,
+  "Cooldown": 3,
+  "Effect": 0.3,
+  "Element": "Physical"
+}

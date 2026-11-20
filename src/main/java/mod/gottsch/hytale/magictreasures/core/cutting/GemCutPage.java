@@ -34,6 +34,8 @@ import mod.gottsch.hytale.magictreasures.core.jewelry.asset.Gemstone;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
+import com.hypixel.hytale.server.core.Message;
 
 /**
  * The gem cutter's kit page: one row per stack of raw gems the player carries, with the
@@ -47,10 +49,10 @@ public class GemCutPage extends ChoiceBasePage {
     /** The page layout, under {@code Common/UI/Custom/}. */
     public static final String LAYOUT = "Pages/MagicTreasures_GemCutPage.ui";
 
-    private final String subtitle;
+    private final Message subtitle;
     private final boolean empty;
 
-    private GemCutPage(PlayerRef playerRef, ChoiceElement[] elements, String subtitle) {
+    private GemCutPage(PlayerRef playerRef, ChoiceElement[] elements, Message subtitle) {
         super(playerRef, elements, LAYOUT);
         this.subtitle = subtitle;
         this.empty = elements.length == 0;
@@ -63,11 +65,11 @@ public class GemCutPage extends ChoiceBasePage {
             commandBuilder.append(getPageLayout());
             commandBuilder.clear("#ElementList");
             commandBuilder.appendInline("#ElementList",
-                    "Label { Text: \"You carry no raw gems.\"; Style: (Alignment: Center); }");
+                    "Label { Text: %server.magictreasures.cutting.noGems; Style: (Alignment: Center); }");
         } else {
             super.build(ref, commandBuilder, eventBuilder, store);
         }
-        commandBuilder.set("#Subtitle.Text", subtitle);
+        commandBuilder.set("#Subtitle.TextSpans", subtitle);
     }
 
     /**
@@ -87,10 +89,11 @@ public class GemCutPage extends ChoiceBasePage {
         }
         // the gems you can cut first
         rows.sort((a, b) -> Boolean.compare(!a.canCut(), !b.canCut()));
-        String next = level >= GemCutting.MAX_LEVEL ? "max level"
-                : xp + " / " + GemCutting.xpFor(level + 1) + " XP";
+        Message next = level >= GemCutting.MAX_LEVEL ? Lang.of("cutting.maxLevel")
+                : Lang.of("cutting.xp").param("xp", xp).param("need", GemCutting.xpFor(level + 1));
         return new GemCutPage(playerRef, rows.toArray(ChoiceElement[]::new),
-                "Gem cutting level " + level + " (" + next + "). " + usesLeft(kitSlot.get()) + ".");
+                Lang.of("cutting.subtitle").param("level", level).param("next", next)
+                        .param("kit", usesLeft(kitSlot.get())));
     }
 
     /**
@@ -101,10 +104,10 @@ public class GemCutPage extends ChoiceBasePage {
         return skill == null ? 0 : skill.getXp();
     }
 
-    static String usesLeft(ItemStack kit) {
+    static Message usesLeft(ItemStack kit) {
         if (kit == null || kit.getMaxDurability() <= 0) {
-            return "Kit: unlimited uses";
+            return Lang.of("cutting.kitUnlimited");
         }
-        return "Kit: " + (int) Math.ceil(kit.getDurability()) + " uses left";
+        return Lang.of("cutting.kitUses").param("uses", (int) Math.ceil(kit.getDurability()));
     }
 }

@@ -17,6 +17,9 @@
  */
 package mod.gottsch.hytale.magictreasures.core.element;
 
+import com.hypixel.hytale.server.core.Message;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
+
 import javax.annotation.Nullable;
 import java.util.Locale;
 
@@ -123,14 +126,19 @@ public record ElementProperty(Kind kind, String element, double value, @Nullable
      * {@code Ice resistance -8%}, {@code +10% as Fire damage} (each weapon hit adds 10% of
      * itself as a Fire hit, Nov 12) or {@code Burn on hit 10%}
      */
-    public String describe() {
-        String name = "Elemental".equalsIgnoreCase(element) ? "Elemental" : element;
+    public Message describe() {
         long percent = Math.round(value * 100);
+        String signed = (percent >= 0 ? "+" : "") + percent + "%";
+        // translated (v1.2): magictreasures.power.* in server.lang
         return switch (kind) {
-            case RESISTANCE -> name + " resistance " + (percent >= 0 ? "+" : "") + percent + "%";
-            case DAMAGE -> (percent >= 0 ? "+" : "") + percent + "% as " + name + " damage";
-            case ON_HIT -> (effect == null ? name : effect.replace('_', ' ')) + " on hit " + percent + "%";
-            case CRIT -> "Critical hit chance " + (percent >= 0 ? "+" : "") + percent + "%";
+            case RESISTANCE -> Lang.of("power.resistance").param("element", Lang.element(element))
+                    .param("elementLower", Lang.elementLower(element)).param("value", signed);
+            case DAMAGE -> Lang.of("power.damage").param("element", Lang.element(element))
+                    .param("elementLower", Lang.elementLower(element)).param("value", signed);
+            case ON_HIT -> Lang.of("power.onHit")
+                    .param("status", effect == null ? Lang.element(element) : Lang.status(effect))
+                    .param("value", percent + "%");
+            case CRIT -> Lang.of("power.crit").param("value", signed);
         };
     }
 }

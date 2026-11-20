@@ -46,6 +46,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
 
 /**
  * The Treasures Case page (Nov 11), opened by right-clicking the case in place of the vanilla
@@ -103,7 +104,7 @@ public class JewelryCasePage extends InteractiveCustomUIPage<JewelryCasePage.Cli
     public void build(@Nonnull Ref<EntityStore> ref, @Nonnull UICommandBuilder commands,
                       @Nonnull UIEventBuilder events, @Nonnull Store<EntityStore> store) {
         commands.append(LAYOUT);
-        fill(ref, store, commands, "");
+        fill(ref, store, commands, null);
         for (int i = 0; i < SLOT_TYPES.length; i++) {
             events.addEventBinding(CustomUIEventBindingType.Activating, "#WornButton" + i,
                     new EventData().append(Click.ACTION, WORN).append(Click.INDEX, String.valueOf(i)));
@@ -116,7 +117,7 @@ public class JewelryCasePage extends InteractiveCustomUIPage<JewelryCasePage.Cli
 
     @Override
     public void handleDataEvent(@Nonnull Ref<EntityStore> ref, @Nonnull Store<EntityStore> store, Click click) {
-        String message = "";
+        Message message = null;
         int index = click.index();
         if (WORN.equals(click.action) && index >= 0 && index < SLOT_TYPES.length) {
             message = takeOff(ref, store, (short) index);
@@ -161,16 +162,17 @@ public class JewelryCasePage extends InteractiveCustomUIPage<JewelryCasePage.Cli
      * Puts a carried piece in the case: the first free slot of its type, or swapped with the
      * piece in that type's first slot.
      *
-     * @return a message for the page, empty if all went well
+     * @return a message for the page, null if all went well
      */
-    private String putOn(ItemSlot from) {
+    @Nullable
+    private Message putOn(ItemSlot from) {
         ItemStack piece = from.get();
         JewelryDefinition definition = Jewelry.definition(piece);
         if (definition == null) {
-            return "That piece has moved.";
+            return Lang.of("case.pieceMoved");
         }
         if (caseItems() == null) {
-            return "The case has moved. Close this and open it again.";
+            return Lang.of("case.caseMoved");
         }
         short target = -1;
         for (short i = 0; i < SLOT_TYPES.length; i++) {
@@ -186,13 +188,13 @@ public class JewelryCasePage extends InteractiveCustomUIPage<JewelryCasePage.Cli
             }
         }
         if (target < 0) {
-            return "The case has no slot for a " + definition.getType().toLowerCase() + ".";
+            return Lang.of("case.noSlot");
         }
         ItemSlot into = caseSlot(target);
         ItemStack swapped = into.get();
         // case first: if that fails, nothing has moved
         if (!into.set(piece)) {
-            return "Couldn't put it in the case.";
+            return Lang.of("case.couldNotPut");
         }
         boolean back = swapped == null || swapped.isEmpty() ? from.clear() : from.set(swapped);
         if (!back) {
@@ -202,47 +204,48 @@ public class JewelryCasePage extends InteractiveCustomUIPage<JewelryCasePage.Cli
             } else {
                 into.set(swapped);
             }
-            return "Couldn't move it.";
+            return Lang.of("case.couldNotMove");
         }
-        return "";
+        return null;
     }
 
     /**
      * Takes the piece in a case slot off, into the first empty slot of storage, the hotbar or
      * the backpack.
      *
-     * @return a message for the page, empty if all went well
+     * @return a message for the page, null if all went well
      */
-    private String takeOff(Ref<EntityStore> ref, ComponentAccessor<EntityStore> accessor, short index) {
+    @Nullable
+    private Message takeOff(Ref<EntityStore> ref, ComponentAccessor<EntityStore> accessor, short index) {
         ItemSlot from = caseSlot(index);
         ItemStack piece = from.get();
         if (piece == null || piece.isEmpty()) {
-            return "";
+            return null;
         }
         ItemSlot into = emptySlot(ref, accessor);
         if (into == null) {
-            return "No room in your inventory.";
+            return Lang.of("case.noRoom");
         }
         if (!into.set(piece)) {
-            return "Couldn't take it off.";
+            return Lang.of("case.couldNotTakeOff");
         }
         if (!from.clear()) {
             into.clear();
-            return "Couldn't take it off.";
+            return Lang.of("case.couldNotTakeOff");
         }
-        return "";
+        return null;
     }
 
     /**
      * Fills every slot of the page from the case and the player's inventory.
      */
     private void fill(Ref<EntityStore> ref, ComponentAccessor<EntityStore> accessor, UICommandBuilder commands,
-                      String message) {
+                      @Nullable Message message) {
         ItemContainer caseItems = caseItems();
         for (short i = 0; i < SLOT_TYPES.length; i++) {
             ItemStack stack = caseItems == null || i >= caseItems.getCapacity() ? null : caseItems.getItemStack(i);
             commands.set("#WornGrid" + i + ".Slots", List.of(slot(stack)));
-            tooltip(commands, "#WornButton" + i, stack, SLOT_TYPES[i] + " slot");
+            tooltip(commands, "#WornButton" + i, stack, Lang.of("case.slot." + SLOT_TYPES[i]));
         }
         carried = carried(ref, accessor);
         for (int i = 0; i < CARRIED_SLOTS; i++) {
@@ -250,13 +253,13 @@ public class JewelryCasePage extends InteractiveCustomUIPage<JewelryCasePage.Cli
             commands.set("#CarryGrid" + i + ".Slots", List.of(slot(stack)));
             tooltip(commands, "#CarryButton" + i, stack, null);
         }
-        if (message.isEmpty() && carried.size() > CARRIED_SLOTS) {
-            message = (carried.size() - CARRIED_SLOTS) + " more pieces aren't shown.";
+        if (message == null && carried.size() > CARRIED_SLOTS) {
+            message = Lang.of("case.moreNotShown").param("count", carried.size() - CARRIED_SLOTS);
         }
-        if (message.isEmpty() && carried.isEmpty()) {
-            message = "You carry no other jewelry.";
+        if (message == null && carried.isEmpty()) {
+            message = Lang.of("case.noOtherJewelry");
         }
-        commands.set("#Message.Text", message);
+        commands.set("#Message.TextSpans", message == null ? Message.raw("") : message);
     }
 
     /**
@@ -277,7 +280,7 @@ public class JewelryCasePage extends InteractiveCustomUIPage<JewelryCasePage.Cli
      * @param empty the tooltip for an empty slot, or null for none
      */
     private static void tooltip(UICommandBuilder commands, String button, @Nullable ItemStack stack,
-                                @Nullable String empty) {
+                                @Nullable Message empty) {
         String selector = button + ".TooltipTextSpans";
         // an empty carried slot has nothing to say or click: hide its button, since even an
         // empty tooltip draws an empty box on hover (Mark, Nov 15). Set every time, as the
@@ -285,12 +288,12 @@ public class JewelryCasePage extends InteractiveCustomUIPage<JewelryCasePage.Cli
         commands.set(button + ".Visible", Jewelry.isJewelry(stack) || empty != null);
         if (Jewelry.isJewelry(stack)) {
             Message text = Message.empty().insertAll(
-                    Message.raw(Jewelry.displayName(stack)).bold(true).color(NAME),
+                    Jewelry.name(stack).bold(true).color(NAME),
                     Message.raw("\n"),
                     Jewelry.describe(Jewelry.stats(stack), Jewelry.state(stack)));
             commands.set(selector, text);
         } else if (empty != null) {
-            commands.set(selector, Message.raw(empty).color(EMPTY));
+            commands.set(selector, empty.color(EMPTY));
         } else {
             // not setNull: the client disconnects on a null span list (Nov 11)
             commands.set(selector, Message.raw(""));

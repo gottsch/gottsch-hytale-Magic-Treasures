@@ -1,0 +1,21 @@
+{
+  "Duration": 30,
+  "OverlapBehavior": "Overwrite",
+  "RemovalBehavior": "Duration",
+  "Debuff": false,
+  "StatusEffectIcon": "Icons/ItemsGenerated/Armor_Bronze_Chest.png",
+  "DamageResistance": {
+    "Physical": [
+      {
+        "CalculationType": "Percent",
+        "Amount": 0.25
+      }
+    ],
+    "Projectile": [
+      {
+        "CalculationType": "Percent",
+        "Amount": 0.25
+      }
+    ]
+  }
+}

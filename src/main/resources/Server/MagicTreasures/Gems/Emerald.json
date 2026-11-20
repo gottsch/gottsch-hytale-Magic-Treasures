@@ -1,6 +1,6 @@
 {
   "Item": "Rock_Gem_Emerald",
-  "Mana": 45,
+  "Mana": 15,
   "Recharges": 1,
   "Factors": {
     "Cooldown": 0.99,

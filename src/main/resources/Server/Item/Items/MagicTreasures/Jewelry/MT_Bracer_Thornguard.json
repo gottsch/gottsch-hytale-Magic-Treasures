@@ -1,0 +1,38 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MT_Bracer_Thornguard.name",
+    "Description": "server.items.MT_Bracer_Thornguard.description"
+  },
+  "Icon": "Icons/Items/MagicTreasures/MT_Bracer_Thornguard.png",
+  "Quality": "Legendary",
+  "ItemLevel": 7,
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Tags": {
+    "Family": [
+      "MT_Jewelry"
+    ]
+  },
+  "Model": "Items/MagicTreasures/Bracers/Bracer_Thornguard.blockymodel",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Iron_Ruby.png",
+  "PlayerAnimationsId": "Item",
+  "Utility": {
+    "Compatible": true
+  },
+  "MaxStack": 1,
+  "Scale": 1.0,
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenCustomUI",
+          "Page": {
+            "Id": "MT_Imbue"
+          }
+        }
+      ]
+    }
+  }
+}

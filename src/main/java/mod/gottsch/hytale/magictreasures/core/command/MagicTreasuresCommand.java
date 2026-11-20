@@ -33,7 +33,7 @@ public class MagicTreasuresCommand extends AbstractCommandCollection {
     public static final String PERMISSION_EVERYONE = "hytale:Adventurer";
 
     public MagicTreasuresCommand() {
-        super("magictreasures", "Magic Treasures root command.");
+        super("magictreasures", "server.magictreasures.commands.magictreasures.desc");
         this.addAliases("mt");
         // open, so players reach worn and cutting; other subcommands keep their own node
         this.setPermissionGroups(PERMISSION_EVERYONE);

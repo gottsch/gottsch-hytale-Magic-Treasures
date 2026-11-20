@@ -33,10 +33,12 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import mod.gottsch.hytale.magictreasures.core.element.ElementProperty;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
 import mod.gottsch.hytale.magictreasures.core.element.ElementRolling;
 import mod.gottsch.hytale.magictreasures.core.jewelry.Jewelry;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryState;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryStats;
+import mod.gottsch.hytale.magictreasures.core.spell.SpellEngine;
 import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
 
 import javax.annotation.Nonnull;
@@ -65,7 +67,7 @@ public class InfoCommand extends AbstractPlayerCommand {
     private final DefaultArg<Boolean> rerollArg;
 
     public InfoCommand() {
-        super("info", "Show the held jewelry's stats and state.");
+        super("info", "server.magictreasures.commands.info.desc");
         this.manaArg = withOptionalArg("mana", "Test: set the held piece's mana", ArgTypes.DOUBLE);
         this.runeArg = withOptionalArg("rune", "Test: add a rune id to the held piece", ArgTypes.STRING);
         this.spellArg = withOptionalArg("spell", "Test: add a spell id to the held piece", ArgTypes.STRING);
@@ -81,6 +83,8 @@ public class InfoCommand extends AbstractPlayerCommand {
     @Override
     protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
                            @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
+        // what Cat Sight's dark check reads here (Nov 18: it kept casting in daylight)
+        context.sendMessage(Message.raw(SpellEngine.describeLight(ref, store)).color("#c8c8c8"));
         InventoryComponent.Hotbar hotbar = store.getComponent(ref, InventoryComponent.Hotbar.getComponentType());
         if (hotbar == null) {
             context.sendMessage(Message.raw("You have no hotbar."));
@@ -169,8 +173,8 @@ public class InfoCommand extends AbstractPlayerCommand {
         context.sendMessage(Message.raw("Factors: " + stats.factors()));
         context.sendMessage(Message.raw("State" + (saved ? "" : " (not saved yet, shown fresh)") + ": " + state));
         List<ElementProperty> elements = ElementRolling.decode(state);
-        context.sendMessage(Message.raw("Elements" + (state.isRolled() ? "" : " (not rolled yet)") + ": "
-                + (elements.isEmpty() ? "none" : String.join(", ",
-                elements.stream().map(ElementProperty::describe).toList()))));
+        context.sendMessage(Message.join(Message.raw("Elements" + (state.isRolled() ? "" : " (not rolled yet)")
+                + ": "), elements.isEmpty() ? Message.raw("none")
+                : Lang.join(elements.stream().map(ElementProperty::describe).toList(), ", ")));
     }
 }

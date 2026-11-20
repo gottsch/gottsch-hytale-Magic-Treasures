@@ -15,7 +15,7 @@
     ]
   },
   "Model": "Items/MagicTreasures/Rings/Ring_Great_Set.blockymodel",
-  "Texture": "Items/MagicTreasures/Rings/Ring_Gold_Sapphire.png",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Great_Gold_Sapphire.png",
   "PlayerAnimationsId": "Item",
   "Utility": {
     "Compatible": true

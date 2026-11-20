@@ -117,6 +117,11 @@ public class LootTable implements JsonAssetWithMap<String, DefaultAssetMap<Strin
         return id;
     }
 
+    /** @return {@link #CHEST} or {@link #MOB}: what the table adds loot to */
+    public String getSource() {
+        return source;
+    }
+
     public double getChance() {
         return chance;
     }

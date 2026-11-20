@@ -25,6 +25,7 @@ import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.Gemstone;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
 
 /**
  * One row of the {@link GemCutPage}: a stack of raw gems and the odds of cutting one, or
@@ -36,15 +37,16 @@ public class GemCutElement extends ChoiceElement {
     private static final String ROW_LAYOUT = "Pages/ItemRepairElement.ui";
 
     private final String itemId;
-    private final String label;
-    private final String text;
+    private final Message label;
+    private final Message text;
     private final boolean canCut;
 
     public GemCutElement(ItemStack stack, Gemstone gem, int level, GemCutChoice choice) {
         this.itemId = stack.getItemId();
-        this.label = "Raw " + gem.getId().toLowerCase() + " x" + stack.getQuantity();
+        // the raw gem's own name, "Ruby" ("Rubi")
+        this.label = Message.join(Lang.item(itemId), Message.raw(" x" + stack.getQuantity()));
         this.canCut = level >= GemCutting.minLevel(gem);
-        this.text = canCut ? odds(level, gem) : "Needs level " + GemCutting.minLevel(gem);
+        this.text = canCut ? odds(level, gem) : Lang.of("cutting.rowNeeds").param("level", GemCutting.minLevel(gem));
         this.interactions = new ChoiceInteraction[]{choice};
     }
 
@@ -55,10 +57,13 @@ public class GemCutElement extends ChoiceElement {
     /**
      * @return e.g. "Flawless+ 20%, shatter 8%"
      */
-    static String odds(int level, Gemstone gem) {
+    static Message odds(int level, Gemstone gem) {
         double[] odds = GemCutting.odds(level, gem);
-        String text = String.format("Flawless+ %.0f%%", odds[2] + odds[3]);
-        return odds[4] > 0 ? text + String.format(", shatter %.0f%%", odds[4]) : text;
+        String flawless = String.format("%.0f%%", odds[2] + odds[3]);
+        return odds[4] > 0
+                ? Lang.of("cutting.oddsShatter").param("flawless", flawless)
+                        .param("shatter", String.format("%.0f%%", odds[4]))
+                : Lang.of("cutting.odds").param("flawless", flawless);
     }
 
     @Override
@@ -66,7 +71,7 @@ public class GemCutElement extends ChoiceElement {
                           PlayerRef playerRef) {
         commandBuilder.append("#ElementList", ROW_LAYOUT);
         commandBuilder.set(selector + " #Icon.ItemId", itemId);
-        commandBuilder.set(selector + " #Name.TextSpans", Message.raw(label).color(canCut ? "#ffffff" : "#8a8a8a"));
-        commandBuilder.set(selector + " #Durability.Text", text);
+        commandBuilder.set(selector + " #Name.TextSpans", label.color(canCut ? "#ffffff" : "#8a8a8a"));
+        commandBuilder.set(selector + " #Durability.TextSpans", text);
     }
 }

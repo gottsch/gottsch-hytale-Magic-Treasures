@@ -1,0 +1,21 @@
+{
+  "Type": "Bracer",
+  "Material": "Iron",
+  "Style": "Great",
+  "Gem": "Ruby",
+  "Name": "Thornguard",
+  "Cut": "Perfect",
+  "Spells": [
+    "Thorns"
+  ],
+  "SpellOverrides": {
+    "Cost": 0,
+    "Cooldown": 1,
+    "Effect": 0.6
+  },
+  "Unlimited": true,
+  "Unbreakable": true,
+  "Curses": [
+    "Weariness"
+  ]
+}

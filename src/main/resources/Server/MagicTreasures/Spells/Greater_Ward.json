@@ -2,7 +2,7 @@
   "Name": "Greater Ward",
   "Kind": "Ward",
   "Level": 5,
-  "Cost": 10,
+  "Cost": 30,
   "Cooldown": 240,
   "Duration": 60,
   "Element": "Fire, Poison",

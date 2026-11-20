@@ -44,7 +44,8 @@ import java.util.Arrays;
  *     <li>{@code Cooldown}: seconds before the same piece can cast it again.</li>
  *     <li>{@code Effect}: health healed (a Vampiric spell drains it from the target first); for
  *     a Weapon spell, the share of each
- *     weapon hit added as {@code Element} damage (0.25: 25% of the hit, Nov 12).</li>
+ *     weapon hit added as {@code Element} damage (0.25: 25% of the hit, Nov 12); for Thorns,
+ *     the share of a melee hit taken handed back to the attacker (Nov 17).</li>
  *     <li>{@code Element}: a Weapon spell's element (a damage cause id such as {@code Fire}),
  *     or the elements a Ward starts on, comma separated ({@code "Fire, Poison"}).</li>
  *     <li>{@code Duration}: seconds a buff lasts.</li>

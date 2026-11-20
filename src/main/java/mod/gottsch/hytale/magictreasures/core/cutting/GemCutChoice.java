@@ -36,6 +36,7 @@ import mod.gottsch.hytale.magictreasures.core.jewelry.asset.Gemstone;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
 
 /**
  * What clicking a row of the {@link GemCutPage} does: checks the kit and the gems are still
@@ -73,22 +74,22 @@ public class GemCutChoice extends ChoiceInteraction {
         Gemstone gem = GemCut.gemOfRaw(gemItemId);
         if (kit == null || !GemCutPageSupplier.KIT_ITEM_ID.equals(kit.getItemId()) || raw == null
                 || !gemItemId.equals(raw.getItemId()) || gem == null) {
-            playerRef.sendMessage(Message.raw("Those items moved. Open the kit again.").color(ERROR));
+            playerRef.sendMessage(Lang.of("cutting.moved").color(ERROR));
             player.getPageManager().setPage(ref, store, Page.None);
             return;
         }
         int xp = GemCutPage.skill(store, ref);
         int level = GemCutting.level(xp);
-        String name = gem.getId().toLowerCase();
+        Message name = Lang.source(gem.getId());
         if (level < GemCutting.minLevel(gem)) {
             // a refused row: say why, and leave the page open
-            playerRef.sendMessage(Message.raw("Cutting a " + name + " needs gem cutting level "
-                    + GemCutting.minLevel(gem) + "; you are level " + level + ".").color(ERROR));
+            playerRef.sendMessage(Lang.of("cutting.needsLevel").param("gem", name)
+                    .param("min", GemCutting.minLevel(gem)).param("level", level).color(ERROR));
             return;
         }
         GemCutting.Result result = GemCutting.cut(level, gem);
         if (!gemSlot.takeOne()) {
-            playerRef.sendMessage(Message.raw("Couldn't take the gem.").color(ERROR));
+            playerRef.sendMessage(Lang.of("cutting.couldNotTake").color(ERROR));
             player.getPageManager().setPage(ref, store, Page.None);
             return;
         }
@@ -98,7 +99,7 @@ public class GemCutChoice extends ChoiceInteraction {
                 // no room: put the raw gem back, and nothing happened
                 ItemStack now = gemSlot.get();
                 gemSlot.set(ItemStack.isEmpty(now) ? raw.withQuantity(1) : now.withQuantity(now.getQuantity() + 1));
-                playerRef.sendMessage(Message.raw("No room for the cut gem.").color(ERROR));
+                playerRef.sendMessage(Lang.of("cutting.noRoom").color(ERROR));
                 player.getPageManager().setPage(ref, store, Page.None);
                 return;
             }
@@ -107,22 +108,22 @@ public class GemCutChoice extends ChoiceInteraction {
         int total = xp + result.xp();
         store.putComponent(ref, GemCuttingSkill.getComponentType(), new GemCuttingSkill(total));
         if (result.shattered()) {
-            playerRef.sendMessage(Message.raw("The " + name + " shattered. (+" + result.xp() + " XP)").color(ERROR));
+            playerRef.sendMessage(Lang.of("cutting.shattered").param("gem", name).param("xp", result.xp()).color(ERROR));
             SoundUtil.playSoundEvent2dToPlayer(playerRef, SHATTER_SOUND, SoundCategory.UI);
         } else {
-            playerRef.sendMessage(Message.raw("You cut a " + result.cut().getName().toLowerCase() + " " + name
-                    + ". (+" + result.xp() + " XP)").color(GOOD));
+            playerRef.sendMessage(Lang.of("cutting.cut").param("gem", Lang.item(result.cut().itemId(gem)))
+                    .param("xp", result.xp()).color(GOOD));
             SoundUtil.playSoundEvent2dToPlayer(playerRef, SOUND, SoundCategory.UI);
         }
         int after = GemCutting.level(total);
         if (after > level) {
-            playerRef.sendMessage(Message.raw("Gem cutting level " + after + "!").color(GOOD));
+            playerRef.sendMessage(Lang.of("cutting.levelUp").param("level", after).color(GOOD));
         }
         LOGGER.atInfo().log("%s cut %s: %s, xp %d -> %d", playerRef.getUsername(), gemItemId,
                 result.shattered() ? "shattered" : result.cut().getName(), xp, total);
 
         if (!wear(kit)) {
-            playerRef.sendMessage(Message.raw("Your gem cutter's kit is worn out.").color(ERROR));
+            playerRef.sendMessage(Lang.of("cutting.kitWorn").color(ERROR));
             player.getPageManager().setPage(ref, store, Page.None);
             return;
         }

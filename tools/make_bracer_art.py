@@ -101,7 +101,9 @@ def item_model(style, gem):
     st = STYLES[style]
     w = st["w"]
     nodes = band_nodes(style)
-    rims = [("Top", w / 2 - 0.5), ("Bottom", -(w / 2 - 0.5))]
+    # PROUD: the rims' outer faces clear of the band's edges
+    rims = [("Top", w / 2 - 0.5 + ring.PROUD),
+            ("Bottom", -(w / 2 - 0.5 + ring.PROUD))]
     if st["ridge"]:
         rims.append(("Ridge", 0.0))
     for k, (name, z) in enumerate(rims):
@@ -139,7 +141,10 @@ def ring_parts(prefix, y, hx, hz, t, h):
     ]
 
 
-def worn_model(assets, style, gem, side=WORN_SIDE):
+def worn_model(assets, style, gem, side=WORN_SIDE, extra=None):
+    """The worn cuff. extra(st, y, hx, hz, t), if given, returns more
+    nodes for the cuff, in the forearm's frame (v1.2: Thornguard's
+    thorns, make_thornguard_art.py)."""
     st = STYLES[style]
     fx, fy, fz = FOREARM
     g, h, t = WORN_GAP, st["worn_h"], st["worn_t"]
@@ -155,7 +160,9 @@ def worn_model(assets, style, gem, side=WORN_SIDE):
     children = [box(10 + i, name, pos, (0, 0, 0, 1), (4, 8, 4), size, faces)
                 for i, (name, pos, size) in
                 enumerate(ring_parts("Cuff", y, hx, hz, t, h))]
-    rims = [("Rim_Top", y + h / 2 - 0.4), ("Rim_Bottom", y - h / 2 + 0.4)]
+    # PROUD: the rims' top and bottom clear of the cuff's
+    rims = [("Rim_Top", y + h / 2 - 0.4 + ring.PROUD),
+            ("Rim_Bottom", y - h / 2 + 0.4 - ring.PROUD)]
     if st["ridge"]:
         rims.append(("Ridge", y))
     for k, (name, ry) in enumerate(rims):
@@ -172,6 +179,8 @@ def worn_model(assets, style, gem, side=WORN_SIDE):
         surface = hx + t + (0.35 if st["ridge"] else 0)
         girdle = surface + brilliant.GIRDLE_H * st["worn_gem"]
         children.append(set_gem(st["worn_gem"], (out * girdle, y, 0), turn))
+    if extra:
+        children += extra(st, y, hx, hz, t)
     node_id = 1
     for bone in reversed(ring.skeleton_chain(assets, side)[:-1]):
         shape = dict(brilliant.ROOT_SHAPE)

@@ -1,6 +1,6 @@
 {
   "Item": "Rock_Gem_Ruby",
-  "Mana": 75,
+  "Mana": 25,
   "Recharges": 1,
   "Factors": {
     "Cooldown": 0.97,

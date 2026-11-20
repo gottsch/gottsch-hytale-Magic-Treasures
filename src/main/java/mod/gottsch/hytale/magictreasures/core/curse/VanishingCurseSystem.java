@@ -44,6 +44,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
 
 /**
  * The Curse of Vanishing: when a player dies, every piece of jewelry they carry with that
@@ -91,8 +92,7 @@ public class VanishingCurseSystem extends DeathSystems.OnDeathSystem {
         if (player != null) {
             for (ItemStack piece : gone) {
                 // the piece's own (translated) name, so a named piece is called by its name
-                player.sendMessage(Message.join(Message.raw("Your "), Jewelry.name(piece),
-                        Message.raw(" vanished with your death.")).color("#ff7070"));
+                player.sendMessage(Lang.of("curse.vanished").param("piece", Jewelry.name(piece)).color("#ff7070"));
             }
         }
     }

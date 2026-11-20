@@ -114,7 +114,9 @@ def texel_centre(cols, rows, centre, size, tex):
 def lich_model():
     """The Great band and rims, with the skull in place of a collar and
     gem."""
-    model = ring.item_model("Great", None)
+    # at 1x: Ring_Lich.png is a 64 texture with the plain metal layout
+    with ring.plain_density():
+        model = ring.item_model("Great", None)
     nodes = model["nodes"][0]["children"]
     S = SKULL
     parts = [

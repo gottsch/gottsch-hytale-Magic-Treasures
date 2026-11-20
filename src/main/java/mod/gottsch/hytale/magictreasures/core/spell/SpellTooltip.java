@@ -17,10 +17,13 @@
  */
 package mod.gottsch.hytale.magictreasures.core.spell;
 
+import com.hypixel.hytale.server.core.Message;
+import mod.gottsch.hytale.magictreasures.core.config.MagicTreasuresConfig;
 import mod.gottsch.hytale.magictreasures.core.cutting.GemCut;
 import mod.gottsch.hytale.magictreasures.core.jewelry.JewelryStats;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.JewelryDefinition;
 import mod.gottsch.hytale.magictreasures.core.jewelry.asset.SpellFactors;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
 import mod.gottsch.hytale.magictreasures.core.spell.asset.Spell;
 
 import javax.annotation.Nullable;
@@ -35,18 +38,20 @@ import java.util.Locale;
  * <ul>
  *     <li>{@link #summary}: the total amount, for example {@code drains 25 on hit}.</li>
  *     <li>{@link #breakdown}: where the amount comes from, the spell's base then each
- *     factor that changes it, for example {@code 20, +25% Bone}. Factors multiply, so the
+ *     factor that changes it, for example {@code 20, +25% bone}. Factors multiply, so the
  *     parts are multipliers, not addends.</li>
  *     <li>{@link #details}: up to two lines, as totals only: what the spell does besides
  *     its amount (targets, status, duration), then its cost and cooldown. Two lines, as one
  *     wrapped mid-way on a Drain aura (Nov 15).</li>
  * </ul>
  * The numbers match {@link SpellEngine}: the named piece's {@code SpellOverrides} first, then
- * the piece's factors (material x gem, the gem's scaled by its cut).
+ * the piece's factors (material x gem, the gem's scaled by its cut). The words are translation
+ * keys, {@code magictreasures.spell.*} in server.lang (v1.2).
  *
  * @author Mark Gottschling on 11/14/2026
  */
-public record SpellTooltip(String name, String summary, String breakdown, List<String> details) {
+public record SpellTooltip(Message name, @Nullable Message summary, @Nullable Message breakdown,
+                           List<Message> details) {
 
     /**
      * @param cut the piece's gem cut, or null for Fine
@@ -62,67 +67,94 @@ public record SpellTooltip(String name, String summary, String breakdown, List<S
         Spell spell = definition == null ? base : base.withOverrides(definition.getSpellOverrides());
         SpellFactors factors = stats.factors();
         double effect = spell.getEffect() * factors.getEffect();
-        String name = spell.getName() + " (" + spell.getLevel() + ")";
+        Message name = Message.join(Lang.spell(spellId), Message.raw(" (" + spell.getLevel() + ")"));
 
-        String summary;
+        Message summary;
         String baseText = number(spell.getEffect());
-        List<String> extras = new ArrayList<>();
+        List<Message> extras = new ArrayList<>();
         switch (spell.getKind()) {
-            case HEALING -> summary = "heals " + number(effect);
-            case VAMPIRIC -> summary = "drains " + number(effect) + " on hit";
-            case STRIKE -> summary = number(effect) + " " + element(spell.getElement()) + " damage on hit";
+            case HEALING -> summary = Lang.of("spell.heals").param("amount", number(effect));
+            case VAMPIRIC -> summary = Lang.of("spell.drainsOnHit").param("amount", number(effect));
+            case STRIKE -> summary = Lang.of("spell.strike").param("amount", number(effect))
+                    .param("element", element(spell.getElement()));
             case DRAIN -> {
-                summary = "drains " + number(effect) + " per mob every " + rounded(spell.getPulse()) + " s";
-                extras.add("up to " + spell.getMaxTargets() + " mobs within "
-                        + number(spell.getRadius() * factors.getRange()) + " m");
+                summary = Lang.of("spell.drainAura").param("amount", number(effect))
+                        .param("pulse", rounded(spell.getPulse()));
+                extras.add(Lang.of("spell.drainTargets").param("count", spell.getMaxTargets())
+                        .param("range", number(spell.getRadius() * factors.getRange())));
             }
             case WEAPON -> {
-                summary = "+" + Math.round(effect * 100) + "% " + element(spell.getElement()) + " per hit";
+                summary = Lang.of("spell.weapon").param("percent", Math.round(effect * 100))
+                        .param("element", element(spell.getElement()));
                 baseText = Math.round(spell.getEffect() * 100) + "%";
                 if (spell.getOnHit() != null) {
-                    String status = status(spell.getOnHit());
-                    extras.add(spell.getOnHitChance() >= 1 ? status + " on hit"
-                            : status + " on " + number(spell.getOnHitChance() * 100) + "% of hits");
+                    Message status = Lang.status(spell.getOnHit());
+                    extras.add(spell.getOnHitChance() >= 1
+                            ? Lang.of("spell.onHit").param("status", status)
+                            : Lang.of("spell.onHitChance").param("status", status)
+                                    .param("chance", number(spell.getOnHitChance() * 100)));
                 }
             }
-            case WARD -> summary = "wards " + String.join(", ", spell.getElements().stream()
-                    .map(SpellTooltip::element).toList());
-            default -> summary = "";
+            case WARD -> summary = Lang.of("spell.wards").param("elements", elements(spell));
+            case THORNS -> {
+                summary = Lang.of("spell.thorns").param("percent", Math.round(effect * 100));
+                baseText = Math.round(spell.getEffect() * 100) + "%";
+            }
+            case BARRIER -> {
+                // a Barrier with an Effect heals too (v1.2: 10 plain, 30 on the Amulet of the Last Stand)
+                summary = spell.getEffect() > 0
+                        ? Lang.join(List.of(Lang.of("spell.heals").param("amount", number(effect)),
+                                Lang.of("spell.wards").param("elements", elements(spell))), ", ")
+                        : Lang.of("spell.wards").param("elements", elements(spell));
+                extras.add(Lang.of("spell.barrierWhen")
+                        .param("percent", Math.round(SpellEngine.BARRIER_HEALTH * 100)));
+            }
+            case CAT_SIGHT -> {
+                summary = null;
+                extras.add(Lang.of("spell.catSightWhen"));
+            }
+            default -> summary = null;
         }
 
         // only spells with an amount get a breakdown
-        String breakdown = "";
-        if (usesEffect(spell.getKind())) {
-            List<String> parts = new ArrayList<>();
-            parts.add(baseText);
+        Message breakdown = null;
+        if (usesEffect(spell.getKind()) || (spell.getKind() == SpellKind.BARRIER && spell.getEffect() > 0)) {
+            List<Message> parts = new ArrayList<>();
+            parts.add(Message.raw(baseText));
             if (stats.material() != null) {
                 part(parts, stats.material().getFactors().getEffect(), stats.material().getId());
             }
             if (stats.gem() != null) {
                 GemCut gemCut = cut == null ? GemCut.FINE : cut;
-                part(parts, gemCut.scale(stats.gem().getFactors()).getEffect(),
-                        stats.gem().getId().toLowerCase(Locale.ROOT));
+                part(parts, gemCut.scale(stats.gem().getFactors()).getEffect(), stats.gem().getId());
             }
             // just the base: nothing to break down
             if (parts.size() > 1) {
-                breakdown = String.join(", ", parts);
+                breakdown = Lang.join(parts, ", ");
             }
         }
 
         if (spell.getDuration() > 0) {
-            extras.add("lasts " + rounded(spell.getDuration() * factors.getDuration()) + " s");
+            extras.add(Lang.of("spell.lasts").param("seconds",
+                    rounded(spell.getDuration() * factors.getDuration())));
         }
-        List<String> costs = new ArrayList<>();
+        List<Message> costs = new ArrayList<>();
         if (definition == null || !definition.isUnlimited()) {
-            costs.add("cost " + rounded(spell.getCost() * factors.getCost()));
+            costs.add(Lang.of("spell.cost").param("cost", rounded(spell.getCost() * factors.getCost())));
         }
-        costs.add("cooldown " + rounded(spell.getCooldown() * factors.getCooldown()) + " s");
-        List<String> details = new ArrayList<>();
+        costs.add(Lang.of("spell.cooldown").param("seconds", rounded(spell.getCooldown()
+                * factors.getCooldown() * MagicTreasuresConfig.get().getSpellCooldowns())));
+        List<Message> details = new ArrayList<>();
         if (!extras.isEmpty()) {
-            details.add(String.join(", ", extras));
+            details.add(Lang.join(extras, ", "));
         }
-        details.add(String.join(", ", costs));
+        details.add(Lang.join(costs, ", "));
         return new SpellTooltip(name, summary, breakdown, details);
+    }
+
+    /** @return a Ward's elements, "fire, poison" */
+    private static Message elements(Spell spell) {
+        return Lang.join(spell.getElements().stream().map(SpellTooltip::element).toList(), ", ");
     }
 
     /**
@@ -131,18 +163,19 @@ public record SpellTooltip(String name, String summary, String breakdown, List<S
      */
     private static boolean usesEffect(SpellKind kind) {
         return switch (kind) {
-            case HEALING, VAMPIRIC, STRIKE, DRAIN, WEAPON -> true;
+            case HEALING, VAMPIRIC, STRIKE, DRAIN, WEAPON, THORNS -> true;
             default -> false;
         };
     }
 
     /**
-     * Adds a factor's part, for example {@code +25% Bone}, unless it rounds to no change.
+     * Adds a factor's part, for example {@code +25% bone}, unless it rounds to no change.
      */
-    private static void part(List<String> parts, double factor, String source) {
+    private static void part(List<Message> parts, double factor, String source) {
         long percent = Math.round((factor - 1) * 100);
         if (percent != 0) {
-            parts.add((percent > 0 ? "+" : "") + percent + "% " + source);
+            parts.add(Message.join(Message.raw((percent > 0 ? "+" : "") + percent + "% "),
+                    Lang.source(source)));
         }
     }
 
@@ -158,21 +191,15 @@ public record SpellTooltip(String name, String summary, String breakdown, List<S
     /**
      * @return a whole number without decimals, otherwise one decimal (12.5, 31.3)
      */
-    static String number(double value) {
+    public static String number(double value) {
         if (Math.abs(value - Math.round(value)) < 0.05) {
             return Long.toString(Math.round(value));
         }
         return String.format(Locale.ROOT, "%.1f", value);
     }
 
-    private static String element(@Nullable String element) {
-        return element == null ? "elemental" : element.toLowerCase(Locale.ROOT);
-    }
-
-    /**
-     * @return a status effect id as a name, for example {@code MT_Status_Stun} as {@code Stun}
-     */
-    private static String status(String id) {
-        return id.replaceFirst("^MT_Status_", "").replace('_', ' ');
+    /** @return an element inside a sentence ("fire"), "elemental" if none */
+    private static Message element(@Nullable String element) {
+        return Lang.elementLower(element == null ? "Elemental" : element);
     }
 }

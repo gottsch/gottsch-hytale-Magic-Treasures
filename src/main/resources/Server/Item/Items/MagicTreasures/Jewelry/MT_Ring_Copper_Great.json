@@ -15,7 +15,7 @@
     ]
   },
   "Model": "Items/MagicTreasures/Rings/Ring_Great.blockymodel",
-  "Texture": "Items/MagicTreasures/Rings/Ring_Copper.png",
+  "Texture": "Items/MagicTreasures/Rings/Ring_Great_Copper.png",
   "PlayerAnimationsId": "Item",
   "Utility": {
     "Compatible": true

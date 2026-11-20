@@ -16,6 +16,7 @@
  * along with Magic Treasures.  If not, see <http://www.gnu.org/licenses/lgpl>.
  */
 package mod.gottsch.hytale.magictreasures.core.imbue;
+import mod.gottsch.hytale.magictreasures.core.lang.Lang;
 
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
@@ -66,19 +67,19 @@ public class ImbueChoice extends ChoiceInteraction {
         ItemStack material = materialSlot.get();
         if (piece == null || material == null || !pieceId.equals(piece.getItemId())
                 || !materialId.equals(material.getItemId())) {
-            playerRef.sendMessage(Message.raw("Those items moved. Open it again.").color(ERROR));
+            playerRef.sendMessage(Lang.of("imbue.moved").color(ERROR));
             player.getPageManager().setPage(ref, store, Page.None);
             return;
         }
         Imbuing.Outcome outcome = Imbuing.check(piece, material);
         if (outcome == null || !outcome.allowed()) {
             // a refused row: say why, and leave the page open
-            playerRef.sendMessage(Message.raw(outcome == null ? "That can't be used here." : outcome.message())
+            playerRef.sendMessage((outcome == null ? Lang.of("imbue.cantUse") : outcome.message())
                     .color(ERROR));
             return;
         }
         if (!materialSlot.takeOne()) {
-            playerRef.sendMessage(Message.raw("Couldn't use that item.").color(ERROR));
+            playerRef.sendMessage(Lang.of("imbue.couldNotUse").color(ERROR));
             player.getPageManager().setPage(ref, store, Page.None);
             return;
         }
@@ -91,13 +92,13 @@ public class ImbueChoice extends ChoiceInteraction {
             } else {
                 materialSlot.set(now.withQuantity(now.getQuantity() + 1));
             }
-            playerRef.sendMessage(Message.raw("Couldn't change the jewelry.").color(ERROR));
+            playerRef.sendMessage(Lang.of("imbue.couldNotChange").color(ERROR));
             player.getPageManager().setPage(ref, store, Page.None);
             return;
         }
         LOGGER.atInfo().log("%s: %s on %s -> %s", playerRef.getUsername(), materialId, pieceId,
                 outcome.result().getItemId());
-        playerRef.sendMessage(Message.raw(outcome.message()).color("#e8c96a"));
+        playerRef.sendMessage(outcome.message().color("#e8c96a"));
         player.getPageManager().setPage(ref, store, Page.None);
         SoundUtil.playSoundEvent2dToPlayer(playerRef, SOUND, SoundCategory.UI);
     }
